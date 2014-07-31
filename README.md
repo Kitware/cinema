@@ -1,4 +1,4 @@
-![](https://raw.githubusercontent.com/patrickoleary/cinema/master/assets/img/icon.png)
+![](https://raw.githubusercontent.com/zachmullen/cinema/master/web/dist/assets/img/icon.png)
 # Cinema
 
 Cinema - An Image-based Approach to Extreme Scale In Situ Visualization and Analysis - is an open-source toolkit licensed under the BSD license.
