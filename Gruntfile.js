@@ -1,19 +1,3 @@
-/**
- * Copyright Kitware Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 module.exports = function (grunt) {
     var staticRoot;
     var fs = require('fs');
@@ -47,25 +31,44 @@ module.exports = function (grunt) {
             options: {
                 client: true,
                 compileDebug: false,
-                namespace: 'cinema.templates',
                 processName: function (filename) {
                     return path.basename(filename, '.jade');
                 }
             },
-            core: {
+            app: {
                 files: {
-                    'web/dist/templates.js': [
-                        'web/src/templates/**/*.jade'
+                    'web/dist/built/cinema.app.templates.js': [
+                        'web/src/templates/app/**/*.jade'
                     ]
+                },
+                options: {
+                    namespace: 'cinema.app.templates'
+                }
+            },
+            lib: {
+                files: {
+                    'web/dist/built/cinema.templates.js': [
+                        'web/src/templates/lib/**/*.jade'
+                    ]
+                },
+                options: {
+                    namespace: 'cinema.templates'
                 }
             }
         },
 
         stylus: {
-            core: {
+            app: {
                 files: {
-                    'web/dist/app.min.css': [
-                        'web/src/stylesheets/**/*.styl'
+                    'web/dist/built/cinema.app.min.css': [
+                        'web/src/stylesheets/app/**/*.styl'
+                    ]
+                }
+            },
+            lib: {
+                files: {
+                    'web/dist/built/cinema.min.css': [
+                        'web/src/stylesheets/lib/**/*.styl'
                     ]
                 }
             }
@@ -82,44 +85,60 @@ module.exports = function (grunt) {
             },
             app: {
                 files: {
-                    'web/dist/app.min.js': [
-                        'web/dist/templates.js',
-                        'web/src/models/**/*.js',
-                        'web/src/collections/**/*.js',
-                        'web/src/views/**/*.js'
-                    ],
-                    'web/dist/main.min.js': [
-                        'web/src/main.js'
+                    'web/dist/built/cinema.app.min.js': [
+                        'web/dist/built/cinema.app.templates.js',
+                        'web/src/js/app/**/*.js'
                     ]
                 }
             },
-            libs: {
+            ext: {
                 files: {
-                    'web/dist/libs.min.js': [
+                    'web/dist/built/cinema.ext.min.js': [
                         'node_modules/jquery-browser/lib/jquery.js',
                         'node_modules/jade/runtime.js',
                         'node_modules/underscore/underscore.js',
                         'node_modules/backbone/backbone.js'
                     ]
                 }
-            }
+            },
+            lib: {
+                files: {
+                    'web/dist/built/cinema.min.js': [
+                        'web/dist/built/cinema.templates.js',
+                        'web/src/js/lib/**/*.js'
+                    ]
+                }
+            },
         },
 
         watch: {
-            stylus_core: {
-                files: ['web/src/stylesheets/**/*.styl'],
-                tasks: ['stylus:core'],
-                options: {failOnError: false}
+            stylus_app: {
+                files: ['web/src/stylesheets/app/**/*.styl'],
+                tasks: ['stylus:app']
             },
-            js_core: {
-                files: ['web/src/**/*.js'],
-                tasks: ['uglify:app'],
-                options: {failOnError: false}
+            stylus_lib: {
+                files: ['web/src/stylesheets/lib/**/*.styl'],
+                tasks: ['stylus:lib']
             },
-            jade_core: {
-                files: ['web/src/templates/**/*.jade'],
-                tasks: ['build-app'],
-                options: {failOnError: false}
+            js_app: {
+                files: ['web/src/js/app/**/*.js'],
+                tasks: ['uglify:app']
+            },
+            js_lib: {
+                files: ['web/src/js/lib/**/*.js'],
+                tasks: ['uglify:lib']
+            },
+            jade_app: {
+                files: ['web/src/templates/app/**/*.jade'],
+                tasks: ['jade:app', 'uglify:app']
+            },
+            jade_lib: {
+                files: ['web/src/templates/lib/**/*.jade'],
+                tasks: ['jade:lib', 'uglify:lib']
+            },
+            index_html: {
+                files: ['web/src/templates/index.html.jade'],
+                tasks: ['index-html']
             }
         }
     });
@@ -140,17 +159,19 @@ module.exports = function (grunt) {
         });
         fs.writeFileSync('web/dist/index.html', fn({
             cssFiles: [
-                'app.min.css'
+                'built/cinema.min.css',
+                'built/cinema.app.min.css'
             ],
             jsFiles: [
-                'libs.min.js',
-                'app.min.js'
+                'built/cinema.ext.min.js',
+                'built/cinema.min.js',
+                'built/cinema.app.min.js'
             ],
             config: config
         }));
     });
 
-    grunt.registerTask('build-app', ['jade', 'uglify:app', 'index-html']);
-    grunt.registerTask('init', ['extend', 'uglify:libs']);
-    grunt.registerTask('default', ['stylus', 'build-app']);
+    grunt.registerTask('build-js', ['jade', 'uglify:app', 'uglify:lib']);
+    grunt.registerTask('init', ['extend', 'uglify:ext', 'index-html']);
+    grunt.registerTask('default', ['stylus', 'build-js']);
 };
