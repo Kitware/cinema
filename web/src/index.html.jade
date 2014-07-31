@@ -4,6 +4,8 @@ html(lang="en")
     meta(name="viewport", content="width=device-width, initial-scale=1")
     title ParaView Cinema
     link(rel="icon", type="image/png", href="#{config.staticRoot}assets/img/bpvc-60.png")
+    link(rel="stylesheet", type="text/css", href="#{config.staticRoot}fontello/css/fontello.css")
+    
     each css in cssFiles
       link(rel="stylesheet", type="text/css", href="#{config.staticRoot}#{css}")
     each js in jsFiles
