@@ -17,7 +17,7 @@ module.exports = function (grunt) {
         extend: {
             options: {
                 defaults: {
-                    staticRoot: '/',
+                    staticRoot: '',
                     dataRoot: '/data'
                 }
             },
