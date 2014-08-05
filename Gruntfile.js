@@ -87,7 +87,8 @@ module.exports = function (grunt) {
                 files: {
                     'web/dist/built/cinema.app.min.js': [
                         'web/dist/built/cinema.app.templates.js',
-                        'web/src/js/app/**/*.js'
+                        'web/src/js/app/**/*.js',
+                        'web/src/js/app-main.js'
                     ]
                 }
             },
@@ -105,6 +106,7 @@ module.exports = function (grunt) {
                 files: {
                     'web/dist/built/cinema.min.js': [
                         'web/dist/built/cinema.templates.js',
+                        'web/src/js/init.js',
                         'web/src/js/lib/**/*.js'
                     ]
                 }
