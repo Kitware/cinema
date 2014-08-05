@@ -17,7 +17,8 @@ module.exports = function (grunt) {
         extend: {
             options: {
                 defaults: {
-                    staticRoot: '/'
+                    staticRoot: '/',
+                    dataRoot: '/data'
                 }
             },
             config: {
@@ -123,11 +124,11 @@ module.exports = function (grunt) {
                 tasks: ['stylus:lib']
             },
             js_app: {
-                files: ['web/src/js/app/**/*.js'],
+                files: ['web/src/js/app/**/*.js', 'web/src/js/app-main.js'],
                 tasks: ['uglify:app']
             },
             js_lib: {
-                files: ['web/src/js/lib/**/*.js'],
+                files: ['web/src/js/lib/**/*.js', 'web/src/js/init.js'],
                 tasks: ['uglify:lib']
             },
             jade_app: {
