@@ -3,6 +3,6 @@
  */
 $(function () {
     new cinema.StandaloneApp({
-      el: 'body'
+        el: 'body'
     });
 });

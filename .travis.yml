@@ -4,4 +4,7 @@ install:
     - npm install -g grunt grunt-cli
     - npm install
 script:
-    - echo "done"
+    - mkdir _build
+    - cd _build
+    - cmake ..
+    - ctest -VV -S ../cmake/travis-ci.cmake
