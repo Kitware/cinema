@@ -14,13 +14,15 @@ cinema.StandaloneApp = Backbone.View.extend({
     render: function () {
         this.$el.html(cinema.app.templates.layout());
 
-        var infoModel = new cinema.models.JsonModel();
-        infoModel.url = this.dataRoot + '/info.json';
+        var visModel = new cinema.models.VisualizationModel({
+            basePath: this.dataRoot,
+            infoFile: 'info.json'
+        });
 
         new cinema.views.ViewportView({
             el: this.$('#c-app-viewport-container'),
-            infoModel: infoModel
+            visModel: visModel
         });
-        infoModel.fetch();
+        visModel.fetch();
     }
 });

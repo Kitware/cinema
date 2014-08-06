@@ -1,13 +1,16 @@
 cinema.views.ViewportView = Backbone.View.extend({
     initialize: function (settings) {
-        this.infoModel = settings.infoModel;
+        this.visModel = settings.visModel;
 
-        this.infoModel.on('change', function () {
+        this.visModel.on('change', function () {
             this.render();
         }, this);
     },
 
     render: function () {
-        console.log(this.infoModel);
+        new cinema.views.VisualizationCanvasWidget({
+            el: this.el,
+            visModel: this.visModel
+        }).render();
     }
 });
