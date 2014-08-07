@@ -22,7 +22,7 @@
         this.imageFileName = params.imageFileName || 'rgb.jpg';
         this.compositeInfoFileName = params.compositeInfoFileName || 'composite.json';
         this._cache = {};
-        this.updateFields(args.time.default, args.phi.default, args.theta.default);
+        this.updateFields(args.time['default'], args.phi['default'], args.theta['default']);
 
         return this;
     };
@@ -44,26 +44,26 @@
      */
     prototype._downloadImage = function (key) {
         var url = this.visModel.url.substring(0, this.visModel.url.lastIndexOf('/')) +
-                  '/' + key.replace('{filename}', this.imageFileName),
+            '/' + key.replace('{filename}', this.imageFileName),
             img = new Image();
 
-            img.onLoad = _.bind(function () {
-                this._cache[key]['image'] = img;
-                if (_.has(this._cache[key], 'json')) {
-                    this.trigger('c:data.ready', this._cache[key]);
-                }
-            }, this);
-
-            img.onError = _.bind(function () {
-                this.trigger('c:error', {
-                    'message': 'Error loading image ' + url + ' for key ' + key
-                });
-            }, this);
-
-            img.src = url;
-            if (img.complete) {
-                img.onLoad();
+        img.onload = _.bind(function () {
+            this._cache[key].image = img;
+            if (_.has(this._cache[key], 'json')) {
+                this.trigger('c:data.ready', this._cache[key]);
             }
+        }, this);
+
+        img.onerror = _.bind(function () {
+            this.trigger('c:error', {
+                'message': 'Error loading image ' + url + ' for key ' + key
+            });
+        }, this);
+
+        img.src = url;
+        if (img.complete) {
+            img.onload();
+        }
     };
 
     /**
@@ -75,7 +75,7 @@
                   '/' + key.replace('{filename}', this.compositeInfoFileName);
 
         $.getJSON(url, _.bind(function (data) {
-            this._cache[key]['json'] = data;
+            this._cache[key].json = data;
             if (_.has(this._cache[key], 'image')) {
                 this.trigger('c:data.ready', this._cache[key]);
             }

@@ -1,6 +1,6 @@
 /**
  * This widget renders the visualization defined by a VisualizationModel onto
- * a canvas element.
+ * a canvas element that will fill the parent element.
  */
 cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
     initialize: function (settings) {
@@ -11,16 +11,17 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             visModel: this.visModel
         });
 
-        this.compositeManager.on('c:error', function (d) {
-            // TODO handle error
+        this.compositeManager.on('c:error', function (e) {
+            this.trigger('c:error', e);
+        }, this).on('c:data.ready', function (data) {
+
         }, this);
     },
 
     render: function () {
         this.$el.html(cinema.templates.visCanvas());
-        window.x = this.visModel;
 
-        this._drawImage();
+        //this._drawImage();
     },
 
     _drawImage: function () {
