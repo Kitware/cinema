@@ -7,6 +7,13 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         this.visModel = settings.visModel;
         this.drawingCenter = settings.drawingCenter || [0, 0];
         this.zoomLevel = settings.zoomLevel || 1.0;
+        this.compositeManager = new cinema.utilities.CompositeImageManager({
+            visModel: this.visModel
+        });
+
+        this.compositeManager.on('c:error', function (d) {
+            // TODO handle error
+        }, this);
     },
 
     render: function () {

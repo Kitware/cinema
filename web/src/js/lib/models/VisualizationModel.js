@@ -39,15 +39,36 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
         return this.get('_deltaTheta');
     },
 
-    numberOfImages: function () {
-        if (!this.has('_numImages')) {
-            var layerFields = this.get('metadata').layer_fields;
+    /**
+     * Return the number of layers in this composited image.
+     */
+    numberOfLayers: function () {
+        if (!this.has('_numLayers')) {
+            var layerFields = this.get('metadata').layer_fields || [];
 
-            this.set('_numImages', _.reduce(layerFields, function (c, val) {
+            this.set('_numLayers', _.reduce(layerFields, function (c, val) {
                 return c + val.length;
             }, 0));
         }
 
-        return this.get('_numImages');
+        return this.get('_numLayers');
+    },
+
+    /**
+     * Return a [width, height] array representing the dimensions of the
+     * composited (single) image to be rendered.
+     */
+    imageDimensions: function () {
+        return this.get('metadata').dimensions;
+    },
+
+    /**
+     * Return a [width, height] array representing the dimensions of the full
+     * sprite sheet, which is assumed to be a vertically-stacked sprite sheet
+     * of uniformly sized layers.
+     */
+    spritesheetDimensions: function () {
+        var dim = this.imageDimensions();
+        return [dim[0], dim[1] * this.numberOfLayers()];
     }
 });

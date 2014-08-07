@@ -14,6 +14,7 @@ if (!window.console) {
 var cinema = {
     models: {},
     collections: {},
+    utilities: {},
     views: {},
     events: _.clone(Backbone.Events)
 };
