@@ -18,7 +18,8 @@ module.exports = function (grunt) {
             options: {
                 defaults: {
                     staticRoot: '',
-                    dataRoot: '/data'
+                    dataRoot: '/data',
+                    title: 'ParaView Cinema'
                 }
             },
             config: {

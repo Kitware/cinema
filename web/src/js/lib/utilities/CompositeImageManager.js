@@ -1,7 +1,8 @@
 (function () {
     /**
      * The CompositeImageManager is in charge of actually downloading and
-     * caching image data for a given VisualizationModel. Usage:
+     * caching raw image and compositing data for a given VisualizationModel.
+     * Usage example:
      *
      *    var mgr = new cinema.utilities.CompositeImageManager({
      *        visModel: myVisualizationModel
@@ -12,17 +13,18 @@
      *        console.log('Error: ' + e.message);
      *    });
      *
+     *    mgr.updateFields(t, phi, theta);
+     *
+     * Further compositing computation and drawing of the composited image is
+     * left to other components.
      */
     cinema.utilities.CompositeImageManager = function (params) {
-        var args = params.visModel.get('arguments');
-
         _.extend(this, Backbone.Events);
 
         this.visModel = params.visModel;
         this.imageFileName = params.imageFileName || 'rgb.jpg';
         this.compositeInfoFileName = params.compositeInfoFileName || 'composite.json';
         this._cache = {};
-        this.updateFields(args.time['default'], args.phi['default'], args.theta['default']);
 
         return this;
     };
