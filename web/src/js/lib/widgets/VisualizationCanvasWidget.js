@@ -5,13 +5,16 @@
 cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
     initialize: function (settings) {
         this.visModel = settings.visModel;
+        this.query = settings.query || "AABBCBDBEBFBGCHCICJCKC"; // TODO figure out what this means
         this.drawingCenter = settings.drawingCenter || [0, 0];
         this.zoomLevel = settings.zoomLevel || 1.0;
+        this.backgroundColor = settings.backgroundColor || '#ffffff';
         this.orderMapping = {};
-        this.query = "AABBCBDBEBFBGCHCICJCKC"; // TODO figure out what this means
         this.compositeManager = new cinema.utilities.CompositeImageManager({
             visModel: this.visModel
         });
+
+        this._computeLayerOffset();
 
         this.compositeManager.on('c:error', function (e) {
             this.trigger('c:error', e);
@@ -28,6 +31,48 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         var args = this.visModel.get('arguments');
         this.compositeManager.updateFields(
             args.time['default'], args.phi['default'], args.theta['default']);
+        window.w = this;
+    },
+
+    _computeOffset: function (order) {
+        for(var i = 0; i < order.length; i += 1) {
+            var offset = this.layerOffset[order[i]];
+            if (offset > -1) {
+                return offset;
+            }
+        }
+        return -1;
+    },
+
+    _computeLayerOffset: function () {
+        this.layerOffset = {};
+
+        for (var i = 0; i < this.query.length; i += 2) {
+            var layer = this.query[i],
+                field = this.query[i + 1];
+
+            if (field === '_') {
+                this.layerOffset[layer] = -1;
+            } else {
+                this.layerOffset[layer] = this.visModel.numberOfLayers() - 1 -
+                    this.visModel.get('metadata').offset[this.query.substr(i, 2)];
+            }
+        }
+    },
+
+    _computeCompositeInfo: function (data) {
+        var composite = data.json['pixel-order'].split('+'),
+            count = composite.length;
+        while (count--) {
+            var str = composite[count];
+            if (str[0] === '@') {
+                composite[count] = Number(str.substr(1))
+            } else if (!_.has(this.orderMapping, str)) {
+                this.orderMapping[str] = this._computeOffset(str);
+            }
+        }
+
+        data.composite = composite;
     },
 
     /**
@@ -38,43 +83,56 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
      */
     _writeCompositeBuffer: function (data) {
         if (!_.has(data, 'composite')) {
-            cinema.utilities.computeCompositeData(data, this.orderMapping);
+            this._computeCompositeInfo(data);
         }
 
         var renderCanvas = this.$('.c-vis-render-canvas')[0],
             compositeCanvas = this.$('.c-vis-composite-buffer')[0],
             spriteCanvas = this.$('.c-vis-spritesheet-buffer')[0],
-            composite = data.composite,
-            fullPixelOffset = singleImageSize[0] * singleImageSize[1] * 4,
-            count = composite.length;
+            dim = this.visModel.imageDimensions(),
+            spritesheetDim = this.visModel.spritesheetDimensions(),
+            spriteCtx = spriteCanvas.getContext('2d'),
+            compositeCtx = compositeCanvas.getContext('2d');
 
-        // Fill buffer with image
-        bgCTX.drawImage(data.image, 0, 0);
+        $(spriteCanvas).attr({
+            width: spritesheetDim[0],
+            height: spritesheetDim[1]
+        });
+        $(compositeCanvas).attr({
+            width: dim[0],
+            height: dim[1]
+        });
 
-        var pixelBuffer = bgCTX.getImageData(0, 0, fullImageSize[0], fullImageSize[1]).data,
-        frontBuffer = null, frontPixels = null, pixelIdx = 0, localIdx;
+        // Fill full spritesheet buffer with raw image data
+        spriteCtx.drawImage(data.image, 0, 0);
 
-        // Fill with bg color
-        if(bgColor) {
-            frontCTX.fillStyle = bgColor;
-            frontCTX.fillRect(0,0,singleImageSize[0], singleImageSize[1]);
-            frontBuffer = frontCTX.getImageData(0, 0, singleImageSize[0], singleImageSize[1]);
-            frontPixels = frontBuffer.data;
-        } else {
-            frontBuffer = bgCTX.getImageData(0, (nbImages - 1) * singleImageSize[1], singleImageSize[0], singleImageSize[1]);
-            frontPixels = frontBuffer.data;
+        var pixelBuffer = spriteCtx.getImageData(0, 0,
+                  spritesheetDim[0], spritesheetDim[1]).data,
+            frontBuffer,
+            pixelIdx = 0;
+
+        // Fill the background if backgroundColor is specified
+        if (this.backgroundColor) {
+            compositeCtx.fillStyle = this.backgroundColor;
+            compositeCtx.fillRect(0, 0, dim[0], dim[1]);
+            frontBuffer = compositeCtx.getImageData(0, 0, dim[0], dim[1]);
+        } else { // Otherwise use the bottom spritesheet image as a background
+            frontBuffer = spriteCtx.getImageData(
+                0, (this.visModel.numberOfLayers() - 1) * dim[1], dim[0], dim[1]);
         }
 
-        for (var i = 0; i < count; i += 1) {
-            var order = composite[i];
-            if(order > 0) {
+        var frontPixels = frontBuffer.data;
+
+        for (var i = 0; i < data.composite.length; ++i) {
+            var order = data.composite[i];
+            if (order > 0) {
                 pixelIdx += order;
             } else {
                 var offset = this.orderMapping[order];
 
-                if(offset > -1) {
-                    localIdx = 4 * pixelIdx;
-                    offset *= fullPixelOffset;
+                if (offset > -1) {
+                    var localIdx = 4 * pixelIdx;
+                    offset *= dim[0] * dim[1] * 4;
                     offset += localIdx;
                     frontPixels[localIdx] = pixelBuffer[offset];
                     frontPixels[localIdx + 1] = pixelBuffer[offset + 1];
@@ -86,9 +144,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             }
         }
 
-        // Draw buffer to canvas
-        frontCTX.putImageData(frontBuffer, 0, 0);
-        container.trigger('render-bg');
+        // Draw buffer to composite canvas
+        compositeCtx.putImageData(frontBuffer, 0, 0);
     },
 
     /**
@@ -99,8 +156,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
     drawImage: function () {
         var renderCanvas = this.$('.c-vis-render-canvas')[0],
             compositeCanvas = this.$('.c-vis-composite-buffer')[0],
-            w = this.$el.width(),
-            h = this.$el.height(),
+            w = this.$el.parent().width(),
+            h = this.$el.parent().height(),
             iw = compositeCanvas.width,
             ih = compositeCanvas.height;
 

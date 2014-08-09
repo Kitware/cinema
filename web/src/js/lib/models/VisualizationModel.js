@@ -48,7 +48,7 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
 
             this.set('_numLayers', _.reduce(layerFields, function (c, val) {
                 return c + val.length;
-            }, 0));
+            }, 1));
         }
 
         return this.get('_numLayers');

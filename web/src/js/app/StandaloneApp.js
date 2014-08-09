@@ -4,11 +4,6 @@ cinema.StandaloneApp = Backbone.View.extend({
         this.staticRoot = settings.staticRoot;
 
         this.render();
-
-        // Initialize the routing system
-        Backbone.history.start({
-            pushState: false
-        });
     },
 
     render: function () {
@@ -20,7 +15,7 @@ cinema.StandaloneApp = Backbone.View.extend({
         });
 
         new cinema.views.ViewportView({
-            el: this.$('#c-app-viewport-container'),
+            el: this.$('.c-app-viewport-container'),
             visModel: visModel
         });
         visModel.fetch();

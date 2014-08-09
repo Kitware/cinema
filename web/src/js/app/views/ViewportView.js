@@ -8,8 +8,10 @@ cinema.views.ViewportView = Backbone.View.extend({
     },
 
     render: function () {
+        this.$el.html(cinema.app.templates.viewport());
+
         new cinema.views.VisualizationCanvasWidget({
-            el: this.el,
+            el: this.$('.c-app-renderer-container'),
             visModel: this.visModel
         }).render();
     }
