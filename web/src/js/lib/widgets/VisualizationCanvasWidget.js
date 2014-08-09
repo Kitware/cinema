@@ -20,6 +20,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             this.trigger('c:error', e);
         }, this).on('c:data.ready', function (data) {
             this._writeCompositeBuffer(data);
+            this.resetCamera();
             this.drawImage();
         }, this);
     },
@@ -31,7 +32,6 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         var args = this.visModel.get('arguments');
         this.compositeManager.updateFields(
             args.time['default'], args.phi['default'], args.theta['default']);
-        window.w = this;
     },
 
     _computeOffset: function (order) {
@@ -139,7 +139,6 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
                     frontPixels[localIdx + 2] = pixelBuffer[offset + 2];
                     frontPixels[localIdx + 3] = 255;
                 }
-                // Move forward
                 pixelIdx += 1;
             }
         }
@@ -169,8 +168,6 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
 
         var tw = Math.floor(iw * this.zoomLevel),
         th = Math.floor(ih * this.zoomLevel),
-        tx = this.drawingCenter[0] - (tw / 2),
-        ty = this.drawingCenter[1] - (th / 2),
         dx = (tw > w) ? (tw - w) : (w - tw),
         dy = (th > h) ? (th - h) : (h - th),
         centerBounds = [(w - dx) / 2, (h - dy) / 2, (w + dx) / 2, (h + dy) / 2];
@@ -183,13 +180,28 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
                 Math.min(Math.max(this.drawingCenter[0], centerBounds[0]), centerBounds[2]),
                 Math.min(Math.max(this.drawingCenter[1], centerBounds[1]), centerBounds[3])
             ];
-            tx = this.drawingCenter[0] - (tw / 2);
-            ty = this.drawingCenter[1] - (th / 2);
+
         }
+        var tx = this.drawingCenter[0] - (tw / 2),
+            ty = this.drawingCenter[1] - (th / 2);
 
         renderCanvas.getContext('2d').drawImage(
             compositeCanvas,
             0,   0, iw, ih,  // Source image   [Location,Size]
-            tx, ty, tw, th); // Traget drawing [Location,Size]
+            tx, ty, tw, th); // Target drawing [Location,Size]
+    },
+
+    /**
+     * Reset the zoom level and drawing center such that the image is
+     * centered and zoomed to fit within the parent container.
+     */
+    resetCamera: function () {
+        var w = this.$el.parent().width(),
+            h = this.$el.parent().height(),
+            iw = this.$('.c-vis-composite-buffer').width(),
+            ih = this.$('.c-vis-composite-buffer').height();
+
+        this.zoomLevel = Math.min(w / iw, h / ih);
+        this.drawingCenter = [w / 2, h / 2];
     }
 });
