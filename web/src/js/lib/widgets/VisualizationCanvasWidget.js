@@ -3,6 +3,25 @@
  * a canvas element that will fill the parent element.
  */
 cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
+    // Expose primitive events from the canvas for building interactors
+    events: {
+        'click .c-vis-render-canvas': function (e) {
+            this.trigger('c:click', e);
+        },
+        'dblclick .c-vis-render-canvas': function (e) {
+            this.trigger('c:dblclick', e);
+        },
+        'mousedown .c-vis-render-canvas': function (e) {
+            this.trigger('c:mousedown', e);
+        },
+        'mousemove .c-vis-render-canvas': function (e) {
+            this.trigger('c:mousemove', e);
+        },
+        'mouseup .c-vis-render-canvas': function (e) {
+            this.trigger('c:mouseup', e);
+        }
+    },
+
     initialize: function (settings) {
         this.visModel = settings.visModel;
         this.query = settings.query || "AABBCBDBEBFBGCHCICJCKC"; // TODO figure out what this means
@@ -10,6 +29,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         this.zoomLevel = settings.zoomLevel || 1.0;
         this.backgroundColor = settings.backgroundColor || '#ffffff';
         this.orderMapping = {};
+
         this.compositeManager = new cinema.utilities.CompositeImageManager({
             visModel: this.visModel
         });
@@ -204,5 +224,20 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
 
         this.zoomLevel = Math.min(w / iw, h / ih);
         this.drawingCenter = [w / 2, h / 2];
+    },
+
+    /**
+     * Maps an [x, y] value relative to the canvas element to an [x, y] value
+     * relative to the image being rendered on the canvas.
+     * @param coords 2-length list representing [x, y] offset into the canvas
+     * element.
+     * @returns the corresponding [x, y] value of the image being rendered on
+     * the canvas, respecting zoom level and drawing center, or null if the
+     * input coordinates are on a part of the canvas outside of the image render
+     * bounds. If not null, this will be a value bounded in each dimension by
+     * the length of the composited image in that dimension.
+     */
+    mapToImageCoordinates: function (coords) {
+        // TODO
     }
 });
