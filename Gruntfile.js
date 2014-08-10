@@ -14,6 +14,13 @@ module.exports = function (grunt) {
     grunt.config.init({
         pkg: grunt.file.readJSON('package.json'),
 
+        copy: {
+            ext: {
+                src: 'node_modules/bootstrap/dist/css/bootstrap.min.css',
+                dest: 'web/dist/built/bootstrap.min.css'
+            }
+        },
+
         extend: {
             options: {
                 defaults: {
@@ -100,7 +107,8 @@ module.exports = function (grunt) {
                         'node_modules/jquery-browser/lib/jquery.js',
                         'node_modules/jade/runtime.js',
                         'node_modules/underscore/underscore.js',
-                        'node_modules/backbone/backbone.js'
+                        'node_modules/backbone/backbone.js',
+                        'node_modules/bootstrap/dist/js/bootstrap.js'
                     ]
                 }
             },
@@ -147,6 +155,7 @@ module.exports = function (grunt) {
         }
     });
 
+    grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-jade');
     grunt.loadNpmTasks('grunt-contrib-stylus');
@@ -163,6 +172,7 @@ module.exports = function (grunt) {
         });
         fs.writeFileSync('web/dist/index.html', fn({
             cssFiles: [
+                'built/bootstrap.min.css',
                 'built/cinema.min.css',
                 'built/cinema.app.min.css'
             ],
@@ -176,6 +186,6 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('build-js', ['jade', 'uglify:app', 'uglify:lib']);
-    grunt.registerTask('init', ['extend', 'uglify:ext', 'index-html']);
+    grunt.registerTask('init', ['copy:ext', 'extend', 'uglify:ext', 'index-html']);
     grunt.registerTask('default', ['stylus', 'build-js']);
 };
