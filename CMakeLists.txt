@@ -14,7 +14,10 @@ if(JAVASCRIPT_STYLE_TESTS)
     add_test(
       NAME "js_style_${name}"
       WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/web"
-      COMMAND "${JSHINT_EXECUTABLE}" --config "${PROJECT_SOURCE_DIR}/web/testing/jshint.cfg" "${input}"
+      COMMAND "${JSHINT_EXECUTABLE}"
+      --verbose
+      --config "${PROJECT_SOURCE_DIR}/web/testing/jshint.cfg"
+      "${input}"
     )
   endfunction()
 

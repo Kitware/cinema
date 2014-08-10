@@ -35,7 +35,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
     },
 
     _computeOffset: function (order) {
-        for(var i = 0; i < order.length; i += 1) {
+        for (var i = 0; i < order.length; i += 1) {
             var offset = this.layerOffset[order[i]];
             if (offset > -1) {
                 return offset;
@@ -63,10 +63,11 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
     _computeCompositeInfo: function (data) {
         var composite = data.json['pixel-order'].split('+'),
             count = composite.length;
+        /*jshint -W016 */
         while (count--) {
             var str = composite[count];
             if (str[0] === '@') {
-                composite[count] = Number(str.substr(1))
+                composite[count] = Number(str.substr(1));
             } else if (!_.has(this.orderMapping, str)) {
                 this.orderMapping[str] = this._computeOffset(str);
             }
@@ -123,7 +124,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
 
         var frontPixels = frontBuffer.data;
 
-        for (var i = 0; i < data.composite.length; ++i) {
+        for (var i = 0; i < data.composite.length; i += 1) {
             var order = data.composite[i];
             if (order > 0) {
                 pixelIdx += order;
