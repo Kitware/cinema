@@ -12,46 +12,46 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
     },
 
     deltaPhi: function () {
-        if (!this.has('_deltaPhi')) {
+        if (!_.has(this, '_deltaPhi')) {
             var args = this.get('arguments');
             if (_.has(args, 'phi') && args.phi.values.length > 1) {
-                this.set('_deltaPhi', args.phi.values[1] - args.phi.values[0]);
+                this._deltaPhi = args.phi.values[1] - args.phi.values[0];
             }
             else {
-                this.set('_deltaPhi', 0);
+                this._deltaPhi = 0;
             }
         }
 
-        return this.get('_deltaPhi');
+        return this._deltaPhi;
     },
 
     deltaTheta: function () {
-        if (!this.has('_deltaTheta')) {
+        if (!_.has(this, '_deltaTheta')) {
             var args = this.get('arguments');
             if (_.has(args, 'theta') && args.theta.values.length > 1) {
-                this.set('_deltaTheta', args.theta.values[1] - args.theta.values[0]);
+                this._deltaTheta = args.theta.values[1] - args.theta.values[0];
             }
             else {
-                this.set('_deltaTheta', 0);
+                this._deltaTheta = 0;
             }
         }
 
-        return this.get('_deltaTheta');
+        return this._deltaTheta;
     },
 
     /**
      * Return the number of layers in this composited image.
      */
     numberOfLayers: function () {
-        if (!this.has('_numLayers')) {
+        if (!_.has(this, '_numLayers')) {
             var layerFields = this.get('metadata').layer_fields || [];
 
-            this.set('_numLayers', _.reduce(layerFields, function (c, val) {
+            this._numLayers = _.reduce(layerFields, function (c, val) {
                 return c + val.length;
-            }, 1));
+            }, 1);
         }
 
-        return this.get('_numLayers');
+        return this._numLayers;
     },
 
     /**
