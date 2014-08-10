@@ -14,6 +14,10 @@ cinema.StandaloneApp = Backbone.View.extend({
             infoFile: 'info.json'
         });
 
+        new cinema.views.HeaderView({
+            el: this.$('.c-app-header-container')
+        }).render();
+
         new cinema.views.ViewportView({
             el: this.$('.c-app-viewport-container'),
             visModel: visModel

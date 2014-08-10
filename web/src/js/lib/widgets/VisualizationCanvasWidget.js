@@ -19,6 +19,12 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         },
         'mouseup .c-vis-render-canvas': function (e) {
             this.trigger('c:mouseup', e);
+        },
+        'mousewheel .c-vis-render-canvas': function (e) {
+            this.trigger('c:mousewheel', e);
+        },
+        'keypress .c-vis-render-canvas': function (e) {
+            this.trigger('c:keypress', e);
         }
     },
 
@@ -68,10 +74,9 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         this.layerOffset = {};
 
         for (var i = 0; i < this.query.length; i += 2) {
-            var layer = this.query[i],
-                field = this.query[i + 1];
+            var layer = this.query[i];
 
-            if (field === '_') {
+            if (this.query[i + 1] === '_') {
                 this.layerOffset[layer] = -1;
             } else {
                 this.layerOffset[layer] = this.visModel.numberOfLayers() - 1 -
