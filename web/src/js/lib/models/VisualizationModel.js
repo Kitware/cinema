@@ -73,7 +73,11 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
     },
 
     _getNextCircular: function (list, val, amount) {
-        var i = Math.max((_.indexOf(list, val) + amount) % list.length, 0);
+        var i = (_.indexOf(list, val) + amount) % list.length;
+
+        if (i < 0) {
+            i += list.length;
+        }
         return list[i];
     },
 
