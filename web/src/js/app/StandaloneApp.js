@@ -1,15 +1,27 @@
 cinema.StandaloneApp = Backbone.View.extend({
-    initialize: function () {
-        this.render();
+    initialize: function (settings) {
+        this.dataRoot = settings.dataRoot;
+        this.staticRoot = settings.staticRoot;
 
-        // Initialize the routing system
-        Backbone.history.start({
-            pushState: false
-        });
+        this.render();
     },
 
     render: function () {
-        // Render the layout
         this.$el.html(cinema.app.templates.layout());
+
+        var visModel = new cinema.models.VisualizationModel({
+            basePath: this.dataRoot,
+            infoFile: 'info.json'
+        });
+
+        new cinema.views.HeaderView({
+            el: this.$('.c-app-header-container')
+        }).render();
+
+        new cinema.views.ViewportView({
+            el: this.$('.c-app-viewport-container'),
+            visModel: visModel
+        });
+        visModel.fetch();
     }
 });

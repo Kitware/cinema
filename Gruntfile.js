@@ -14,10 +14,19 @@ module.exports = function (grunt) {
     grunt.config.init({
         pkg: grunt.file.readJSON('package.json'),
 
+        copy: {
+            ext: {
+                src: 'node_modules/bootstrap/dist/css/bootstrap.min.css',
+                dest: 'web/dist/built/bootstrap.min.css'
+            }
+        },
+
         extend: {
             options: {
                 defaults: {
-                    staticRoot: '/'
+                    staticRoot: '',
+                    dataRoot: '/data',
+                    title: 'ParaView Cinema'
                 }
             },
             config: {
@@ -98,15 +107,16 @@ module.exports = function (grunt) {
                         'node_modules/jquery-browser/lib/jquery.js',
                         'node_modules/jade/runtime.js',
                         'node_modules/underscore/underscore.js',
-                        'node_modules/backbone/backbone.js'
+                        'node_modules/backbone/backbone.js',
+                        'node_modules/bootstrap/dist/js/bootstrap.js'
                     ]
                 }
             },
             lib: {
                 files: {
                     'web/dist/built/cinema.min.js': [
-                        'web/dist/built/cinema.templates.js',
                         'web/src/js/init.js',
+                        'web/dist/built/cinema.templates.js',
                         'web/src/js/lib/**/*.js'
                     ]
                 }
@@ -123,11 +133,11 @@ module.exports = function (grunt) {
                 tasks: ['stylus:lib']
             },
             js_app: {
-                files: ['web/src/js/app/**/*.js'],
+                files: ['web/src/js/app/**/*.js', 'web/src/js/app-main.js'],
                 tasks: ['uglify:app']
             },
             js_lib: {
-                files: ['web/src/js/lib/**/*.js'],
+                files: ['web/src/js/lib/**/*.js', 'web/src/js/init.js'],
                 tasks: ['uglify:lib']
             },
             jade_app: {
@@ -145,6 +155,7 @@ module.exports = function (grunt) {
         }
     });
 
+    grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-jade');
     grunt.loadNpmTasks('grunt-contrib-stylus');
@@ -161,6 +172,7 @@ module.exports = function (grunt) {
         });
         fs.writeFileSync('web/dist/index.html', fn({
             cssFiles: [
+                'built/bootstrap.min.css',
                 'built/cinema.min.css',
                 'built/cinema.app.min.css'
             ],
@@ -174,6 +186,6 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('build-js', ['jade', 'uglify:app', 'uglify:lib']);
-    grunt.registerTask('init', ['extend', 'uglify:ext', 'index-html']);
+    grunt.registerTask('init', ['copy:ext', 'extend', 'uglify:ext', 'index-html']);
     grunt.registerTask('default', ['stylus', 'build-js']);
 };

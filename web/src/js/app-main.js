@@ -3,6 +3,8 @@
  */
 $(function () {
     new cinema.StandaloneApp({
-        el: 'body'
+        el: 'body',
+        dataRoot: $('#c-data-root').text(),
+        staticRoot: $('#c-static-root').text()
     });
 });
