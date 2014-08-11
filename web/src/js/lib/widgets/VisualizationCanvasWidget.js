@@ -25,6 +25,9 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         },
         'keypress .c-vis-render-canvas': function (e) {
             this.trigger('c:keypress', e);
+        },
+        'contextmenu .c-vis-render-canvas': function (e) {
+            e.preventDefault();
         }
     },
 
@@ -48,12 +51,18 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         });
 
         this._computeLayerOffset();
+        this._first = true;
 
         this.compositeManager.on('c:error', function (e) {
             this.trigger('c:error', e);
         }, this).on('c:data.ready', function (data) {
             this._writeCompositeBuffer(data);
-            this.resetCamera();
+
+            if (this._first) {
+                this._first = false;
+                this.resetCamera();
+            }
+
             this.drawImage();
         }, this);
     },
@@ -62,7 +71,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         this.$el.html(cinema.templates.visCanvas());
 
         // Fetch and render the default phi/time/theta image.
-        return this.showImage(this.viewpoint);
+        return this.showViewpoint();
     },
 
     _computeOffset: function (order) {
@@ -238,11 +247,14 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
 
     /**
      * Change the viewpoint to show a different image.
-     * @param viewpoint An object containing "time", "phi", and "theta" keys.
+     * @param viewpoint An object containing "time", "phi", and "theta" keys. If you
+     * do not pass this, simply renders the current this.viewpoint value.
      * @return this, for chainability
      */
-    showImage: function (viewpoint) {
-        this.viewpoint = viewpoint;
+    showViewpoint: function (viewpoint) {
+        if (viewpoint) {
+            this.viewpoint = viewpoint;
+        }
         this.compositeManager.updateViewpoint(this.viewpoint);
 
         return this;

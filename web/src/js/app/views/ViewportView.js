@@ -21,6 +21,6 @@ cinema.views.ViewportView = Backbone.View.extend({
             maxZoomLevel: 10,
             zoomIncrement: 0.05,
             invertControl: false
-        });
+        }).enableDragRotation();
     }
 });

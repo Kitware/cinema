@@ -70,5 +70,46 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
     spritesheetDimensions: function () {
         var dim = this.imageDimensions();
         return [dim[0], dim[1] * this.numberOfLayers()];
+    },
+
+    _getNextCircular: function (list, val, amount) {
+        var retVal = null;
+        _.every(list, function (v, idx) {
+            if (v === val) {
+                retVal = list[Math.max((idx + amount) % list.length, 0)];
+                return false;
+            }
+            return true;
+        });
+
+        return retVal;
+    },
+
+    _getNextBounded: function (list, val, amount) {
+        var retVal = null;
+        _.every(list, function (v, idx) {
+            if (v === val) {
+                var i = Math.max(0, Math.min(idx + amount, list.length - 1));
+                retVal = list[i];
+                return false;
+            }
+            return true;
+        });
+
+        return retVal;
+    },
+
+    /**
+     * Use this to get other discrete phi values.
+     */
+    incrementPhi: function (phi, amount) {
+        return this._getNextCircular(this.get('arguments').phi.values, phi, amount);
+    },
+
+    /**
+     * Use this to get other discrete theta values.
+     */
+    incrementTheta: function (theta, amount) {
+        return this._getNextBounded(this.get('arguments').theta.values, theta, amount);
     }
 });
