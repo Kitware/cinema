@@ -29,12 +29,19 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
     },
 
     initialize: function (settings) {
+        var args = settings.visModel.get('arguments');
+
         this.visModel = settings.visModel;
         this.query = settings.query || "AABBCBDBEBFBGCHCICJCKC"; // TODO figure out what this means
         this.drawingCenter = settings.drawingCenter || [0, 0];
         this.zoomLevel = settings.zoomLevel || 1.0;
         this.backgroundColor = settings.backgroundColor || '#ffffff';
         this.orderMapping = {};
+        this.viewpoint = settings.viewpoint || {
+            time: args.time['default'],
+            phi: args.phi['default'],
+            theta: args.theta['default']
+        };
 
         this.compositeManager = new cinema.utilities.CompositeImageManager({
             visModel: this.visModel
@@ -54,10 +61,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
     render: function () {
         this.$el.html(cinema.templates.visCanvas());
 
-        // Fetch and render the initial phi/time/theta image.
-        var args = this.visModel.get('arguments');
-        this.compositeManager.updateFields(
-            args.time['default'], args.phi['default'], args.theta['default']);
+        // Fetch and render the default phi/time/theta image.
+        return this.showImage(this.viewpoint);
     },
 
     _computeOffset: function (order) {
@@ -229,6 +234,18 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
 
         this.zoomLevel = Math.min(w / iw, h / ih);
         this.drawingCenter = [w / 2, h / 2];
+    },
+
+    /**
+     * Change the viewpoint to show a different image.
+     * @param viewpoint An object containing "time", "phi", and "theta" keys.
+     * @return this, for chainability
+     */
+    showImage: function (viewpoint) {
+        this.viewpoint = viewpoint;
+        this.compositeManager.updateViewpoint(this.viewpoint);
+
+        return this;
     },
 
     /**

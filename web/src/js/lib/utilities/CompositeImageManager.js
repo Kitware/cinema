@@ -88,8 +88,8 @@
         }, this));
     };
 
-    prototype.updateFields = function (time, phi, theta) {
-        var key = this._getDataPath(time, phi, theta);
+    prototype.updateViewpoint = function (viewpoint) {
+        var key = this._getDataPath(viewpoint.time, viewpoint.phi, viewpoint.theta);
 
         if (_.has(this._cache, key)) {
             this.trigger('c:data.ready', this._cache[key]);
