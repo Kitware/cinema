@@ -73,30 +73,13 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
     },
 
     _getNextCircular: function (list, val, amount) {
-        var retVal = null;
-        _.every(list, function (v, idx) {
-            if (v === val) {
-                retVal = list[Math.max((idx + amount) % list.length, 0)];
-                return false;
-            }
-            return true;
-        });
-
-        return retVal;
+        var i = Math.max((_.indexOf(list, val) + amount) % list.length, 0)
+        return list[i];
     },
 
     _getNextBounded: function (list, val, amount) {
-        var retVal = null;
-        _.every(list, function (v, idx) {
-            if (v === val) {
-                var i = Math.max(0, Math.min(idx + amount, list.length - 1));
-                retVal = list[i];
-                return false;
-            }
-            return true;
-        });
-
-        return retVal;
+        var i = Math.max(0, Math.min(_.indexOf(list, val) + amount, list.length - 1));
+        return list[i];
     },
 
     /**
