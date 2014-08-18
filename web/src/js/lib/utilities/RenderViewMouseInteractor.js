@@ -1,4 +1,25 @@
 (function () {
+    // Flags for key modifiers for interaction
+    cinema.keyModifiers = {
+        CTRL: 1,
+        ALT: 2,
+        SHIFT: 4
+    };
+
+    /**
+     * Returns whether or not the key modifiers on the event match the
+     * keyModifiers state, which should be a bitwise OR of cinema.keyModifiers
+     * flags.
+     * @param event The event to test.
+     * @param keyModifiers The state to test again.
+     * @return Boolean
+     */
+    var _testKeyModifiers = function (event, keyModifiers) {
+        return event.ctrlKey === Boolean(keyModifiers & cinema.keyModifiers.CTRL) &&
+            event.altKey === Boolean(keyModifiers & cinema.keyModifiers.ALT) &&
+            event.shiftKey === Boolean(keyModifiers & cinema.keyModifiers.SHIFT);
+    };
+
     /**
      * The RenderViewInteractor is used to bind interactor functionality onto
      * an underlying render view that fires primitive mouse events.
@@ -90,14 +111,19 @@
      * Add mouse drag controls that cause the viewpoint to change. Moving in
      * X will change theta, moving in Y will change phi.
      * @param xPhiRatio How many pixels must be dragged in x per degree change in phi.
-     * @param yThetaRatio How many pixels must be dragged in y per degree change in theta..
+     * @param yThetaRatio How many pixels must be dragged in y per degree change in theta.
+     * @param keyModifiers Bitwise OR of cinema.keyModifiers, or a falsy value.
      */
     prototype.enableDragRotation = function (params) {
         params = params || {};
         this._xPhiRatio = params.xPhiRatio || 3;
         this._yThetaRatio = params.yThetaRatio || 3;
+        this._rotationKeyModifiers = params.keyModifiers || 0;
 
-        this._measureDrag().off('c:_drag', null, this).on('c:_drag', function (payload) {
+        var dragHandler = function (payload) {
+            if (!_testKeyModifiers(payload.event, this._rotationKeyModifiers)) {
+                return;
+            }
             var dphi = payload.delta[0] / this._xPhiRatio,
                 dtheta = payload.delta[1] / this._yThetaRatio,
                 stepTheta = this.visModel.deltaTheta(),
@@ -115,7 +141,35 @@
                 this._dragStart = [payload.event.offsetX, payload.event.offsetY];
                 this.renderView.showViewpoint();
             }
-        }, this);
+        };
+
+        this._measureDrag().off('c:_drag', dragHandler, this)
+                           .on('c:_drag', dragHandler, this);
+
+        return this;
+    };
+
+    /**
+     * Add this to enable panning when dragging the mouse.
+     * @param keyModifiers Bitwise OR of cinema.keyModifiers, or a falsy value.
+     */
+    prototype.enableDragPan = function (params) {
+        params = params || {};
+        this._panKeyModifiers = params.keyModifiers || 0;
+
+        var dragHandler = function (payload) {
+            if (!_testKeyModifiers(payload.event, this._panKeyModifiers)) {
+                return;
+            }
+            this.renderView.drawingCenter[0] +=
+                payload.event.offsetX - this._dragStart[0];
+            this.renderView.drawingCenter[1] +=
+                payload.event.offsetY - this._dragStart[1];
+            this.renderView.drawImage();
+            this._dragStart = [payload.event.offsetX, payload.event.offsetY];
+        };
+        this._measureDrag().off('c:_drag', dragHandler, this)
+                           .on('c:_drag', dragHandler, this);
 
         return this;
     };
