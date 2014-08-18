@@ -15,6 +15,7 @@
      * @return Boolean
      */
     var _testKeyModifiers = function (event, keyModifiers) {
+        /*jshint -W016 */
         return event.ctrlKey === Boolean(keyModifiers & cinema.keyModifiers.CTRL) &&
             event.altKey === Boolean(keyModifiers & cinema.keyModifiers.ALT) &&
             event.shiftKey === Boolean(keyModifiers & cinema.keyModifiers.SHIFT);
