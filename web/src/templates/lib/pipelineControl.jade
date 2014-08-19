@@ -1,0 +1,16 @@
+each object, idx in metadata.pipeline
+  .c-pipeline-element-header
+    a.c-pipeline-visibility-toggle(pipeline-idx="#{idx}", state="on")
+      i.icon-eye
+    span.c-pipeline-name= object.name
+
+  if object.type === 'directory'
+    each layer in object.children
+      .c-pipeline-layer-wrapper
+        a.c-layer-visibility-toggle(layer-id="#{layer.ids[0]}")
+          i.icon-eye
+        span.c-layer-name= layer.name
+
+        select.c-layer-color-select(layer-id="#{layer.ids[0]}")
+          each field in metadata.layer_fields[layer.ids[0]]
+            option(value="#{field}")= metadata.fields[field]

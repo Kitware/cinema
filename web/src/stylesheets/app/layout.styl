@@ -4,6 +4,9 @@ body
   margin 0
   padding 0
 
+a
+  cursor pointer
+
 .c-app-header-container
   background-color #333
   height 40px
@@ -14,3 +17,31 @@ body
   right 0
   top 40px
   bottom 0
+  z-index 0
+
+.c-app-pipeline-area
+  width 300px
+  border-radius 3px
+  background-color rgba(255, 255, 255, 0.8)
+  border 1px solid #e3e3e3
+  position absolute
+  left 10px
+  top 48px
+  z-index 10
+
+  .c-app-pipeline-area-header
+    padding 6px 10px 6px 7px
+    background-color #eee
+
+  .c-pipeline-title
+    display inline-block
+    font-size 15px
+    font-weight bold
+    color #666
+
+  .c-app-pipeline-control-container
+    border-top 1px solid #e3e3e3
+    padding 6px 9px
+
+  .c-pipeline-area.closed .c-app-pipeline-control-container
+    display none

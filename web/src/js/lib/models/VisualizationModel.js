@@ -98,5 +98,13 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
      */
     incrementTheta: function (theta, amount) {
         return this._getNextBounded(this.get('arguments').theta.values, theta, amount);
+    },
+
+    /**
+     * Return the default query that this model should display. For now, this
+     * returns the empty string, meaning no layers are rendered.
+     */
+    defaultQuery: function () {
+        return '';
     }
 });

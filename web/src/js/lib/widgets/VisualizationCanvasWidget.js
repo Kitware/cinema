@@ -35,7 +35,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         var args = settings.visModel.get('arguments');
 
         this.visModel = settings.visModel;
-        this.query = settings.query || "AABBCBDBEBFBGCHCICJCKC"; // TODO figure out what this means
+        this.query = settings.query || this.visModel.defaultQuery();
         this.drawingCenter = settings.drawingCenter || [0, 0];
         this.zoomLevel = settings.zoomLevel || 1.0;
         this.backgroundColor = settings.backgroundColor || '#ffffff';

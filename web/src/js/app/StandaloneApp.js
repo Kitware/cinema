@@ -18,10 +18,16 @@ cinema.StandaloneApp = Backbone.View.extend({
             el: this.$('.c-app-header-container')
         }).render();
 
-        new cinema.views.ViewportView({
+        var viewportView = new cinema.views.ViewportView({
             el: this.$('.c-app-viewport-container'),
             visModel: visModel
         });
+
+        var pipelineControlView = new cinema.views.PipelineControlWidget({
+            el: this.$('.c-app-pipeline-control-container'),
+            visModel: visModel
+        });
+
         visModel.fetch();
     }
 });
