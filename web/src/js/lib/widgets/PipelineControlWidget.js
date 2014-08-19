@@ -5,27 +5,58 @@
  */
 cinema.views.PipelineControlWidget = Backbone.View.extend({
     events: {
+        'click .c-layer-visibility-toggle': function (e) {
+            var link = $(e.currentTarget);
+
+            if (link.attr('state') === 'on') {
+                link.attr('state', 'off').find('i')
+                    .removeClass('icon-eye')
+                    .addClass('icon-eye-off c-icon-disabled');
+            }
+            else {
+                link.attr('state', 'on').find('i')
+                    .removeClass('icon-eye-off c-icon-disabled')
+                    .addClass('icon-eye');
+            }
+
+            this.computeQuery();
+        },
+
+        'change .c-layer-color-select': function (e) {
+            this.computeQuery();
+        }
     },
 
     initialize: function (settings) {
         this.visModel = settings.visModel;
-
-        this.visModel.on('change', function () {
-            this.query = settings.query || this.visModel.defaultQuery();
-            this._layers = this.unserializeQuery(this.query);
-
-            this.render();
-        }, this);
+        this.query = settings.query || this.visModel.defaultQuery();
     },
 
     render: function () {
-        console.log(this.visModel.attributes);
         this.$el.html(cinema.templates.pipelineControl({
-            layers: this._layers,
             metadata: this.visModel.get('metadata')
         }));
 
+        this.computeQuery();
+
         return this;
+    },
+
+    /**
+     * Compute the new query string based on the current state of the widget.
+     * Triggers a c:query.update event with the new query.
+     */
+    computeQuery: function () {
+        var q = '';
+        _.each(this.$('.c-layer-visibility-toggle[state=on]'), function (el) {
+            q += $(el).attr('layer-id');
+            q += $(el).parents('.c-pipeline-layer-wrapper').find('.c-layer-color-select').val();
+        });
+
+        if (q !== this.query) {
+            this.query = q;
+            this.trigger('c:query.update', this.query);
+        }
     },
 
     /**

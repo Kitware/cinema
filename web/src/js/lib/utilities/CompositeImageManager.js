@@ -95,7 +95,7 @@
             this.trigger('c:data.ready', this._cache[key]);
         }
         else {
-            this._cache[key] = {};
+            this._cache[key] = {key: key};
             this._downloadImage(key);
             this._downloadCompositeInfo(key);
         }

@@ -7,10 +7,9 @@ each object, idx in metadata.pipeline
   if object.type === 'directory'
     each layer in object.children
       .c-pipeline-layer-wrapper
-        a.c-layer-visibility-toggle(layer-id="#{layer.ids[0]}")
+        a.c-layer-visibility-toggle(layer-id="#{layer.ids[0]}", state="on")
           i.icon-eye
         span.c-layer-name= layer.name
-
         select.c-layer-color-select(layer-id="#{layer.ids[0]}")
           each field in metadata.layer_fields[layer.ids[0]]
             option(value="#{field}")= metadata.fields[field]

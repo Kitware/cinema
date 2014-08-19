@@ -28,6 +28,13 @@ cinema.StandaloneApp = Backbone.View.extend({
             visModel: visModel
         });
 
-        visModel.fetch();
+        pipelineControlView.on('c:query.update', function (query) {
+            viewportView.updateQuery(query);
+        });
+
+        visModel.on('change', function () {
+            viewportView.render();
+            pipelineControlView.render();
+        }, this).fetch();
     }
 });
