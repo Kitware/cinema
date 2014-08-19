@@ -1,15 +1,24 @@
 each object, idx in metadata.pipeline
-  .c-pipeline-element-header
-    a.c-pipeline-visibility-toggle(pipeline-idx="#{idx}", state="on")
-      i.icon-eye
-    span.c-pipeline-name= object.name
-
   if object.type === 'directory'
-    each layer in object.children
-      .c-pipeline-layer-wrapper
-        a.c-layer-visibility-toggle(layer-id="#{layer.ids[0]}", state="on")
-          i.icon-eye
-        span.c-layer-name= layer.name
-        select.c-layer-color-select(layer-id="#{layer.ids[0]}")
-          each field in metadata.layer_fields[layer.ids[0]]
-            option(value="#{field}")= metadata.fields[field]
+    .c-pipeline-element-header
+      a.c-pipeline-visibility-toggle(type="directory", state="on")
+        i.icon-eye
+      span.c-pipeline-name= object.name
+
+      each layer in object.children
+        .c-pipeline-layer-wrapper
+          a.c-layer-visibility-toggle(layer-id="#{layer.ids[0]}", state="on")
+            i.icon-eye
+          span.c-layer-name= layer.name
+          select.c-layer-color-select(layer-id="#{layer.ids[0]}")
+            each field in metadata.layer_fields[layer.ids[0]]
+              option(value="#{field}")= metadata.fields[field]
+
+  else if object.type === 'layer'
+    .c-pipeline-element-header
+      a.c-pipeline-visibility-toggle(layer-id="#{object.ids[0]}", state="on", type="layer")
+        i.icon-eye
+      span.c-pipeline-name= object.name
+      a.c-layer-visibility-toggle.hide(
+          layer-id="#{object.ids[0]}", state="on",
+          color-by="#{metadata.layer_fields[object.ids[0]]}")

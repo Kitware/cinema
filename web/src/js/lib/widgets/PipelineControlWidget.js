@@ -22,6 +22,41 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
             this.computeQuery();
         },
 
+        'click .c-pipeline-visibility-toggle': function (e) {
+            var link = $(e.currentTarget),
+                state;
+
+            if (link.attr('state') === 'on') {
+                state = 'off';
+                link.attr('state', state).find('i')
+                    .removeClass('icon-eye')
+                    .addClass('icon-eye-off c-icon-disabled');
+
+
+            }
+            else {
+                state = 'on';
+                link.attr('state', state).find('i')
+                    .removeClass('icon-eye-off c-icon-disabled')
+                    .addClass('icon-eye');
+            }
+
+            _.each(link.parent().find('.c-layer-visibility-toggle'), function (el) {
+                $(el).attr('state', state);
+
+                if (state === 'on') {
+                    $(el).find('i').removeClass('icon-eye-off c-icon-disabled')
+                                   .addClass('icon-eye');
+                }
+                else {
+                    $(el).find('i').removeClass('icon-eye')
+                                   .addClass('icon-eye-off c-icon-disabled');
+                }
+            });
+
+            this.computeQuery();
+        },
+
         'change .c-layer-color-select': function (e) {
             this.computeQuery();
         }
@@ -50,9 +85,9 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
         var q = '';
         _.each(this.$('.c-layer-visibility-toggle[state=on]'), function (el) {
             q += $(el).attr('layer-id');
-            q += $(el).parents('.c-pipeline-layer-wrapper').find('.c-layer-color-select').val();
+            q += $(el).attr('color-by') ||
+                 $(el).parents('.c-pipeline-layer-wrapper').find('.c-layer-color-select').val();
         });
-
         if (q !== this.query) {
             this.query = q;
             this.trigger('c:query.update', this.query);
