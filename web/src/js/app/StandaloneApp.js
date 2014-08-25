@@ -38,6 +38,12 @@ cinema.StandaloneApp = Backbone.View.extend({
             viewportView.updateQuery(query);
         });
 
+        cinema.events.on('c:app.show-pipeline-controls', function () {
+            this.$('.c-app-pipeline-panel').fadeIn();
+        }, this).on('c:app.show-view-controls', function () {
+            this.$('.c-app-view-panel').fadeIn();
+        }, this);
+
         visModel.on('change', function () {
             viewportView.render();
             pipelineControlView.render();
