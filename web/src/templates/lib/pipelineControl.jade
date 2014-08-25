@@ -10,9 +10,11 @@ each object, idx in metadata.pipeline
           a.c-layer-visibility-toggle(layer-id="#{layer.ids[0]}", state="on")
             i.icon-eye
           span.c-layer-name= layer.name
-          select.c-layer-color-select(layer-id="#{layer.ids[0]}")
-            each field in metadata.layer_fields[layer.ids[0]]
-              option(value="#{field}")= metadata.fields[field]
+
+          - var colorValue = metadata.layer_fields[layer.ids[0]][0]
+          a.c-layer-color-select(layer-id="#{layer.ids[0]}", data-toggle="popover",
+                                 title="Color by field", color-field="#{colorValue}")
+            i.icon-brush
 
   else if object.type === 'layer'
     .c-pipeline-element-header
@@ -21,4 +23,4 @@ each object, idx in metadata.pipeline
       span.c-pipeline-name= object.name
       a.c-layer-visibility-toggle.hide(
           layer-id="#{object.ids[0]}", state="on",
-          color-by="#{metadata.layer_fields[object.ids[0]]}")
+          color-field="#{metadata.layer_fields[object.ids[0]]}")

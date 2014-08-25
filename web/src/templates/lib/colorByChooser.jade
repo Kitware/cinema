@@ -1,0 +1,4 @@
+.c-color-by-container
+  select.c-layer-value-choice(layer-id="#{layerId}")
+    each field in metadata.layer_fields[layerId]
+      option(value="#{field}")= metadata.fields[field]

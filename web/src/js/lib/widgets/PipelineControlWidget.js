@@ -72,6 +72,25 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
             metadata: this.visModel.get('metadata')
         }));
 
+        var view = this;
+        _.each(this.$('.c-layer-color-select'), function (el) {
+            $(el).popover('destroy').popover({
+                html: true,
+                container: 'body',
+                placement: 'right',
+                content: cinema.templates.colorByChooser({
+                    layerId: $(el).attr('layer-id'),
+                    metadata: this.visModel.get('metadata')
+                })
+            }).off('show.bs.popover').on('show.bs.popover', function () {
+                view.$('.c-layer-color-select').popover('hide');
+            }).on('shown.bs.popover', function () {
+                $('.c-layer-value-choice').change(function () {
+                    console.log($(this).val());
+                });
+            });
+        }, this);
+
         this.computeQuery();
 
         return this;
@@ -85,8 +104,8 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
         var q = '';
         _.each(this.$('.c-layer-visibility-toggle[state=on]'), function (el) {
             q += $(el).attr('layer-id');
-            q += $(el).attr('color-by') ||
-                 $(el).parents('.c-pipeline-layer-wrapper').find('.c-layer-color-select').val();
+            q += $(el).parent().find('.c-layer-color-select').attr('color-field') ||
+                 $(el).attr('color-field');
         });
         if (q !== this.query) {
             this.query = q;
