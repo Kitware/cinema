@@ -1,17 +1,26 @@
 $headerTextColor = #fdfcfc
+$headerHeight = 40px
 
 .c-header-content
-  padding 7px 15px
+  line-height 4opx
   color $headerTextColor
+  padding 0 12px 0 18px
 
 .c-app-title
   display inline-block
+  line-height $headerHeight
   font-weight bold
   font-size 20px
 
 .c-header-buttons-container
   float right
-  padding-top 2px
   a
+    line-height $headerHeight
     color $headerTextColor
     cursor pointer
+    margin-left 3px
+    border-radius 3px
+    padding 5px
+
+    &:hover
+      background-color #555

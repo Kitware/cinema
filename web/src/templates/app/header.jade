@@ -1,5 +1,17 @@
 .c-header-content
   .c-app-title Cinema
   .c-header-buttons-container
+    span.dropdown
+      a.c-controls-button(title="Tools", data-toggle="dropdown")
+        i.icon-tools
+        i.icon-down-dir
+      ul.dropdown-menu.pull-right(role="menu")
+        li(role="presentation")
+          a.c-show-pipeline-controls(role="menuitem")
+            i.icon-layers
+            |  Show pipeline controls
+          a.c-show-view-controls(role="menuitem")
+            i.icon-camera
+            |  Show view controls
     a.c-search-button(title="Search")
       i.icon-search

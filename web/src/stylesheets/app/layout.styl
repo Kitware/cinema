@@ -7,6 +7,9 @@ body
 a
   cursor pointer
 
+.dropdown-menu>li>a
+  padding-left 6px
+
 .c-app-header-container
   background-color #333
   height 40px
@@ -19,29 +22,32 @@ a
   bottom 0
   z-index 0
 
-.c-app-pipeline-area
+.c-app-left-control-area
   width 300px
-  border-radius 3px
-  background-color rgba(255, 255, 255, 0.8)
-  border 1px solid #e3e3e3
   position absolute
   left 10px
   top 48px
   z-index 10
 
-  .c-app-pipeline-area-header
+.c-panel-title
+  display inline-block
+  font-size 15px
+  font-weight bold
+  color #666
+
+.c-control-panel
+  border-radius 3px
+  background-color rgba(255, 255, 255, 0.8)
+  border 1px solid #e3e3e3
+  margin-bottom 10px
+
+  .c-control-panel-header
     padding 6px 10px 6px 7px
     background-color #eee
 
-  .c-pipeline-title
-    display inline-block
-    font-size 15px
-    font-weight bold
-    color #666
-
-  .c-app-pipeline-control-container
+  .c-control-panel-body
     border-top 1px solid #e3e3e3
     padding 6px 9px
 
-  .c-pipeline-area.closed .c-app-pipeline-control-container
+  &.closed
     display none
