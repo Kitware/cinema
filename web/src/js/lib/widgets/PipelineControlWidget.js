@@ -83,7 +83,11 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
                     metadata: this.visModel.get('metadata')
                 })
             }).off('show.bs.popover').on('show.bs.popover', function () {
-                view.$('.c-layer-color-select').popover('hide');
+                _.each(view.$('.c-layer-color-select'), function (otherEl) {
+                    if ($(otherEl).attr('layer-id') !== $(el).attr('layer-id')) {
+                        $(otherEl).popover('hide');
+                    }
+                });
             }).on('shown.bs.popover', function () {
                 $('.c-layer-value-choice').change(function () {
                     console.log($(this).val());
