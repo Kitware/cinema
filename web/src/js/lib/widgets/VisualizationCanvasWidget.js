@@ -212,16 +212,6 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         dy = (th > h) ? (th - h) : (h - th),
         centerBounds = [(w - dx) / 2, (h - dy) / 2, (w + dx) / 2, (h + dy) / 2];
 
-        if (this.drawingCenter[0] < centerBounds[0] ||
-            this.drawingCenter[0] > centerBounds[2] ||
-            this.drawingCenter[1] < centerBounds[1] ||
-            this.drawingCenter[1] > centerBounds[3]) {
-            this.drawingCenter = [
-                Math.min(Math.max(this.drawingCenter[0], centerBounds[0]), centerBounds[2]),
-                Math.min(Math.max(this.drawingCenter[1], centerBounds[1]), centerBounds[3])
-            ];
-
-        }
         var tx = this.drawingCenter[0] - (tw / 2),
             ty = this.drawingCenter[1] - (th / 2);
 
