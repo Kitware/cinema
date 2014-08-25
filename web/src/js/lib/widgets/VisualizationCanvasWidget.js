@@ -207,10 +207,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         renderCanvas.getContext('2d').clearRect(0, 0, w, h);
 
         var tw = Math.floor(iw * this.zoomLevel),
-        th = Math.floor(ih * this.zoomLevel),
-        dx = (tw > w) ? (tw - w) : (w - tw),
-        dy = (th > h) ? (th - h) : (h - th),
-        centerBounds = [(w - dx) / 2, (h - dy) / 2, (w + dx) / 2, (h + dy) / 2];
+            th = Math.floor(ih * this.zoomLevel);
 
         var tx = this.drawingCenter[0] - (tw / 2),
             ty = this.drawingCenter[1] - (th / 2);
