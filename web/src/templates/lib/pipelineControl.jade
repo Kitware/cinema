@@ -13,7 +13,7 @@ each object, idx in metadata.pipeline
 
           - var colorValue = metadata.layer_fields[layer.ids[0]][0]
           a.c-layer-color-select(layer-id="#{layer.ids[0]}", data-toggle="popover",
-                                 title="Color by field", color-field="#{colorValue}")
+                                 color-field="#{colorValue}", tabindex="-1")
             i.icon-brush
 
   else if object.type === 'layer'

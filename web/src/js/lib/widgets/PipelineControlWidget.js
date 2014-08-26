@@ -55,10 +55,6 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
             });
 
             this.computeQuery();
-        },
-
-        'change .c-layer-color-select': function (e) {
-            this.computeQuery();
         }
     },
 
@@ -74,23 +70,30 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
 
         var view = this;
         _.each(this.$('.c-layer-color-select'), function (el) {
+            var layerId = $(el).attr('layer-id');
             $(el).popover('destroy').popover({
                 html: true,
                 container: 'body',
                 placement: 'right',
                 content: cinema.templates.colorByChooser({
-                    layerId: $(el).attr('layer-id'),
+                    layerId: layerId,
                     metadata: this.visModel.get('metadata')
                 })
             }).off('show.bs.popover').on('show.bs.popover', function () {
                 _.each(view.$('.c-layer-color-select'), function (otherEl) {
-                    if ($(otherEl).attr('layer-id') !== $(el).attr('layer-id')) {
+                    if ($(otherEl).attr('layer-id') !== layerId) {
                         $(otherEl).popover('hide');
                     }
                 });
             }).on('shown.bs.popover', function () {
-                $('.c-layer-value-choice').change(function () {
-                    console.log($(this).val());
+                $('input[name=color-by-select][value=' +
+                    $(el).attr('color-field') + ']').attr('checked', 'checked');
+                $('input[name=color-by-select]').change(function () {
+                    $(el).attr('color-field', $(this).val());
+                    view.computeQuery();
+                });
+                $('.c-popover-close').click(function () {
+                    $(el).popover('hide');
                 });
             });
         }, this);
@@ -113,6 +116,7 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
         });
         if (q !== this.query) {
             this.query = q;
+            this.queryObj = this.unserializeQuery(q);
             this.trigger('c:query.update', this.query);
         }
     },
