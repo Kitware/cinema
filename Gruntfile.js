@@ -90,7 +90,8 @@ module.exports = function (grunt) {
                 report: 'min',
                 beautify: {
                     ascii_only: true
-                }
+                },
+                mangle: environment !== 'dev'
             },
             app: {
                 files: {
