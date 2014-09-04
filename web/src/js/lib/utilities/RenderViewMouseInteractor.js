@@ -160,18 +160,20 @@
 
         var dragHandler = function (payload) {
             if (!_testKeyModifiers(payload.event, this._panKeyModifiers)) {
+                console.log('failed');
                 return;
             }
+
             this.renderView.drawingCenter[0] +=
-                payload.event.offsetX - this._dragStart[0];
+                payload.event.clientX - this._dragStart[0];
             this.renderView.drawingCenter[1] +=
-                payload.event.offsetY - this._dragStart[1];
+                payload.event.clientY - this._dragStart[1];
             this.renderView.drawImage();
-            this._dragStart = [payload.event.offsetX, payload.event.offsetY];
+            this._dragStart = [payload.event.clientX, payload.event.clientY];
         };
         this._measureDrag().off('c:_drag', dragHandler, this)
                            .on('c:_drag', dragHandler, this);
 
         return this;
     };
-}) ();
+}());
