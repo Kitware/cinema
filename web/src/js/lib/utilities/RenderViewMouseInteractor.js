@@ -160,10 +160,8 @@
 
         var dragHandler = function (payload) {
             if (!_testKeyModifiers(payload.event, this._panKeyModifiers)) {
-                console.log('failed');
                 return;
             }
-
             this.renderView.drawingCenter[0] +=
                 payload.event.clientX - this._dragStart[0];
             this.renderView.drawingCenter[1] +=
