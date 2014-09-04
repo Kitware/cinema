@@ -23,6 +23,9 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         'mousewheel .c-vis-render-canvas': function (e) {
             this.trigger('c:mousewheel', e);
         },
+        'DOMMouseScroll .c-vis-render-canvas': function (e) {
+            this.trigger('c:mousewheel', e);
+        },
         'keypress .c-vis-render-canvas': function (e) {
             this.trigger('c:keypress', e);
         },
