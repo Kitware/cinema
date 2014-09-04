@@ -80,7 +80,7 @@
         this._dragStart = null;
         this._measuringDrag = true;
         this.renderView.on('c:mousedown', function (evt) {
-            this._dragStart = [evt.offsetX, evt.offsetY];
+            this._dragStart = [evt.clientX, evt.clientY];
         }, this);
 
         this.renderView.on('c:mouseup', function () {
@@ -92,8 +92,8 @@
                 var payload = {
                     event: evt,
                     delta: [
-                        evt.offsetX - this._dragStart[0],
-                        evt.offsetY - this._dragStart[1]
+                        evt.clientX - this._dragStart[0],
+                        evt.clientY - this._dragStart[1]
                     ]
                 };
                 if (evt.button === 0) {
@@ -133,13 +133,13 @@
             if (Math.abs(dtheta) > stepTheta) {
                 this.renderView.viewpoint.theta = this.visModel.incrementTheta(
                     this.renderView.viewpoint.theta, dtheta > 0 ? 1 : -1);
-                this._dragStart = [payload.event.offsetX, payload.event.offsetY];
+                this._dragStart = [payload.event.clientX, payload.event.clientY];
                 this.renderView.showViewpoint();
             }
             else if (Math.abs(dphi) > stepPhi) {
                 this.renderView.viewpoint.phi = this.visModel.incrementPhi(
                     this.renderView.viewpoint.phi, dphi > 0 ? 1 : -1);
-                this._dragStart = [payload.event.offsetX, payload.event.offsetY];
+                this._dragStart = [payload.event.clientX, payload.event.clientY];
                 this.renderView.showViewpoint();
             }
         };
