@@ -23,6 +23,9 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         'mousewheel .c-vis-render-canvas': function (e) {
             this.trigger('c:mousewheel', e);
         },
+        'DOMMouseScroll .c-vis-render-canvas': function (e) {
+            this.trigger('c:mousewheel', e);
+        },
         'keypress .c-vis-render-canvas': function (e) {
             this.trigger('c:keypress', e);
         },
@@ -207,21 +210,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         renderCanvas.getContext('2d').clearRect(0, 0, w, h);
 
         var tw = Math.floor(iw * this.zoomLevel),
-        th = Math.floor(ih * this.zoomLevel),
-        dx = (tw > w) ? (tw - w) : (w - tw),
-        dy = (th > h) ? (th - h) : (h - th),
-        centerBounds = [(w - dx) / 2, (h - dy) / 2, (w + dx) / 2, (h + dy) / 2];
+            th = Math.floor(ih * this.zoomLevel);
 
-        if (this.drawingCenter[0] < centerBounds[0] ||
-            this.drawingCenter[0] > centerBounds[2] ||
-            this.drawingCenter[1] < centerBounds[1] ||
-            this.drawingCenter[1] > centerBounds[3]) {
-            this.drawingCenter = [
-                Math.min(Math.max(this.drawingCenter[0], centerBounds[0]), centerBounds[2]),
-                Math.min(Math.max(this.drawingCenter[1], centerBounds[1]), centerBounds[3])
-            ];
-
-        }
         var tx = this.drawingCenter[0] - (tw / 2),
             ty = this.drawingCenter[1] - (th / 2);
 
