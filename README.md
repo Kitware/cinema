@@ -1,9 +1,9 @@
-![](https://raw.githubusercontent.com/zachmullen/cinema/master/web/dist/assets/img/icon.png)
+![](https://raw.githubusercontent.com/kitware/cinema/master/web/dist/assets/img/icon.png)
 # Cinema
 
 Cinema - An Image-based Approach to Extreme Scale In Situ Visualization and Analysis - is an open-source toolkit licensed under the BSD license.
 
-http://patrickoleary.github.io/cinema
+http://kitware.github.io/cinema
 
 Copyright (c) 2014 Kitware Inc. All rights reserved.
 
