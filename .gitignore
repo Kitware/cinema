@@ -2,3 +2,5 @@
 *.log
 config.json
 node_modules
+data
+.*.sw?
