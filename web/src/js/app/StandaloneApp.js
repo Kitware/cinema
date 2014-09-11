@@ -45,26 +45,16 @@ cinema.StandaloneApp = Backbone.View.extend({
         }, this);
 
         var pipelineAnimationWidget = new cinema.views.PipelineAnimationWidget({
-            el: this.$('.c-app-pipeline-animation-container'),
-            model: visModel
-        });
-
-        this.listenTo(pipelineAnimationWidget, 'c:phi.viewpoint.show', function (value) {
-            viewportView.phiViewpointShow(value);
-        });
-
-        this.listenTo(pipelineAnimationWidget, 'c:theta.viewpoint.show', function (value) {
-            viewportView.thetaViewpointShow(value);
-        });
-
-        this.listenTo(pipelineAnimationWidget, 'c:time.viewpoint.show', function (value) {
-            viewportView.timeViewpointShow(value);
+            el: this.$('.c-app-view-control-container'),
+            model: visModel,
+            viewport: viewportView
         });
 
         this.listenTo(visModel, 'change', function () {
             viewportView.render();
             pipelineControlView.render();
             pipelineAnimationWidget.render();
-        }).fetch();
+        });
+        visModel.fetch();
     }
 });

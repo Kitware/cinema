@@ -1,0 +1,37 @@
+.c-pipeline-animation-content
+  if maxTime > 0
+    .c-pipeline-animation-time
+      i.icon-clock.c-pipeline-animation-icon &Tau;
+      .c-pipeline-animation-control
+        i.icon-to-start-3.c-pipeline-start.c-pipeline-animation-button
+        i.icon-fast-bw.c-pipeline-back.c-pipeline-animation-button
+        label.c-pipeline-animation-label(id="PipelineAnimationLabelTime") #{time}
+        input.c-pipeline-animation-slider(type="range", value="#{itime}",
+                                          min="#{minTime}", max="#{maxTime}",
+                                          step="#{stepTime}")
+        i.icon-fast-fw-1.c-pipeline-next.c-pipeline-animation-button
+        i.icon-to-end-3.c-pipeline-end.c-pipeline-animation-button
+  if maxPhi > 0
+    .c-pipeline-animation-phi
+      i.icon-resize-horizontal.c-pipeline-animation-icon &Phi;
+      .c-pipeline-animation-control
+        i.icon-to-start-3.c-pipeline-start.c-pipeline-animation-button
+        i.icon-fast-bw.c-pipeline-back.c-pipeline-animation-button
+        label.c-pipeline-animation-label(id="PipelineAnimationLabelPhi") #{phi}
+        input.c-pipeline-animation-slider(type="range", value="#{iphi}",
+                                          min="#{minPhi}", max="#{maxPhi}",
+                                          step="#{stepPhi}")
+        i.icon-fast-fw-1.c-pipeline-next.c-pipeline-animation-button
+        i.icon-to-end-3.c-pipeline-end.c-pipeline-animation-button
+  if maxTheta > 0
+    .c-pipeline-animation-theta
+      i.icon-resize-vertical.c-pipeline-animation-icon &Theta;
+      .c-pipeline-animation-control
+        i.icon-to-start-3.c-pipeline-start.c-pipeline-animation-button
+        i.icon-fast-bw.c-pipeline-back.c-pipeline-animation-button
+        label.c-pipeline-animation-label(id="PipelineAnimationLabelTheta") #{theta}
+        input.c-pipeline-animation-slider(type="range", value="#{itheta}",
+                                          min="#{minTheta}", max="#{maxTheta}",
+                                          step="#{stepTheta}")
+        i.icon-fast-fw-1.c-pipeline-next.c-pipeline-animation-button
+        i.icon-to-end-3.c-pipeline-end.c-pipeline-animation-button

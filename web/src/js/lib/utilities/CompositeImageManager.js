@@ -45,7 +45,7 @@
      * the given key, storing it in the "image" key in the cache entry.
      */
     prototype._downloadImage = function (key) {
-        var url = this.visModel.url().substring(0, this.visModel.url().lastIndexOf('/')) +
+        var url = this.visModel.url.substring(0, this.visModel.url.lastIndexOf('/')) +
             '/' + key.replace('{filename}', this.imageFileName),
             img = new Image();
 
@@ -73,7 +73,7 @@
      * storing its contents in the "json" key in the cache entry.
      */
     prototype._downloadCompositeInfo = function (key) {
-        var url = this.visModel.url().substring(0, this.visModel.url().lastIndexOf('/')) +
+        var url = this.visModel.url.substring(0, this.visModel.url.lastIndexOf('/')) +
                   '/' + key.replace('{filename}', this.compositeInfoFileName);
 
         $.getJSON(url, _.bind(function (data) {
