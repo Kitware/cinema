@@ -35,10 +35,14 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
     },
 
     initialize: function (settings) {
-        var args = settings.visModel.get('arguments');
+        var args = this.model.get('arguments');
 
-        this.visModel = settings.visModel;
-        this.query = settings.query || this.visModel.defaultQuery();
+        if (!this.model.loaded()) {
+            this.listenToOnce(this.model, 'change', this.initialize);
+            return;
+        }
+
+        this.query = settings.query || this.model.defaultQuery();
         this.drawingCenter = settings.drawingCenter || [0, 0];
         this.zoomLevel = settings.zoomLevel || 1.0;
         this.backgroundColor = settings.backgroundColor || '#ffffff';
@@ -51,15 +55,16 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         };
 
         this.compositeManager = new cinema.utilities.CompositeImageManager({
-            visModel: this.visModel
+            visModel: this.model
         });
 
         this._computeLayerOffset();
         this._first = true;
 
-        this.compositeManager.on('c:error', function (e) {
+        this.listenTo(compositeManager, 'c:error', function (e) {
             this.trigger('c:error', e);
-        }, this).on('c:data.ready', function (data) {
+        });
+        this.listenTo(compositeManager, 'c:data.ready', function (data) {
             this._writeCompositeBuffer(data);
 
             if (this._first) {
@@ -68,7 +73,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             }
 
             this.drawImage();
-        }, this);
+        });
     },
 
     render: function () {
@@ -96,8 +101,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             if (this.query[i + 1] === '_') {
                 this.layerOffset[layer] = -1;
             } else {
-                this.layerOffset[layer] = this.visModel.numberOfLayers() - 1 -
-                    this.visModel.get('metadata').offset[this.query.substr(i, 2)];
+                this.layerOffset[layer] = this.model.numberOfLayers() - 1 -
+                    this.model.get('metadata').offset[this.query.substr(i, 2)];
             }
         }
     },
@@ -132,8 +137,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         var renderCanvas = this.$('.c-vis-render-canvas')[0],
             compositeCanvas = this.$('.c-vis-composite-buffer')[0],
             spriteCanvas = this.$('.c-vis-spritesheet-buffer')[0],
-            dim = this.visModel.imageDimensions(),
-            spritesheetDim = this.visModel.spritesheetDimensions(),
+            dim = this.model.imageDimensions(),
+            spritesheetDim = this.model.spritesheetDimensions(),
             spriteCtx = spriteCanvas.getContext('2d'),
             compositeCtx = compositeCanvas.getContext('2d'),
             composite = this.compositeCache[data.key];
@@ -162,7 +167,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             frontBuffer = compositeCtx.getImageData(0, 0, dim[0], dim[1]);
         } else { // Otherwise use the bottom spritesheet image as a background
             frontBuffer = spriteCtx.getImageData(
-                0, (this.visModel.numberOfLayers() - 1) * dim[1], dim[0], dim[1]);
+                0, (this.model.numberOfLayers() - 1) * dim[1], dim[0], dim[1]);
         }
 
         var frontPixels = frontBuffer.data;

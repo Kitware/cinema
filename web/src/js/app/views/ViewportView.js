@@ -1,18 +1,16 @@
 cinema.views.ViewportView = Backbone.View.extend({
-    initialize: function (settings) {
-        this.visModel = settings.visModel;
-    },
 
-    render: function () {
+    initialize: function () {
         this.$el.html(cinema.app.templates.viewport());
 
         this.renderView = new cinema.views.VisualizationCanvasWidget({
             el: this.$('.c-app-renderer-container'),
-            visModel: this.visModel
+            model: this.model
         }).render();
 
         new cinema.utilities.RenderViewMouseInteractor({
-            renderView: this.renderView
+            renderView: this.renderView,
+            visModel: this.model
         }).enableMouseWheelZoom({
             maxZoomLevel: 10,
             zoomIncrement: 0.05,

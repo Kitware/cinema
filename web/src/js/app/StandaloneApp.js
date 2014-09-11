@@ -26,15 +26,15 @@ cinema.StandaloneApp = Backbone.View.extend({
 
         var viewportView = new cinema.views.ViewportView({
             el: this.$('.c-app-viewport-container'),
-            visModel: visModel
+            model: visModel
         });
 
         var pipelineControlView = new cinema.views.PipelineControlWidget({
             el: this.$('.c-app-pipeline-control-container'),
-            visModel: visModel
+            model: visModel
         });
 
-        pipelineControlView.on('c:query.update', function (query) {
+        this.listenTo(pipelineControlView, 'c:query.update', function (query) {
             viewportView.updateQuery(query);
         });
 
@@ -44,9 +44,27 @@ cinema.StandaloneApp = Backbone.View.extend({
             this.$('.c-app-view-panel').fadeIn();
         }, this);
 
-        visModel.on('change', function () {
+        var pipelineAnimationWidget = new cinema.views.PipelineAnimationWidget({
+            el: this.$('.c-app-pipeline-animation-container'),
+            model: visModel
+        });
+
+        this.listenTo(pipelineAnimationWidget, 'c:phi.viewpoint.show', function (value) {
+            viewportView.phiViewpointShow(value);
+        });
+
+        this.listenTo(pipelineAnimationWidget, 'c:theta.viewpoint.show', function (value) {
+            viewportView.thetaViewpointShow(value);
+        });
+
+        this.listenTo(pipelineAnimationWidget, 'c:time.viewpoint.show', function (value) {
+            viewportView.timeViewpointShow(value);
+        });
+
+        this.listenTo(visModel, 'change', function () {
             viewportView.render();
             pipelineControlView.render();
-        }, this).fetch();
+            pipelineAnimationWidget.render();
+        }).fetch();
     }
 });
