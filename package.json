@@ -27,5 +27,8 @@
   },
   "scripts": {
     "postinstall": "./node_modules/.bin/grunt init && ./node_modules/.bin/grunt"
+  },
+  "devDependencies": {
+    "grunt-express": "~1.4.1"
   }
 }

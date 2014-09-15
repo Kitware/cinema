@@ -10,6 +10,9 @@ module.exports = function (grunt) {
         grunt.fatal('The --env argument must be either "dev" or "prod".');
     }
 
+    // Pass a "--port=<value>" argument to grunt to change the server port.
+    var port = Number(grunt.option('port') || '8081');
+
     // Project configuration.
     grunt.config.init({
         pkg: grunt.file.readJSON('package.json'),
@@ -153,6 +156,15 @@ module.exports = function (grunt) {
                 files: ['web/src/templates/index.html.jade'],
                 tasks: ['index-html']
             }
+        },
+
+        express: {
+            server: {
+                options: {
+                    port: port,
+                    bases: ['web/dist', 'web']
+                }
+            }
         }
     });
 
@@ -161,6 +173,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-jade');
     grunt.loadNpmTasks('grunt-contrib-stylus');
     grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-express');
     grunt.loadNpmTasks('grunt-extend');
 
     grunt.registerTask('index-html', 'Build the index.html page.', function () {
@@ -186,6 +199,12 @@ module.exports = function (grunt) {
         }));
     });
 
+    grunt.registerTask(
+        'serve',
+        'Serve the content at http://localhost:8081, ' +
+        'use the --port option to override the default port',
+        ['express', 'watch']
+    );
     grunt.registerTask('build-js', ['jade', 'uglify:app', 'uglify:lib']);
     grunt.registerTask('init', ['copy:ext', 'extend', 'uglify:ext', 'index-html']);
     grunt.registerTask('default', ['stylus', 'build-js']);
