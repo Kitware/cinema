@@ -1,4 +1,13 @@
 cinema.views.HeaderView = Backbone.View.extend({
+    events: {
+        'click .c-show-pipeline-controls': function () {
+            cinema.events.trigger('c:app.show-pipeline-controls');
+        },
+        'click .c-show-view-controls': function () {
+            cinema.events.trigger('c:app.show-view-controls');
+        }
+    },
+
     render: function () {
         this.$el.html(cinema.app.templates.header());
 

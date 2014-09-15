@@ -1,6 +1,6 @@
 .DS_Store
 *.log
-config.json
+/config.json
 node_modules
 data
 .*.sw?

@@ -1,0 +1,11 @@
+.c-color-by-container
+  .c-color-by-label Color by field:
+  .c-layer-value-choice(layer-id="#{layerId}")
+    each field in metadata.layer_fields[layerId]
+      .radio
+        label
+          input(layer-id="#{layerId}", type="radio", name="color-by-select",
+                value="#{field}")
+          = metadata.fields[field]
+
+  button.c-popover-close.btn.btn-default.btn-sm Done

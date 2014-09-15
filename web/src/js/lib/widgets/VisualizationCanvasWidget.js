@@ -38,11 +38,12 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         var args = settings.visModel.get('arguments');
 
         this.visModel = settings.visModel;
-        this.query = settings.query || "AABBCBDBEBFBGCHCICJCKC"; // TODO figure out what this means
+        this.query = settings.query || this.visModel.defaultQuery();
         this.drawingCenter = settings.drawingCenter || [0, 0];
         this.zoomLevel = settings.zoomLevel || 1.0;
         this.backgroundColor = settings.backgroundColor || '#ffffff';
         this.orderMapping = {};
+        this.compositeCache = {};
         this.viewpoint = settings.viewpoint || {
             time: args.time['default'],
             phi: args.phi['default'],
@@ -73,8 +74,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
     render: function () {
         this.$el.html(cinema.templates.visCanvas());
 
-        // Fetch and render the default phi/time/theta image.
-        return this.showViewpoint();
+        return this;
     },
 
     _computeOffset: function (order) {
@@ -115,7 +115,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             }
         }
 
-        data.composite = composite;
+        this.compositeCache[data.key] = composite;
     },
 
     /**
@@ -125,7 +125,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
      * cache entry so it won't have to recompute it.
      */
     _writeCompositeBuffer: function (data) {
-        if (!_.has(data, 'composite')) {
+        if (!_.has(this.compositeCache, data.key)) {
             this._computeCompositeInfo(data);
         }
 
@@ -135,7 +135,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             dim = this.visModel.imageDimensions(),
             spritesheetDim = this.visModel.spritesheetDimensions(),
             spriteCtx = spriteCanvas.getContext('2d'),
-            compositeCtx = compositeCanvas.getContext('2d');
+            compositeCtx = compositeCanvas.getContext('2d'),
+            composite = this.compositeCache[data.key];
 
         $(spriteCanvas).attr({
             width: spritesheetDim[0],
@@ -166,8 +167,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
 
         var frontPixels = frontBuffer.data;
 
-        for (var i = 0; i < data.composite.length; i += 1) {
-            var order = data.composite[i];
+        for (var i = 0; i < composite.length; i += 1) {
+            var order = composite[i];
             if (order > 0) {
                 pixelIdx += order;
             } else {
@@ -248,6 +249,14 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         this.compositeManager.updateViewpoint(this.viewpoint);
 
         return this;
+    },
+
+    updateQuery: function (query) {
+        this.query = query;
+        this.orderMapping = {};
+        this.compositeCache = {};
+        this._computeLayerOffset();
+        this.compositeManager.updateViewpoint(this.viewpoint);
     },
 
     /**
