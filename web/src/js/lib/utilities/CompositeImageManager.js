@@ -22,14 +22,35 @@
         _.extend(this, Backbone.Events);
 
         this.visModel = params.visModel;
-        this.imageFileName = params.imageFileName || 'rgb.jpg';
-        this.compositeInfoFileName = params.compositeInfoFileName || 'composite.json';
         this._cache = {};
 
         return this;
     };
 
     var prototype = cinema.utilities.CompositeImageManager.prototype;
+
+    /**
+     * Returns the image strip file name from the vis model
+     */
+    prototype._imageFileName = function () {
+        var files, rgb;
+
+        rgb = 'rgb.jpg';
+        files = this.visModel.get('arguments').filename.values;
+        files.forEach(function (file) {
+            if (file.substr(0, 3) === 'rgb') {
+                rgb = file;
+            }
+        });
+        return rgb;
+    };
+
+    /**
+     * Returns the composite info file name from the vis model
+     */
+    prototype._compositeInfoFileName = function () {
+        return 'composite.json';
+    };
 
     /**
      * Helper method to transform phi, theta, and time into a path.
@@ -46,7 +67,7 @@
      */
     prototype._downloadImage = function (key) {
         var url = this.visModel.url.substring(0, this.visModel.url.lastIndexOf('/')) +
-            '/' + key.replace('{filename}', this.imageFileName),
+            '/' + key.replace('{filename}', this._imageFileName()),
             img = new Image();
 
         img.onload = _.bind(function () {
@@ -74,7 +95,7 @@
      */
     prototype._downloadCompositeInfo = function (key) {
         var url = this.visModel.url.substring(0, this.visModel.url.lastIndexOf('/')) +
-                  '/' + key.replace('{filename}', this.compositeInfoFileName);
+                  '/' + key.replace('{filename}', this._compositeInfoFileName());
 
         $.getJSON(url, _.bind(function (data) {
             this._cache[key].json = data;
