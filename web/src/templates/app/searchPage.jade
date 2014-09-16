@@ -1,1 +1,16 @@
-| search goes here
+.c-search-input-container
+  .c-search-pipeline-control-container
+  .c-search-filter-container
+    form.form-inline(role="form")
+      .form-group
+        .input-group
+          .input-group-addon.c-filter-help-button(title="Show filter help")
+            i.icon-help
+          input#c-search-filter.form-control.input-sm(placeholder="Additional filters")
+      .form-group
+        button.c-search-filter-apply.btn.btn-default.btn-sm(title="Apply filter")
+          i.icon-filter
+.c-search-results-container
+  .c-result-info-text
+    span.result-count 0
+    |  matching results.
