@@ -16,5 +16,6 @@ var cinema = {
     collections: {},
     utilities: {},
     views: {},
-    events: _.clone(Backbone.Events)
+    events: _.clone(Backbone.Events),
+    router: new Backbone.Router()
 };
