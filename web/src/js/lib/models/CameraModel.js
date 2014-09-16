@@ -42,17 +42,17 @@ cinema.models.CameraModel = Backbone.Model.extend({
             return;
         }
 
-        ['phi', 'theta', 'time'].forEach(function (param) {
+        _.each(['phi', 'theta', 'time'], function (param) {
             var idx;
             this[param + 's'] = args[param].values;
             if (_.has(args[param], 'default')) {
-                idx = args[param].values.indexOf(args[param].default);
+                idx = args[param].values.indexOf(args[param]['default']);
                 if (idx < 0) {
                     throw "'" + param + "' has an invalid default.";
                 }
                 this.defaults[param] = idx;
             }
-        }.bind(this));
+        }, this);
     },
 
     /**

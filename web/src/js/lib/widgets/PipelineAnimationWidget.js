@@ -67,7 +67,7 @@ cinema.views.PipelineAnimationWidget = Backbone.View.extend({
             throw "Animation widget requires a viewport.";
         }
         this.camera = settings.viewport.camera;
-        this.listenTo(this.model, 'change', function (){
+        this.listenTo(this.model, 'change', function () {
             this.render();
         });
         this.listenTo(this.camera, 'change', this._refresh);

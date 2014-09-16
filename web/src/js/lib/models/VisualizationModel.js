@@ -12,18 +12,18 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
     },
 
     defaults: {
-        arguments: {
+        'arguments': {
             phi: {
                 values: [],
-                default: 0
+                'default': 0
             },
             theta: {
                 values: [],
-                default: 0
+                'default': 0
             },
             time: {
                 values: [],
-                default: 0
+                'default': 0
             },
             layer: {
                 values: []
