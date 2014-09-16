@@ -389,7 +389,7 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
      * Return the default query that this model should display. For now, this
      * returns the empty string, meaning no layers are rendered.
      */
-    defaultQuery: function () {
+    defaultLayers: function () {
         return '';
     }
 });

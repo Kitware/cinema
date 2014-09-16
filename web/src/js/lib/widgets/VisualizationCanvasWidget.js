@@ -45,7 +45,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             return;
         }
 
-        this.query = settings.query || this.model.defaultQuery();
+        this.layers = settings.layers || new cinema.models.LayerModel(this.model.defaultLayers());
         this.backgroundColor = settings.backgroundColor || '#ffffff';
         this.orderMapping = {};
         this.compositeCache = {};
@@ -72,6 +72,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             this.drawImage();
         });
         this.listenTo(this.camera, 'change', this.drawImage);
+        this.listenTo(this.layers, 'change', this.updateQuery);
     },
 
     render: function () {
@@ -91,16 +92,19 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
     },
 
     _computeLayerOffset: function () {
+        var query;
+
         this.layerOffset = {};
 
-        for (var i = 0; i < this.query.length; i += 2) {
-            var layer = this.query[i];
+        query = this.layers.serialize();
+        for (var i = 0; i < query.length; i += 2) {
+            var layer = query[i];
 
-            if (this.query[i + 1] === '_') {
+            if (query[i + 1] === '_') {
                 this.layerOffset[layer] = -1;
             } else {
                 this.layerOffset[layer] = this.model.numberOfLayers() - 1 -
-                    this.model.get('metadata').offset[this.query.substr(i, 2)];
+                    this.model.get('metadata').offset[query.substr(i, 2)];
             }
         }
     },
@@ -273,7 +277,6 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
     },
 
     updateQuery: function (query) {
-        this.query = query;
         this.orderMapping = {};
         this.compositeCache = {};
         this._computeLayerOffset();

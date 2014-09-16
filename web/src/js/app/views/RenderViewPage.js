@@ -6,18 +6,17 @@ cinema.views.RenderViewPage = Backbone.View.extend({
     render: function () {
         this.$el.html(cinema.app.templates.renderViewPage());
 
+        var layers = new cinema.models.LayerModel(this.visModel.defaultLayers());
         var viewportView = new cinema.views.ViewportView({
             el: this.$('.c-rv-viewport-container'),
-            model: this.visModel
+            model: this.visModel,
+            layers: layers
         });
 
         var pipelineControlView = new cinema.views.PipelineControlWidget({
             el: this.$('.c-rv-pipeline-control-container'),
-            model: this.visModel
-        });
-
-        this.listenTo(pipelineControlView, 'c:query.update', function (query) {
-            viewportView.updateQuery(query);
+            model: this.visModel,
+            layers: layers
         });
 
         cinema.events.on('c:app.show-pipeline-controls', function () {
