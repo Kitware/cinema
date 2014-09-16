@@ -1,9 +1,9 @@
 cinema.views.ViewportView = Backbone.View.extend({
 
-    initialize: function () {
+    initialize: function (opts) {
         this.$el.html(cinema.app.templates.viewport());
 
-        this.camera = new cinema.models.CameraModel({
+        this.camera = opts.camera || new cinema.models.CameraModel({
             info: this.model
         });
 
@@ -35,5 +35,5 @@ cinema.views.ViewportView = Backbone.View.extend({
 
     _refreshCamera: function () {
         this.renderView.showViewpoint();
-    },
+    }
 });
