@@ -37,6 +37,11 @@ cinema.views.RenderViewPage = Backbone.View.extend({
             pipelineControlView.render();
             pipelineAnimationWidget.render();
         });
-        this.visModel.fetch();
     }
+});
+
+cinema.router.route('renderview', 'renderview', function () {
+    cinema.events.trigger('c:app.showPage', cinema.views.RenderViewPage, {
+        visModel: cinema.standaloneVisModel
+    }, true);
 });
