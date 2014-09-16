@@ -35,6 +35,7 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
         metadata: {
             dimensions: [0, 0],
             fields: {},
+            scalars: {},
             id: 'default-info-object',
             layer_fields: {},
             layers: '',
