@@ -77,7 +77,6 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
             var layerId = $(el).attr('layer-id');
             $(el).popover('destroy').popover({
                 html: true,
-                container: 'body',
                 placement: 'right',
                 content: cinema.templates.colorByChooser({
                     layerId: layerId,
