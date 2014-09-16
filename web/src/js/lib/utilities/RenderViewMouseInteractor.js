@@ -74,6 +74,7 @@
      * For interactivity that requires drag, make sure this gets called.
      */
     prototype._measureDrag = function () {
+        var that = this;
         if (this._measuringDrag) {
             return this;
         }
@@ -81,28 +82,40 @@
         this._measuringDrag = true;
         this.renderView.on('c:mousedown', function (evt) {
             this._dragStart = [evt.clientX, evt.clientY];
-        }, this);
 
-        this.renderView.on('c:mouseup', function () {
-            this._dragStart = null;
-        }, this);
+            // Attach mousemove to document rather than the element
+            // so that dragging continues over other elements, outside
+            // of the browser window, etc.
+            $(document)
+                .off('.renderview')
+                .on('mousemove.renderview',
+                    function (evt) {
+                        var payload = {
+                            event: evt,
+                            delta: [
+                                evt.clientX - that._dragStart[0],
+                                evt.clientY - that._dragStart[1]
+                            ]
+                        };
 
-        this.renderView.on('c:mousemove', function (evt) {
-            if (this._dragStart !== null) {
-                var payload = {
-                    event: evt,
-                    delta: [
-                        evt.clientX - this._dragStart[0],
-                        evt.clientY - this._dragStart[1]
-                    ]
-                };
-                if (evt.button === 0) {
-                    this.trigger('c:_drag', payload);
-                }
-                else if (evt.button === 2) {
-                    this.trigger('c:_drag.right', payload);
-                }
-            }
+                        // prevent text selection while dragging
+                        evt.preventDefault();
+
+                        if (evt.button === 0) {
+                            that.trigger('c:_drag', payload);
+                        }
+                        else if (evt.button === 2) {
+                            that.trigger('c:_drag.right', payload);
+                        }
+                    }
+                )
+                .on('mouseup.renderview',
+                    function () {
+                        that._dragStart = null;
+                        $(document).off('.renderview');
+                    }
+                );
+
         }, this);
 
         return this;
