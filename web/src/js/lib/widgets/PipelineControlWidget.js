@@ -59,13 +59,17 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
     },
 
     initialize: function (settings) {
-        this.visModel = settings.visModel;
-        this.query = settings.query || this.visModel.defaultQuery();
+        this.query = settings.query || this.model.defaultQuery();
+        this.listenTo(this.model, 'change', this.render);
     },
 
     render: function () {
+        var metadata = this.model.get('metadata');
+        if (!metadata) {
+            return;
+        }
         this.$el.html(cinema.templates.pipelineControl({
-            metadata: this.visModel.get('metadata')
+            metadata: metadata
         }));
 
         var view = this;
@@ -77,7 +81,7 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
                 placement: 'right',
                 content: cinema.templates.colorByChooser({
                     layerId: layerId,
-                    metadata: this.visModel.get('metadata')
+                    metadata: this.model.get('metadata')
                 })
             }).off('show.bs.popover').on('show.bs.popover', function () {
                 _.each(view.$('.c-layer-color-select'), function (otherEl) {

@@ -29,7 +29,7 @@
      */
     cinema.utilities.RenderViewMouseInteractor = function (params) {
         this.renderView = params.renderView;
-        this.visModel = params.visModel || params.renderView.visModel;
+        this.camera = params.camera;
 
         return _.extend(this, Backbone.Events);
     };
@@ -60,10 +60,10 @@
                 zoomInc = -zoomInc;
             }
 
-            var newZoom = this.renderView.zoomLevel + zoomInc;
+            var zoomLevel = this.camera.get('zoom'),
+                newZoom = zoomLevel + zoomInc;
             if (newZoom <= this._maxZoomLevel && newZoom >= this._minZoomLevel) {
-                this.renderView.zoomLevel = newZoom;
-                this.renderView.drawImage();
+                this.camera.set('zoom', newZoom);
             }
         }, this);
 
@@ -74,7 +74,6 @@
      * For interactivity that requires drag, make sure this gets called.
      */
     prototype._measureDrag = function () {
-        var that = this;
         if (this._measuringDrag) {
             return this;
         }
@@ -93,8 +92,8 @@
                         var payload = {
                             event: evt,
                             delta: [
-                                evt.clientX - that._dragStart[0],
-                                evt.clientY - that._dragStart[1]
+                                evt.clientX - this._dragStart[0],
+                                evt.clientY - this._dragStart[1]
                             ]
                         };
 
@@ -102,18 +101,18 @@
                         evt.preventDefault();
 
                         if (evt.button === 0) {
-                            that.trigger('c:_drag', payload);
+                            this.trigger('c:_drag', payload);
                         }
                         else if (evt.button === 2) {
-                            that.trigger('c:_drag.right', payload);
+                            this.trigger('c:_drag.right', payload);
                         }
-                    }
+                    }.bind(this)
                 )
                 .on('mouseup.renderview',
                     function () {
-                        that._dragStart = null;
+                        this._dragStart = null;
                         $(document).off('.renderview');
-                    }
+                    }.bind(this)
                 );
 
         }, this);
@@ -140,20 +139,16 @@
             }
             var dphi = payload.delta[0] / this._xPhiRatio,
                 dtheta = payload.delta[1] / this._yThetaRatio,
-                stepTheta = this.visModel.deltaTheta(),
-                stepPhi = this.visModel.deltaPhi();
+                stepTheta = this.camera.delta('theta'),
+                stepPhi = this.camera.delta('phi');
 
             if (Math.abs(dtheta) > stepTheta) {
-                this.renderView.viewpoint.theta = this.visModel.incrementTheta(
-                    this.renderView.viewpoint.theta, dtheta > 0 ? 1 : -1);
+                this.camera.increment('theta', dtheta > 0 ? 1 : -1);
                 this._dragStart = [payload.event.clientX, payload.event.clientY];
-                this.renderView.showViewpoint();
             }
             else if (Math.abs(dphi) > stepPhi) {
-                this.renderView.viewpoint.phi = this.visModel.incrementPhi(
-                    this.renderView.viewpoint.phi, dphi > 0 ? 1 : -1);
+                this.camera.increment('phi', dphi > 0 ? 1 : -1, true);
                 this._dragStart = [payload.event.clientX, payload.event.clientY];
-                this.renderView.showViewpoint();
             }
         };
 
@@ -172,14 +167,15 @@
         this._panKeyModifiers = params.keyModifiers || 0;
 
         var dragHandler = function (payload) {
+            var delta;
             if (!_testKeyModifiers(payload.event, this._panKeyModifiers)) {
                 return;
             }
-            this.renderView.drawingCenter[0] +=
-                payload.event.clientX - this._dragStart[0];
-            this.renderView.drawingCenter[1] +=
-                payload.event.clientY - this._dragStart[1];
-            this.renderView.drawImage();
+            delta = [
+                payload.event.clientX - this._dragStart[0],
+                payload.event.clientY - this._dragStart[1]
+            ];
+            this.camera.increment('center', delta);
             this._dragStart = [payload.event.clientX, payload.event.clientY];
         };
         this._measureDrag().off('c:_drag', dragHandler, this)
