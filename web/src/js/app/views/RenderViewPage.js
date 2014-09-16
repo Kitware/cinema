@@ -1,3 +1,8 @@
+/**
+ * This view is the top-level body view for viewing a visualization model. It
+ * contains widgets for controlling the pipeline (layers, coloring, camera
+ * parameters) and allows for mouse interaction with the scene.
+ */
 cinema.views.RenderViewPage = Backbone.View.extend({
     initialize: function (opts) {
         this.visModel = opts.visModel;
@@ -32,10 +37,18 @@ cinema.views.RenderViewPage = Backbone.View.extend({
             viewport: viewportView
         });
 
-        this.listenTo(this.visModel, 'change', function () {
+        var renderChildren = function () {
             viewportView.render();
             pipelineControlView.render();
             pipelineAnimationWidget.render();
+        };
+
+        if (this.visModel.loaded()) {
+            renderChildren();
+        }
+
+        this.listenTo(this.visModel, 'change', function () {
+            renderChildren();
         });
     }
 });
