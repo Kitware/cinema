@@ -30,7 +30,8 @@ def findTopLayer(orderString, layerlist):
 # subsets of the given layerlist.
 #
 # =============================================================================
-def findAllCombinations(layerlist):
+def findAllCombinations(layers):
+    layerlist = [ ch for ch in layers ]
     resultList = []
     size = len(layerlist)
     while size > 0:
@@ -43,8 +44,8 @@ def findAllCombinations(layerlist):
 
 
 # =============================================================================
-# Takes a query.json object and calculates the percent pixel coverage for
-# each of the layers (represented by single-letter layer codes) in the
+# Takes a query.json object and calculates the percent pixel coverage for each
+# of the layers (layers are represented by single-letter layer codes) in the
 # layerlist parameter.  For example, if the layerlist contained:
 #
 #     [ 'A', 'B', 'C', 'D', 'E' ]
@@ -82,15 +83,54 @@ def processQueryFile(queryJsonObj, layerlist):
 
 
 # =============================================================================
+# Given a name pattern like "{time}/{theta}/{phi}/{filename}" (or similar) and
+# a dictionary of values where the top-level keys in the dictionary should
+# correspond to the strings within the '{' and '}' in the name pattern,
+# generate tuples of the form (index, relative path).
+# =============================================================================
+def cinemaFileIterator(namePattern, dictList):
+    regex = re.compile('{(.+)}')
+    compList = namePattern.split('/')
+    argumentList = []
+
+    for comp in compList[:-1]:
+        m = regex.search(comp)
+        argumentList.append(dictList[m.group(1)]['values'])
+
+    maxIndices = [ len(argumentList[i]) - 1 for i in xrange(len(argumentList)) ]
+    currentIndices = [ 0 for i in argumentList ]
+
+    done = False
+    idx = 0
+
+    while not done:
+        currentValues = [ argumentList[i][currentIndices[i]] for i in xrange(len(currentIndices)) ]
+        relPath = os.path.join(*currentValues)
+        yield idx, relPath
+        # try to increment our multi-base "counter" (the index list), and if
+        # We have reached the top, then we break
+        idx += 1
+        for i in xrange(len(currentIndices) - 1, -1, -1):
+            if currentIndices[i] < maxIndices[i]:
+                currentIndices[i] += 1
+                break
+            else:
+                if i == 0:
+                    done = True
+                currentIndices[i] = 0
+
+
+# =============================================================================
 # The parameter workdir should be a path to a folder with an info.json file in
 # it, which should describe the directory structure below that in terms of
 # timestep, theta, and phi subdirectories below that.  Then this function
 # iterates over that entire directory structure, processing all the query.json
 # files.
 #
-# The result is a histogram, of sorts, specific to the layer list provided, and
-# this histogram can be used to generate visualizations like the one ParaView
-# Cinema shows for pixel coverages.
+# The result will be a directory hierarchy of histogram files, each specific to
+# a particular combination of layers from the set of layers available in the
+# dataset.  These histograms can be used to generate chart visualizations like
+# the one ParaView Cinema shows for pixel coverages.
 #
 # =============================================================================
 def processDataSet(workdir, outputDir):
@@ -101,12 +141,10 @@ def processDataSet(workdir, outputDir):
     with open(filename, 'r') as fd:
         jsonObj = json.load(fd)
 
-    # Pull out all layer names, as well as all values of time, theta, and phi
+    # Pull out all layer names, the name_pattern, and all "arguments"
+    layers = jsonObj['metadata']['layers']
+    namePattern = jsonObj['name_pattern']
     arguments = jsonObj['arguments']
-    layers = arguments['layer']['values']
-    phiValues = arguments['phi']['values']
-    thetaValues = arguments['theta']['values']
-    timeValues = arguments['time']['values']
 
     # Generate all possible combinations of layers in the dataset
     allCombinations = findAllCombinations(layers)
@@ -114,16 +152,14 @@ def processDataSet(workdir, outputDir):
     print 'Reading query.json files into memory...'
 
     # Generate the dictionary of files we need to process for every possible
-    # combination of layers.  The keys are the relative path from the root of
-    # the dataset, i.e. "<time>/<theta>/<phi>".
+    # combination of layers.  The keys are unique ids given by a linear indexing
+    # of the values in time, theta, and phi (or whatever is in name_pattern).
     queryJsonObjects = {}
-    for timeStep in timeValues:
-        for theta in thetaValues:
-            for phi in phiValues:
-                relativePath = os.path.join(timeStep, theta, phi)
-                queryJsonFile = os.path.join(workdir, relativePath, 'query.json')
-                with open(queryJsonFile, 'r') as fd:
-                    queryJsonObjects[relativePath] = json.load(fd)
+    for fileIdx, relativePath in cinemaFileIterator(namePattern, arguments):
+        #print 'id: ',fileIdx,', path: ',relativePath
+        queryJsonFile = os.path.join(workdir, relativePath, 'query.json')
+        with open(queryJsonFile, 'r') as fd:
+            queryJsonObjects[fileIdx] = json.load(fd)
 
     combosToProcess = len(allCombinations)
     currentCombo = 1
@@ -134,7 +170,8 @@ def processDataSet(workdir, outputDir):
         print 'Processing ',currentCombo,' of ',combosToProcess,' layer combinations'
 
         # Create an empty histogram list
-        histogram = [{"values": {layer: 0 for layer in layerlist}} for i in range(100)]
+        histogram = [{ "values": {layer: 0 for layer in layerlist},
+                       "images": {layer: [] for layer in layerlist} } for i in range(100)]
 
         # Now process every query.json file/object in the entire data set
         for queryJsonKey in queryJsonObjects:
@@ -143,6 +180,7 @@ def processDataSet(workdir, outputDir):
             for l in percentCoverages:
                 binNumber = int(math.floor(percentCoverages[l]))
                 histogram[binNumber]['values'][l] += 1
+                histogram[binNumber]['images'][l].append(queryJsonKey)
 
         # We have already assumed fixed bin sizes of 1 percent, from 0.0 to 100.0,
         # but to support future applications where different bin sizes are used, we
@@ -153,14 +191,27 @@ def processDataSet(workdir, outputDir):
             bin['xMax'] = binMin + 1.0
             binMin += 1.0
 
+            # While we're at it, let's remove the key/val pairs from "images"
+            # where the value (a list) is empty
+            empties = []
+            for key in bin['images']:
+                if len(bin['images'][key]) == 0:
+                    empties.append(key)
+
+            for key in empties:
+                bin['images'].pop(key, None)
+
         # Now write out the histogram
-        outputFileName = '-'.join(layerlist) + '-histogram.json'
-        histogramFile = os.path.join(outputDir, outputFileName)
+        outputFilePath = os.path.join(outputDir, *layerlist)
+        if not os.path.exists(outputFilePath):
+            os.makedirs(outputFilePath)
+        histogramFile = os.path.join(outputFilePath, 'histogram.json')
         with open(histogramFile, 'w') as fd:
             json.dump(histogram, fd)
 
+        # It's nice to see some progress while the job is running
         elapsedTime = int(math.ceil(time.time())) - startTime
-        print '    Finished in ',elapsedTime,' seconds, wrote file: ',outputFileName
+        print '    Finished in ',elapsedTime,' seconds, wrote file: ',histogramFile
 
         currentCombo += 1
 
@@ -168,12 +219,12 @@ def processDataSet(workdir, outputDir):
 # =============================================================================
 # Main script entry point.
 #
-# The purpose of the script is to go through a Cinema
-# dataset, iterating over the image directories associated with time, theta,
-# and phi, and generate (for all possible combinations of layers available in
-# the data set) a directory structure of "histogram" files containing json
-# objects.  The structure of a histogram.json file for a given combination of
-# layers will look like the following:
+# The purpose of the script is to go through a Cinema dataset, iterating over
+# the image directories associated with time, theta, and phi, and generate (for
+# all possible combinations of layers available in the data set) a directory
+# structure of "histogram" files containing json objects.  The structure of a
+# histogram.json file for a given combination of layers will look like the
+# following:
 #
 #     [
 #         ...,
@@ -181,13 +232,7 @@ def processDataSet(workdir, outputDir):
 #             "xMin": 32.0,
 #             "values": { "A": 22, "C": 0, "G": 0, "F": 0, "I": 0, "K": 0, "J": 0 },
 #             "images": {
-#                 "A": ["0/10/90", ...],
-#                 "C": ["10/50/160", ...],
-#                 "F": ["2/10/90", ...],
-#                 "G": ["3/40/170", ...],
-#                 "I": ["5/60/80", ...],
-#                 "J": ["5/80/110", ...],
-#                 "K": ["", ...]
+#                 "A": ["0/10/90", ...]
 #             },
 #             "xMax": 33.0
 #         },...
