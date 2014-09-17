@@ -22,14 +22,50 @@
         _.extend(this, Backbone.Events);
 
         this.visModel = params.visModel;
-        this.imageFileName = params.imageFileName || 'rgb.jpg';
-        this.compositeInfoFileName = params.compositeInfoFileName || 'composite.json';
         this._cache = {};
+
+        if (this.visModel.get('metadata').type !== 'composite-image-stack') {
+            throw new Error('Unsupported file format');
+        }
 
         return this;
     };
 
     var prototype = cinema.utilities.CompositeImageManager.prototype;
+
+    /**
+     * Returns the image strip file name from the vis model.
+     * The method looks for the following in order:
+     *   1. arguments.files.image
+     *   2. arguments.filename.default
+     * Falls back on rgb.jpg.
+     */
+    prototype._imageFileName = function () {
+        var image, args;
+
+        image = 'rgb.jpg';
+        args = this.visModel.get('arguments');
+        if (args.files && args.files.image) {
+            image = args.files.image;
+        } else if (args.filename && args.filename['default']) {
+            image = args.filename['default'];
+        }
+        return image;
+    };
+
+    /**
+     * Returns the composite info file name from the vis model.
+     */
+    prototype._compositeInfoFileName = function () {
+        var composite, args;
+
+        composite = 'composite.json';
+        args = this.visModel.get('arguments');
+        if (args.files && args.files.composite) {
+            composite = args.files.composite;
+        }
+        return composite;
+    };
 
     /**
      * Helper method to transform phi, theta, and time into a path.
@@ -46,7 +82,7 @@
      */
     prototype._downloadImage = function (key) {
         var url = this.visModel.url.substring(0, this.visModel.url.lastIndexOf('/')) +
-            '/' + key.replace('{filename}', this.imageFileName),
+            '/' + key.replace('{filename}', this._imageFileName()),
             img = new Image();
 
         img.onload = _.bind(function () {
@@ -75,7 +111,7 @@
      */
     prototype._downloadCompositeInfo = function (key) {
         var url = this.visModel.url.substring(0, this.visModel.url.lastIndexOf('/')) +
-                  '/' + key.replace('{filename}', this.compositeInfoFileName);
+                  '/' + key.replace('{filename}', this._compositeInfoFileName());
 
         $.getJSON(url, _.bind(function (data) {
             this._cache[key].json = data;
