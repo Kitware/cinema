@@ -30,7 +30,8 @@ def findTopLayer(orderString, layerlist):
 # subsets of the given layerlist.
 #
 # =============================================================================
-def findAllCombinations(layerlist):
+def findAllCombinations(layers):
+    layerlist = [ ch for ch in layers ]
     resultList = []
     size = len(layerlist)
     while size > 0:
@@ -43,8 +44,8 @@ def findAllCombinations(layerlist):
 
 
 # =============================================================================
-# Takes a query.json object and calculates the percent pixel coverage for
-# each of the layers (represented by single-letter layer codes) in the
+# Takes a query.json object and calculates the percent pixel coverage for each
+# of the layers (layers are represented by single-letter layer codes) in the
 # layerlist parameter.  For example, if the layerlist contained:
 #
 #     [ 'A', 'B', 'C', 'D', 'E' ]
@@ -88,9 +89,10 @@ def processQueryFile(queryJsonObj, layerlist):
 # iterates over that entire directory structure, processing all the query.json
 # files.
 #
-# The result is a histogram, of sorts, specific to the layer list provided, and
-# this histogram can be used to generate visualizations like the one ParaView
-# Cinema shows for pixel coverages.
+# The result will be a directory hierarchy of histogram files, each specific to
+# a particular combination of layers from the set of layers available in the
+# dataset.  These histograms can be used to generate chart visualizations like
+# the one ParaView Cinema shows for pixel coverages.
 #
 # =============================================================================
 def processDataSet(workdir, outputDir):
@@ -102,8 +104,8 @@ def processDataSet(workdir, outputDir):
         jsonObj = json.load(fd)
 
     # Pull out all layer names, as well as all values of time, theta, and phi
+    layers = jsonObj['metadata']['layers']
     arguments = jsonObj['arguments']
-    layers = arguments['layer']['values']
     phiValues = arguments['phi']['values']
     thetaValues = arguments['theta']['values']
     timeValues = arguments['time']['values']
@@ -134,7 +136,8 @@ def processDataSet(workdir, outputDir):
         print 'Processing ',currentCombo,' of ',combosToProcess,' layer combinations'
 
         # Create an empty histogram list
-        histogram = [{"values": {layer: 0 for layer in layerlist}} for i in range(100)]
+        histogram = [{ "values": {layer: 0 for layer in layerlist},
+                       "images": {layer: [] for layer in layerlist} } for i in range(100)]
 
         # Now process every query.json file/object in the entire data set
         for queryJsonKey in queryJsonObjects:
@@ -143,6 +146,7 @@ def processDataSet(workdir, outputDir):
             for l in percentCoverages:
                 binNumber = int(math.floor(percentCoverages[l]))
                 histogram[binNumber]['values'][l] += 1
+                histogram[binNumber]['images'][l].append(queryJsonKey)
 
         # We have already assumed fixed bin sizes of 1 percent, from 0.0 to 100.0,
         # but to support future applications where different bin sizes are used, we
@@ -168,12 +172,12 @@ def processDataSet(workdir, outputDir):
 # =============================================================================
 # Main script entry point.
 #
-# The purpose of the script is to go through a Cinema
-# dataset, iterating over the image directories associated with time, theta,
-# and phi, and generate (for all possible combinations of layers available in
-# the data set) a directory structure of "histogram" files containing json
-# objects.  The structure of a histogram.json file for a given combination of
-# layers will look like the following:
+# The purpose of the script is to go through a Cinema dataset, iterating over
+# the image directories associated with time, theta, and phi, and generate (for
+# all possible combinations of layers available in the data set) a directory
+# structure of "histogram" files containing json objects.  The structure of a
+# histogram.json file for a given combination of layers will look like the
+# following:
 #
 #     [
 #         ...,
