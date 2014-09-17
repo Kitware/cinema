@@ -36,8 +36,8 @@
     /**
      * Returns the image strip file name from the vis model.
      * The method looks for the following in order:
-     *   1. arguments.filename.default
-     *   2. arguments.files.image
+     *   1. arguments.files.image
+     *   2. arguments.filename.default
      * Falls back on rgb.jpg.
      */
     prototype._imageFileName = function () {
