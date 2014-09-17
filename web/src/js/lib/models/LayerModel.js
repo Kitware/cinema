@@ -3,9 +3,9 @@ cinema.models.LayerModel = Backbone.Model.extend({
     constructor: function (defaults, options) {
         Backbone.Model.call(this, {}, options);
         if (typeof defaults === 'string') {
-            this.unserialize(defaults);
+            this.setFromString(defaults);
         } else if (defaults) {
-            this.set(defaults);
+            this.set('state', defaults);
         }
     },
 
@@ -52,7 +52,6 @@ cinema.models.LayerModel = Backbone.Model.extend({
     setFromString: function (query) {
         var obj = this.unserialize(query);
 
-        this.clear({silent: ! _.isEmpty(obj)});
-        this.set(obj);
+        this.set('state', obj);
     }
 });

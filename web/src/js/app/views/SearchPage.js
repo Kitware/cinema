@@ -9,15 +9,8 @@ cinema.views.SearchPage = Backbone.View.extend({
         },
 
         'click .c-search-toggle-layers': function (e) {
-            var el = this.$('.c-search-layers-panel');
-
             e.preventDefault();
-
-            if (el.is(':visible')) {
-                el.fadeOut();
-            } else {
-                el.fadeIn();
-            }
+            this.$('.c-search-layers-panel').fadeToggle();
         }
     },
 
@@ -38,6 +31,11 @@ cinema.views.SearchPage = Backbone.View.extend({
             model: this.visModel
         });
 
+        this.histogramModel = new cinema.models.HistogramModel({
+            layerModel: pipelineControlView.layers,
+            basePath: this.visModel.basePath
+        });
+
         var renderChildren = function () {
             pipelineControlView.render();
         };
@@ -49,8 +47,27 @@ cinema.views.SearchPage = Backbone.View.extend({
         this.listenTo(this.visModel, 'change', function () {
             renderChildren();
         });
-    }
 
+        this.listenTo(pipelineControlView.layers, 'change', function () {
+            this.executeSearch();
+        }, this);
+    },
+
+    clearResults: function () {
+        this.$('.c-search-results-list-area').empty();
+    },
+
+    executeSearch: function () {
+        this.clearResults();
+        this.histogramModel.off('changed').on('changed', function () {
+            this._showResults();
+        }, this).fetch();
+    },
+
+    showResults: function () {
+        // TODO grab the results and show them
+        console.log(this.histogramModel);
+    }
 });
 
 cinema.router.route('search', 'search', function () {
