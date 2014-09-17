@@ -12,6 +12,10 @@ cinema.views.HeaderView = Backbone.View.extend({
 
         'click .c-view-button': function () {
             cinema.router.navigate('renderview', {trigger: true});
+        },
+
+        'click .c-dashboard-button': function () {
+            cinema.router.navigate('dashboard', {trigger: true});
         }
     },
 
