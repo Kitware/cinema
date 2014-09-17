@@ -2,24 +2,34 @@ each object, idx in metadata.pipeline
   if object.type === 'directory'
     .c-pipeline-element-header
       a.c-pipeline-visibility-toggle(type="directory", state="on")
-        i.icon-eye
+        i.icon-eye.c-pipeline-icon
+      - var colorValue = metadata.layer_fields[object.children[0].ids[0]][0]
+      a.c-directory-color-select(directory-id="#{idx}", layer-id="#{object.children[0].ids[0]}", data-toggle="popover",
+      data-trigger="click", color-field="#{colorValue}", tabindex="-1")
+        i.icon-brush
       span.c-pipeline-name= object.name
+      a.c-pipeline-layers-select(directory-id="#{idx}", data-toggle="popover",
+      data-trigger="click", tabindex="-1")
+        i.icon-plus-circled
 
       each layer in object.children
         .c-pipeline-layer-wrapper
           a.c-layer-visibility-toggle(layer-id="#{layer.ids[0]}", state="on")
-            i.icon-eye
-          span.c-layer-name= layer.name
-
+            i.icon-cancel-circled.c-pipeline-icon
           - var colorValue = metadata.layer_fields[layer.ids[0]][0]
-          a.c-layer-color-select(layer-id="#{layer.ids[0]}", data-toggle="popover",
-                                 color-field="#{colorValue}", tabindex="-1")
+          a.c-layer-color-select(directory-id="#{idx}", layer-id="#{layer.ids[0]}", data-toggle="popover",
+          color-field="#{colorValue}", tabindex="-1")
             i.icon-brush
+          span.c-layer-name= layer.name
 
   else if object.type === 'layer'
     .c-pipeline-element-header
       a.c-pipeline-visibility-toggle(layer-id="#{object.ids[0]}", state="on", type="layer")
-        i.icon-eye
+        i.icon-eye.c-pipeline-icon
+      - var colorValue = metadata.layer_fields[object.ids[0]][0]
+      a.c-layer-color-select(directory-id="#{idx}", layer-id="#{object.ids[0]}", data-toggle="popover",
+      data-trigger="click", color-field="#{colorValue}", tabindex="-1")
+        i.icon-brush
       span.c-pipeline-name= object.name
       a.c-layer-visibility-toggle.hide(
           layer-id="#{object.ids[0]}", state="on",
