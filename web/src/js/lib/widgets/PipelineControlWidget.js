@@ -101,16 +101,14 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
             }).on('shown.bs.popover', function () {
                 $('input[name=color-by-select][value=' + theEl.attr('color-field') + ']').attr('checked', 'checked');
                 $('input[name=color-by-select]').change(function () {
-                    theEl.attr('color-field', $(this).val());
-                });
-                _.each(view.$('.c-layer-color-select'), function (otherEl) {
-                    if ($(otherEl).attr('directory-id') === directoryId) {
-                        $('input[name=color-by-select][value=' + theEl.attr('color-field') + ']').attr('checked', 'checked');
-                        $('input[name=color-by-select]').change(function () {
-                            $(otherEl).attr('color-field', $(this).val());
-                            view.computeQuery();
-                        });
-                    }
+                    var color = $(this).val();
+                    theEl.attr('color-field', color);
+                    _.each(view.$('.c-layer-color-select'), function (otherEl) {
+                        if ($(otherEl).attr('directory-id') === directoryId) {
+                            $(otherEl).attr('color-field', color);
+                        }
+                    });
+                    view.computeQuery();
                 });
             });
         }, this);
