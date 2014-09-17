@@ -41,6 +41,16 @@ cinema.views.ViewportDynamicRenderingCompositeView = Backbone.View.extend({
 
     render: function() {
         this.$el.html("<center>My super lighting dynamic view goes here!!!</center>");
+    },
+
+    updateLight: function(vectorLight) {
+        this.lightDirection = vectorLight;
+        console.log('New light vector in view ' + this.lightDirection.join(', '));
+    },
+
+    updateTransfertFunction: function(func) {
+        this.lookupTableFunction = func;
+        console.log('New LUT function');
     }
 });
 
@@ -59,9 +69,11 @@ cinema.viewFactory.registerView('composite-image-stack-light', 'RenderView', fun
         layers: layers
     });
 
-    // FIXME
-    // - add lookup table
-    // - add lighting control
+    var colorTransformationView = new cinema.views.ColorTransformationWidget({
+        el: that.$('.c-rv-colorTransform-control-container'),
+        model: that.visModel,
+        viewport: viewportView
+    });
 
     cinema.events.on('c:app.show-pipeline-controls', function () {
         that.$('.c-rv-pipeline-panel').fadeIn();
@@ -79,6 +91,7 @@ cinema.viewFactory.registerView('composite-image-stack-light', 'RenderView', fun
         viewportView.render();
         pipelineControlView.render();
         pipelineAnimationWidget.render();
+        colorTransformationView.render();
     };
 
     if (that.visModel.loaded()) {
@@ -88,4 +101,4 @@ cinema.viewFactory.registerView('composite-image-stack-light', 'RenderView', fun
     that.listenTo(visModel, 'change', function () {
         renderChildren();
     });
-});
+}, [ { key: 'pipeline', icon: 'icon-layers', title: 'Pipeline'}, { key: 'view', icon: 'icon-camera', title: 'View'}, { key: 'colorTransform', icon: 'icon-tint', title: 'Color Transformation'} ]);

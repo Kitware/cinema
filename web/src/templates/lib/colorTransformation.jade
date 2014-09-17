@@ -1,0 +1,26 @@
+.row
+    .col-sm-4
+        b. Color Map
+    .col-sm-8
+        select(data-type="colorMapName").form-control.small-combobox
+            each name in colormaps
+                option #{name}
+.row
+    .col-sm-12
+        b. Light position
+.row
+    .col-sm-2
+        i.icon-resize-horizontal
+    .col-sm-10
+        select(data-type="light",data-coordinate="0").form-control.small-combobox
+            option(value="-1") Left
+            option(value="0") Center
+            option(value="1") Right
+.row
+    .col-sm-2
+        i.icon-resize-vertical
+    .col-sm-10
+        select(data-type="light",data-coordinate="1").form-control.small-combobox
+            option(value="1") Top
+            option(value="0") Center
+            option(value="-1") Bottom

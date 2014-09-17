@@ -29,7 +29,7 @@
 
     // Internal helper functions ----------------------------------------------
 
-    function applyCompatibilityMapping(mapToFill, compatibilityMap, dataType, viewType, method ) {
+    function applyCompatibilityMapping(mapToFill, compatibilityMap, dataType, viewType, method, controlPanels ) {
         // FIXME TODO
     }
 
@@ -57,11 +57,10 @@
      * @param viewType The type of the view for which the method is valid for.
      * @param method The function that will be actually called when the view needs to be created.
      */
-    prototype.registerView = function (dataType, viewType, method) {
+    prototype.registerView = function (dataType, viewType, method, controlPanels) {
         var viewMap = this.factoryMap[viewType] = this.factoryMap[viewType] || {};
-        viewMap[dataType] = method;
-        console.log('register[' + viewType +'][' + dataType + ']');
-        applyCompatibilityMapping(this.factoryMap, this.compatibilityMap, dataType, viewType, method);
+        viewMap[dataType] = { "constructor" : method, "controls": controlPanels };
+        applyCompatibilityMapping(this.factoryMap, this.compatibilityMap, dataType, viewType, method, controlPanels);
         return this;
     };
 
@@ -72,9 +71,15 @@
      * @param viewType The type of the view that we want to build.
      */
     prototype.createView = function (viewPointer, viewType) {
-        console.log('createView[' + viewType +'][' + this.visModel.getDataType() + ']');
-        return this.factoryMap[viewType][this.visModel.getDataType()](viewPointer, this.visModel);
+        return this.factoryMap[viewType][this.visModel.getDataType()]["constructor"](viewPointer, this.visModel);
     };
+
+    prototype.getControls = function(viewType) {
+        if(this.visModel) {
+            return this.factoryMap[viewType][this.visModel.getDataType()]["controls"];
+        }
+        return [];
+    }
 
     /**
      * Create additional mapping to support old naming convention

@@ -9,8 +9,6 @@ cinema.views.RenderViewPage = Backbone.View.extend({
     },
 
     render: function () {
-        this.$el.html(cinema.app.templates.renderViewPage());
-
         if (this.visModel.loaded()) {
             this.invalidateContent();
         }
@@ -22,6 +20,9 @@ cinema.views.RenderViewPage = Backbone.View.extend({
 
     invalidateContent: function() {
         cinema.viewFactory.updateRootModel(this.visModel);
+        this.$el.html(cinema.app.templates.renderViewPage({
+            controlPanels: cinema.viewFactory.getControls('RenderView')
+        }));
         cinema.viewFactory.createView(this, 'RenderView');
     }
 });
