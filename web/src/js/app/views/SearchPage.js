@@ -4,8 +4,20 @@
 cinema.views.SearchPage = Backbone.View.extend({
     events: {
         'click .c-search-filter-apply': function (e) {
-            event.preventDefault();
+            e.preventDefault();
             // TODO apply search filters
+        },
+
+        'click .c-search-toggle-layers': function (e) {
+            var el = this.$('.c-search-layers-panel');
+
+            e.preventDefault();
+
+            if (el.is(':visible')) {
+                el.fadeOut();
+            } else {
+                el.fadeIn();
+            }
         }
     },
 
@@ -16,13 +28,13 @@ cinema.views.SearchPage = Backbone.View.extend({
     render: function () {
         this.$el.html(cinema.app.templates.searchPage());
 
-        this.$('.c-filter-help-button,.c-search-filter-apply').tooltip({
+        this.$('[title]').tooltip({
             placement: 'bottom',
             delay: {show: 100}
         });
 
         var pipelineControlView = new cinema.views.PipelineControlWidget({
-            el: this.$('.c-search-pipeline-control-container'),
+            el: this.$('.c-search-layer-control-container'),
             model: this.visModel
         });
 
