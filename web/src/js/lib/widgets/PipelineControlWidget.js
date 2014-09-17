@@ -80,6 +80,7 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
                 html: true,
                 container: 'body',
                 placement: 'right',
+                template: '<div class="popover" role="tooltip"><div class="arrow"></div><div class="popover-content c-color-by-popover"></div></div>',
                 content: cinema.templates.colorByChooser({
                     layerId: layerId,
                     metadata: this.model.get('metadata')
