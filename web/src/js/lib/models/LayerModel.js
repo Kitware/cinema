@@ -42,8 +42,16 @@ cinema.models.LayerModel = Backbone.Model.extend({
             obj[query[i]] = query[i + 1];
         }
 
-        // possibly short cut this in the future to not fire a change event when
-        // nothing actually changes
+        return obj;
+
+    },
+
+    /**
+     * Set the layers by a "query string".
+     */
+    setFromString: function (query) {
+        var obj = this.unserialize(query);
+
         this.clear({silent: ! _.isEmpty(obj)});
         this.set(obj);
     }

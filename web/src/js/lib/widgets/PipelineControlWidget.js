@@ -119,7 +119,7 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
                  $(el).attr('color-field');
         });
 
-        this.layers.unserialize(q);
+        this.layers.setFromString(q);
     }
 
 });
