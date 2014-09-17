@@ -4,7 +4,8 @@
 cinema.views.DashboardView = Backbone.View.extend({
 
     initialize: function (opts) {
-        this._template = opts.template || cinema.app.templates.dashboard2x1Layout;
+        this._template = opts.template || cinema.app.templates.dashboardGridLayout;
+        this._layoutOptions = opts.layoutOptions || { grid: {rows: 2, cols: 3} };
     },
 
     setTemplate: function (template) {
@@ -13,7 +14,7 @@ cinema.views.DashboardView = Backbone.View.extend({
     },
 
     render: function () {
-        this.$el.html(this._template());
+        this.$el.html(this._template(this._layoutOptions));
     }
 
 });
