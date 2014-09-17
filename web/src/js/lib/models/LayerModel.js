@@ -16,7 +16,7 @@ cinema.models.LayerModel = Backbone.Model.extend({
     serialize: function () {
         var query = '';
 
-        _.each(this.attributes, function (v, k) {
+        _.each(this.get('state'), function (v, k) {
             query += k + v;
         });
 
