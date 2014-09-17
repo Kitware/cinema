@@ -52,6 +52,7 @@
         img.onload = _.bind(function () {
             this._cache[key].image = img;
             if (_.has(this._cache[key], 'json')) {
+                this._cache[key].ready = true;
                 this.trigger('c:data.ready', this._cache[key]);
             }
         }, this);
@@ -79,6 +80,7 @@
         $.getJSON(url, _.bind(function (data) {
             this._cache[key].json = data;
             if (_.has(this._cache[key], 'image')) {
+                this._cache[key].ready = true;
                 this.trigger('c:data.ready', this._cache[key]);
             }
         }, this)).fail(_.bind(function () {
@@ -92,10 +94,12 @@
         var key = this._getDataPath(viewpoint.time, viewpoint.phi, viewpoint.theta);
 
         if (_.has(this._cache, key)) {
-            this.trigger('c:data.ready', this._cache[key]);
+            if (this._cache[key].ready) {
+                this.trigger('c:data.ready', this._cache[key]);
+            }
         }
         else {
-            this._cache[key] = {key: key};
+            this._cache[key] = {key: key, ready: false};
             this._downloadImage(key);
             this._downloadCompositeInfo(key);
         }

@@ -7,10 +7,15 @@ cinema.views.ViewportView = Backbone.View.extend({
             info: this.model
         });
 
+        this.layers = opts.layers || new cinema.models.LayerModel(
+            this.model.defaultLayers()
+        );
+
         this.renderView = new cinema.views.VisualizationCanvasWidget({
             el: this.$('.c-viewport-renderer-container'),
             model: this.model,
-            camera: this.camera
+            camera: this.camera,
+            layers: this.layers
         }).render();
 
         this.mouseInteractor = new cinema.utilities.RenderViewMouseInteractor({
@@ -27,10 +32,6 @@ cinema.views.ViewportView = Backbone.View.extend({
         });
 
         this.listenTo(this.camera, 'change', this._refreshCamera);
-    },
-
-    updateQuery: function (query) {
-        this.renderView.updateQuery(query);
     },
 
     _refreshCamera: function () {
