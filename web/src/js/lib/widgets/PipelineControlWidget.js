@@ -59,7 +59,8 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
     },
 
     initialize: function (settings) {
-        this.query = settings.query || this.model.defaultQuery();
+        var defaultLayers = this.model.defaultLayers();
+        this.layers = settings.layers || new cinema.models.LayerModel(defaultLayers);
         this.listenTo(this.model, 'change', this.render);
     },
 
@@ -108,7 +109,6 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
 
     /**
      * Compute the new query string based on the current state of the widget.
-     * Triggers a c:query.update event with the new query.
      */
     computeQuery: function () {
         var q = '';
@@ -117,44 +117,8 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
             q += $(el).parent().find('.c-layer-color-select').attr('color-field') ||
                  $(el).attr('color-field');
         });
-        if (q !== this.query) {
-            this.query = q;
-            this.queryObj = this.unserializeQuery(q);
-            this.trigger('c:query.update', this.query);
-        }
-    },
 
-    /**
-     * Convert an object that maps layer identifiers to color-by values into
-     * a single string that is consumable by other parts of the application.
-     */
-    serializeQuery: function (obj) {
-        var query = '';
-
-        _.each(obj, function (v, k) {
-            query += k + v;
-        });
-
-        return query;
-    },
-
-    /**
-     * Convert a query string to an object that maps layer identifiers to
-     * their color-by value. The query string is a sequence of two-character
-     * pairs, where the first character identifies the layer ID and the second
-     * character identifies which field it should be colored by.
-     */
-    unserializeQuery: function (query) {
-        if (query.length % 2) {
-            return console.error('Query string "' + query + '" has odd length.');
-        }
-
-        var obj = {};
-
-        for (var i = 0; i < query.length; i += 2) {
-            obj[query[i]] = query[i + 1];
-        }
-
-        return obj;
+        this.layers.setFromString(q);
     }
+
 });
