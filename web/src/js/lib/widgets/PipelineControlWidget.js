@@ -57,7 +57,6 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
                 });
             });
         }, this);
-
         _.each(this.$('.c-directory-color-select'), function (el) {
             var theEl = $(el),
                 directoryId = theEl.attr('directory-id'),
@@ -131,6 +130,7 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
      * Compute the new query string based on the current state of the widget.
      */
     computeQuery: function () {
+        console.log("computeQuery");
         var q = '';
         _.each(this.$('.c-remove-layer-toggle[state=on][visible=on]'), function (el) {
             q += $(el).attr('layer-id');
