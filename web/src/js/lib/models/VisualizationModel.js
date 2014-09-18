@@ -397,7 +397,7 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
     /**
      * Return the type of the data.
      */
-    getDataType: function() {
+    getDataType: function () {
         return this.get('metadata').type;
     }
 });

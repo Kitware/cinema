@@ -39,23 +39,23 @@ cinema.views.ViewportDynamicRenderingCompositeView = Backbone.View.extend({
         // FIXME this.renderView.showViewpoint();
     },
 
-    render: function() {
+    render: function () {
         this.$el.html("<center>My super lighting dynamic view goes here!!!</center>");
     },
 
-    updateLight: function(vectorLight) {
+    updateLight: function (vectorLight) {
         this.lightDirection = vectorLight;
         console.log('New light vector in view ' + this.lightDirection.join(', '));
     },
 
-    updateTransfertFunction: function(func) {
+    updateTransfertFunction: function (func) {
         this.lookupTableFunction = func;
         console.log('New LUT function');
     }
 });
 
 // Register Composite view to the factory
-cinema.viewFactory.registerView('composite-image-stack-light', 'RenderView', function(that, visModel){
+cinema.viewFactory.registerView('composite-image-stack-light', 'RenderView', function (that, visModel) {
     var layers = new cinema.models.LayerModel(that.visModel.defaultLayers());
     var viewportView = new cinema.views.ViewportDynamicRenderingCompositeView({
         el: that.$('.c-rv-viewport-container'),

@@ -3,6 +3,11 @@ cinema.views.ColorTransformationWidget = Backbone.View.extend({
         'change select' : 'updateViewPort'
     },
 
+    registerNewLookupTable: function (name, func) {
+        this.transferFunctionKeys.push(name);
+        this.transferFunctionMap[name] = func;
+    },
+
     initialize: function (settings) {
         if (!settings.viewport) {
             throw "Color Transformation widget requires a viewport.";
@@ -13,21 +18,20 @@ cinema.views.ColorTransformationWidget = Backbone.View.extend({
             this.render();
         });
         this.listenTo(this.camera, 'change', this._refresh);
-        this.transferFunctionMap = {
-            Gray: function(value) {
-                var v = Math.floor(value*256);
-                return [v,v,v];
-            },
-            Rainbow: function(value) {
-                // FIXME
-                return [20,100,20];
-            },
-            'Cold to Hot': function(value) {
-                // FIXME
-                return [200,100,20];
-            }
-        };
-        this.transferFunctionKeys = ['Gray', 'Rainbow', 'Cold to Hot'];
+        this.transferFunctionMap = {};
+        this.transferFunctionKeys = [];
+
+        var lutBuilder = new cinema.utilities.LookupTableBuilder();
+        this.registerNewLookupTable("Gray", function (value) { var v = Math.floor(value * 255); return [v, v, v]; });
+        this.registerNewLookupTable("Rainbow", lutBuilder.buildLUT([
+            0.0, 0.0, 0.0, 1.0,
+            1.0, 1.0, 0.0, 0.0
+        ]));
+        this.registerNewLookupTable("Cold To Warm", lutBuilder.buildLUT([
+            0.0, 0.231373, 0.298039, 0.752941,
+            0.5, 0.865003, 0.865003, 0.865003,
+            1.0, 0.705882, 0.0156863, 0.14902
+        ]));
     },
 
     render: function () {
@@ -43,20 +47,20 @@ cinema.views.ColorTransformationWidget = Backbone.View.extend({
         this._refresh();
     },
 
-    updateViewPort: function(event) {
+    updateViewPort: function (event) {
         var origin = $(event.target),
             type = origin.attr('data-type'),
             that = this;
-        if(type === 'light') {
-            var vectorLight = [0,0,1];
-            this.$('select[data-type="light"]').each(function(){
+        if (type === 'light') {
+            var vectorLight = [0, 0, 1];
+            this.$('select[data-type="light"]').each(function () {
                 var me = $(this),
                     idx = Number(me.attr('data-coordinate'));
                 vectorLight[idx] = Number(me.val());
             });
             this.viewport.updateLight(vectorLight);
-        } else if(type === 'colorMapName') {
+        } else if (type === 'colorMapName') {
             this.viewport.updateTransfertFunction(this.transferFunctionMap[origin.val()]);
         }
-    },
+    }
 });

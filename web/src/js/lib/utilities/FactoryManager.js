@@ -29,7 +29,7 @@
 
     // Internal helper functions ----------------------------------------------
 
-    function applyCompatibilityMapping(mapToFill, compatibilityMap, dataType, viewType, method, controlPanels ) {
+    function applyCompatibilityMapping(mapToFill, compatibilityMap, dataType, viewType, method, controlPanels) {
         // FIXME TODO
     }
 
@@ -71,15 +71,15 @@
      * @param viewType The type of the view that we want to build.
      */
     prototype.createView = function (viewPointer, viewType) {
-        return this.factoryMap[viewType][this.visModel.getDataType()]["constructor"](viewPointer, this.visModel);
+        return this.factoryMap[viewType][this.visModel.getDataType()].constructor(viewPointer, this.visModel);
     };
 
-    prototype.getControls = function(viewType) {
-        if(this.visModel) {
-            return this.factoryMap[viewType][this.visModel.getDataType()]["controls"];
+    prototype.getControls = function (viewType) {
+        if (this.visModel) {
+            return this.factoryMap[viewType][this.visModel.getDataType()].controls;
         }
         return [];
-    }
+    };
 
     /**
      * Create additional mapping to support old naming convention

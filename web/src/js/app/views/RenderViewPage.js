@@ -18,7 +18,7 @@ cinema.views.RenderViewPage = Backbone.View.extend({
         });
     },
 
-    invalidateContent: function() {
+    invalidateContent: function () {
         cinema.viewFactory.updateRootModel(this.visModel);
         this.$el.html(cinema.app.templates.renderViewPage({
             controlPanels: cinema.viewFactory.getControls('RenderView')

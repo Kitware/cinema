@@ -40,7 +40,7 @@ cinema.views.ViewportCompositeView = Backbone.View.extend({
 });
 
 // Register Composite view to the factory
-cinema.viewFactory.registerView('composite-image-stack', 'RenderView', function(that, visModel){
+cinema.viewFactory.registerView('composite-image-stack', 'RenderView', function (that, visModel) {
     var layers = new cinema.models.LayerModel(that.visModel.defaultLayers());
     var viewportView = new cinema.views.ViewportCompositeView({
         el: that.$('.c-rv-viewport-container'),
