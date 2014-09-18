@@ -13,7 +13,7 @@
      *        console.log('Error: ' + e.message);
      *    });
      *
-     *    mgr.updateFields(t, phi, theta);
+     *    mgr.downloadData(t, phi, theta);
      *
      * Further compositing computation and drawing of the composited image is
      * left to other components.
@@ -69,19 +69,10 @@
     };
 
     /**
-     * Helper method to transform phi, theta, and time into a path.
-     */
-    prototype._getDataPath = function (time, phi, theta) {
-        return this.visModel.get('name_pattern').replace('{time}', time)
-                                                .replace('{phi}', phi)
-                                                .replace('{theta}', theta);
-    };
-
-    /**
      * Downloads the image data asynchronously and stores it in the cache for
      * the given key, storing it in the "image" key in the cache entry.
      */
-    prototype._downloadImage = function (key) {
+    prototype._downloadImage = function (key, viewpoint) {
         var url = this.visModel.url.substring(0, this.visModel.url.lastIndexOf('/')) +
             '/' + key.replace('{filename}', this._imageFileName()),
             img = new Image();
@@ -90,7 +81,7 @@
             this._cache[key].image = img;
             if (_.has(this._cache[key], 'json')) {
                 this._cache[key].ready = true;
-                this.trigger('c:data.ready', this._cache[key]);
+                this.trigger('c:data.ready', this._cache[key], viewpoint);
             }
         }, this);
 
@@ -110,7 +101,7 @@
      * Downloads the composite info file that sits alongside the image,
      * storing its contents in the "json" key in the cache entry.
      */
-    prototype._downloadCompositeInfo = function (key) {
+    prototype._downloadCompositeInfo = function (key, viewpoint) {
         var url = this.visModel.url.substring(0, this.visModel.url.lastIndexOf('/')) +
                   '/' + key.replace('{filename}', this._compositeInfoFileName());
 
@@ -118,7 +109,7 @@
             this._cache[key].json = data;
             if (_.has(this._cache[key], 'image')) {
                 this._cache[key].ready = true;
-                this.trigger('c:data.ready', this._cache[key]);
+                this.trigger('c:data.ready', this._cache[key], viewpoint);
             }
         }, this)).fail(_.bind(function () {
             this.trigger('c:error', {
@@ -127,18 +118,26 @@
         }, this));
     };
 
-    prototype.updateViewpoint = function (viewpoint) {
-        var key = this._getDataPath(viewpoint.time, viewpoint.phi, viewpoint.theta);
+    /**
+     * This is the primary public API method of this class. It is responsible
+     * for downloading (and internally caching) the requisite image data for
+     * the given viewpoint (time/phi/theta combination).
+     *
+     * @param viewpoint A viewpoint object containing "time", "phi", and
+     *                  "theta" keys.
+     */
+    prototype.downloadData = function (viewpoint) {
+        var key = this.visModel.objectToPath(viewpoint) + '/{filename}';
 
         if (_.has(this._cache, key)) {
             if (this._cache[key].ready) {
-                this.trigger('c:data.ready', this._cache[key]);
+                this.trigger('c:data.ready', this._cache[key], viewpoint);
             }
         }
         else {
             this._cache[key] = {key: key, ready: false};
-            this._downloadImage(key);
-            this._downloadCompositeInfo(key);
+            this._downloadImage(key, viewpoint);
+            this._downloadCompositeInfo(key, viewpoint);
         }
     };
 }) ();
