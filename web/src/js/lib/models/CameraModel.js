@@ -32,7 +32,6 @@ cinema.models.CameraModel = Backbone.Model.extend({
      * Store all available camera angles according to the information model.
      */
     setCameraParameters: function () {
-
         var args = this.info.get('arguments');
         if (!this.info.loaded()) {
             // info model not yet loaded
@@ -53,6 +52,18 @@ cinema.models.CameraModel = Backbone.Model.extend({
                 this.defaults[param] = idx;
             }
         }, this);
+    },
+
+    /**
+     * Programmatically adjust the camera parameters by passing a viewpoint
+     * object containing phi, theta, and time values.
+     */
+    setViewpoint: function (viewpoint) {
+        this.set({
+            iphi: this.phis.indexOf(viewpoint.phi),
+            itheta: this.thetas.indexOf(viewpoint.theta),
+            itime: this.times.indexOf(viewpoint.time)
+        });
     },
 
     /**

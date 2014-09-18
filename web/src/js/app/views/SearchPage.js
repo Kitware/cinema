@@ -31,10 +31,11 @@ cinema.views.SearchPage = Backbone.View.extend({
             model: this.visModel
         });
 
-        this.histogramModel = new cinema.models.HistogramModel({
-            layerModel: pipelineControlView.layers,
-            basePath: this.visModel.basePath
+        this.searchModel = new cinema.models.SearchModel({
+            layerModel: pipelineControlView.layers
         });
+
+        this.searchModel.on('c:result', this._showResult, this);
 
         var renderChildren = function () {
             pipelineControlView.render();
@@ -42,6 +43,7 @@ cinema.views.SearchPage = Backbone.View.extend({
 
         if (this.visModel.loaded()) {
             renderChildren();
+            this.searchModel.fetch();
         }
 
         this.listenTo(this.visModel, 'change', function () {
@@ -49,7 +51,8 @@ cinema.views.SearchPage = Backbone.View.extend({
         });
 
         this.listenTo(pipelineControlView.layers, 'change', function () {
-            this.executeSearch();
+            this.clearResults();
+            this.searchModel.fetch();
         }, this);
     },
 
@@ -57,16 +60,24 @@ cinema.views.SearchPage = Backbone.View.extend({
         this.$('.c-search-results-list-area').empty();
     },
 
-    executeSearch: function () {
-        this.clearResults();
-        this.histogramModel.off('changed').on('changed', function () {
-            this._showResults();
-        }, this).fetch();
-    },
+    _showResult: function (viewpoint) {
+        var el = $(cinema.app.templates.searchResultContainer({
+            viewpoint: viewpoint
+        }));
 
-    showResults: function () {
-        // TODO grab the results and show them
-        console.log(this.histogramModel);
+        el.appendTo(this.$('.c-search-results-list-area'));
+
+        var camera = new cinema.models.CameraModel({
+            info: this.visModel
+        });
+        camera.setViewpoint(viewpoint);
+
+        new cinema.views.VisualizationCanvasWidget({
+            el: el,
+            model: this.visModel,
+            camera: camera,
+            layers: this.searchModel.layerModel
+        }).render().showViewpoint();
     }
 });
 
