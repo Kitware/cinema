@@ -50,7 +50,7 @@ cinema.models.CameraModel = Backbone.Model.extend({
                 if (idx < 0) {
                     throw "'" + param + "' has an invalid default.";
                 }
-                this.defaults[param] = idx;
+                this.defaults['i' + param] = idx;
             }
         }, this);
     },
