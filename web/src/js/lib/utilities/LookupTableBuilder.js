@@ -18,9 +18,9 @@
 
     function interpolateColor(pointA, pointB, value) {
         var ratio = (value - pointA[0]) / (pointB[0] - pointA[0]);
-        return [ applyRatio(pointA[1], pointB[1], ratio),
-                 applyRatio(pointA[2], pointB[2], ratio),
-                 applyRatio(pointA[3], pointB[3], ratio) ];
+        return [ applyRatio(pointA[1], pointB[1], ratio) * 255,
+                 applyRatio(pointA[2], pointB[2], ratio) * 255,
+                 applyRatio(pointA[3], pointB[3], ratio) * 255 ];
     }
 
     function extractPoint(controlPoints, idx) {
