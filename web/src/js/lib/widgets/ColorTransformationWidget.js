@@ -1,6 +1,8 @@
 cinema.views.ColorTransformationWidget = Backbone.View.extend({
     events: {
-        'change select' : 'updateViewPort'
+        'change select' : 'updateViewPort',
+        'click .color': 'updateLightColor',
+        'change input': 'updateLighting'
     },
 
     registerNewLookupTable: function (name, func) {
@@ -45,6 +47,29 @@ cinema.views.ColorTransformationWidget = Backbone.View.extend({
 
     change: function (param, value) {
         this._refresh();
+    },
+
+    updateLightColor: function (event) {
+        var me = $(event.target),
+            color = me.attr('color').split(',');
+        color[0] = Number(color[0]);
+        color[1] = Number(color[1]);
+        color[2] = Number(color[2]);
+
+        this.viewport.updateLightColor(color);
+    },
+
+    updateLighting: function () {
+        var lightTerms = {};
+        this.$('input').each(function(){
+            var me = $(this),
+                name = me.attr('name'),
+                value = Number(me.val());
+
+            lightTerms[name] = value;
+        });
+
+        this.viewport.updateLightTerms(lightTerms);
     },
 
     updateViewPort: function (event) {
