@@ -20,5 +20,12 @@ cinema.views.DashboardView = Backbone.View.extend({
 });
 
 cinema.router.route('dashboard', 'dashboard', function () {
-    cinema.events.trigger('c:app.showPage', cinema.views.DashboardView, {}, true);
+    cinema.events.trigger(
+        'c:app.showPage',
+        cinema.views.DashboardView,
+        {},
+        true,
+        cinema.views.HeaderViewDashboard,
+        {}
+    );
 });
