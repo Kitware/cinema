@@ -32,7 +32,7 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
             theEl.popover('destroy').popover({
                 html: true,
                 container: 'body',
-                placement: 'right',
+                placement: 'left',
                 template: '<div class="popover" role="tooltip"><div class="arrow"></div><div class="popover-content c-color-by-popover"></div></div>',
                 content: cinema.templates.directoryAddLayers({
                     directoryId: directoryId,
