@@ -34,6 +34,10 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         }
     },
 
+    //subclass uses to extend
+    _privateInit: function () {
+    },
+
     /**
      * This widget should be initialized with a visModel as the model parameter
      * and optionally a pre-existing CompositeImageManager.
@@ -56,6 +60,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             return;
         }
 
+        this._privateInit();
         this.layers = settings.layers || new cinema.models.LayerModel(this.model.defaultLayers());
         this.backgroundColor = settings.backgroundColor || '#ffffff';
         this.orderMapping = {};

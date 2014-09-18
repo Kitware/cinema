@@ -112,7 +112,8 @@ module.exports = function (grunt) {
                         'node_modules/jade/runtime.js',
                         'node_modules/underscore/underscore.js',
                         'node_modules/backbone/backbone.js',
-                        'node_modules/bootstrap/dist/js/bootstrap.js'
+                        'node_modules/bootstrap/dist/js/bootstrap.js',
+                        'web/ext/vector.js'
                     ]
                 }
             },

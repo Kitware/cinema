@@ -24,7 +24,8 @@
         this.visModel = params.visModel;
         this._cache = {};
 
-        if (this.visModel.get('metadata').type !== 'composite-image-stack') {
+        if (this.visModel.get('metadata').type !== 'composite-image-stack' &&
+            this.visModel.get('metadata').type !== 'composite-image-stack-light') {
             throw new Error('Unsupported file format');
         }
 
@@ -65,15 +66,6 @@
             composite = args.files.composite;
         }
         return composite;
-    };
-
-    /**
-     * Helper method to transform phi, theta, and time into a path.
-     */
-    prototype._getDataPath = function (time, phi, theta) {
-        return this.visModel.get('name_pattern').replace('{time}', time)
-                                                .replace('{phi}', phi)
-                                                .replace('{theta}', theta);
     };
 
     /**
@@ -135,7 +127,7 @@
      *                  "theta" keys.
      */
     prototype.downloadData = function (viewpoint) {
-        var key = this._getDataPath(viewpoint.time, viewpoint.phi, viewpoint.theta);
+        var key = this.visModel.objectToPath(viewpoint) + '/{filename}';
 
         if (_.has(this._cache, key)) {
             if (this._cache[key].ready) {
