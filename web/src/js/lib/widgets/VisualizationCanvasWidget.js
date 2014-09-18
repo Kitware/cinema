@@ -214,6 +214,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
 
         // Draw buffer to composite canvas
         compositeCtx.putImageData(frontBuffer, 0, 0);
+        this.trigger('c:composited');
     },
 
     /**
@@ -248,6 +249,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             compositeCanvas,
             0,   0, iw, ih,  // Source image   [Location,Size]
             tx, ty, tw, th); // Target drawing [Location,Size]
+
+        this.trigger('c:drawn');
     },
 
     /**

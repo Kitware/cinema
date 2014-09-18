@@ -35,7 +35,7 @@ cinema.views.SearchPage = Backbone.View.extend({
             layerModel: pipelineControlView.layers
         });
 
-        this.searchModel.on('c:result', this._showResult, this);
+        this.searchModel.on('c:done', this._showResults, this);
 
         var renderChildren = function () {
             pipelineControlView.render();
@@ -43,7 +43,7 @@ cinema.views.SearchPage = Backbone.View.extend({
 
         if (this.visModel.loaded()) {
             renderChildren();
-            this.searchModel.fetch();
+            this.searchModel.compute();
         }
 
         this.listenTo(this.visModel, 'change', function () {
@@ -51,8 +51,7 @@ cinema.views.SearchPage = Backbone.View.extend({
         });
 
         this.listenTo(pipelineControlView.layers, 'change', function () {
-            this.clearResults();
-            this.searchModel.fetch();
+            this.searchModel.compute();
         }, this);
     },
 
@@ -60,7 +59,21 @@ cinema.views.SearchPage = Backbone.View.extend({
         this.$('.c-search-results-list-area').empty();
     },
 
-    _showResult: function (viewpoint) {
+    _showResults: function () {
+        this.resultIndex = 0;
+        this.clearResults();
+        this.$('.c-search-result-message').text(
+            this.searchModel.results.length + ' results');
+
+        this._showNextResult();
+    },
+
+    _showNextResult: function () {
+        if (this.searchModel.results.length <= this.resultIndex) {
+            return;
+        }
+
+        var viewpoint = this.searchModel.results[this.resultIndex];
         var el = $(cinema.app.templates.searchResultContainer({
             viewpoint: viewpoint
         }));
@@ -77,7 +90,11 @@ cinema.views.SearchPage = Backbone.View.extend({
             model: this.visModel,
             camera: camera,
             layers: this.searchModel.layerModel
-        }).render().showViewpoint();
+        }).on('c:drawn', function () {
+            // TODO figure out why drawImage is happening more than it should.
+            this.resultIndex += 1;
+            this._showNextResult();
+        }, this).render().showViewpoint();
     }
 });
 
