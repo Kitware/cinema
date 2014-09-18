@@ -5,6 +5,13 @@ cinema.views.HeaderView = Backbone.View.extend({
         },
         'click .c-show-view-controls': function () {
             cinema.events.trigger('c:app.show-view-controls');
+        },
+        'click .c-search-button': function () {
+            cinema.router.navigate('search', {trigger: true});
+        },
+
+        'click .c-view-button': function () {
+            cinema.router.navigate('renderview', {trigger: true});
         }
     },
 

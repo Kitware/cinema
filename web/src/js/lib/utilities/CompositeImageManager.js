@@ -24,7 +24,8 @@
         this.visModel = params.visModel;
         this._cache = {};
 
-        if (this.visModel.get('metadata').type !== 'composite-image-stack') {
+        if (this.visModel.get('metadata').type !== 'composite-image-stack' &&
+            this.visModel.get('metadata').type !== 'composite-image-stack-light') {
             throw new Error('Unsupported file format');
         }
 
