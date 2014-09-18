@@ -114,4 +114,8 @@ cinema.viewFactory.registerView('composite-image-stack-light', 'RenderView', fun
     that.listenTo(visModel, 'change', function () {
         renderChildren();
     });
-}, [ { key: 'pipeline', icon: 'icon-layers', title: 'Pipeline', position: 'right'}, { key: 'view', icon: 'icon-camera', title: 'View', position: 'right'}, { key: 'colorTransform', icon: 'icon-tint', title: 'Color Transformation', position: 'left'} ]);
+}, [
+    { position: 'right', key: 'pipeline',       icon: 'icon-layers', title: 'Pipeline'},
+    { position: 'right', key: 'view',           icon: 'icon-camera', title: 'View'},
+    { position: 'left',  key: 'colorTransform', icon: 'icon-tint',   title: 'Color Transformation'}
+]);
