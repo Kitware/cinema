@@ -11,46 +11,49 @@ cinema.views.ViewportDynamicRenderingCompositeView = Backbone.View.extend({
             this.model.defaultLayers()
         );
 
-        // FIXME make your own
-        // this.renderView = new cinema.views.VisualizationCanvasWidget({
-        //     el: this.$('.c-viewport-renderer-container'),
-        //     model: this.model,
-        //     camera: this.camera,
-        //     layers: this.layers
-        // }).render();
+        this.renderView = new cinema.views.VisualizationCanvasWidgetLit({
+            el: this.$('.c-viewport-renderer-container'),
+            model: this.model,
+            camera: this.camera,
+            layers: this.layers
+        }).render();
 
-        // this.mouseInteractor = new cinema.utilities.RenderViewMouseInteractor({
-        //     renderView: this.renderView,
-        //     camera: this.camera
-        // }).enableMouseWheelZoom({
-        //     maxZoomLevel: 10,
-        //     zoomIncrement: 0.05,
-        //     invertControl: false
-        // }).enableDragPan({
-        //     keyModifiers: cinema.keyModifiers.SHIFT
-        // }).enableDragRotation({
-        //     keyModifiers: null
-        // });
+        this.mouseInteractor = new cinema.utilities.RenderViewMouseInteractor({
+            renderView: this.renderView,
+            camera: this.camera
+        }).enableMouseWheelZoom({
+            maxZoomLevel: 10,
+            zoomIncrement: 0.05,
+            invertControl: false
+        }).enableDragPan({
+            keyModifiers: cinema.keyModifiers.SHIFT
+        }).enableDragRotation({
+            keyModifiers: null
+        });
 
         this.listenTo(this.camera, 'change', this._refreshCamera);
     },
 
     _refreshCamera: function () {
-        // FIXME this.renderView.showViewpoint();
+        this.renderView.showViewpoint();
     },
 
-    render: function () {
+    /*
+    render: function() {
         this.$el.html("<center>My super lighting dynamic view goes here!!!</center>");
     },
+    */
 
     updateLight: function (vectorLight) {
         this.lightDirection = vectorLight;
-        console.log('New light vector in view ' + this.lightDirection.join(', '));
+        this.renderView.setLight(vectorLight);
+        this.renderView.forceRedraw();
     },
 
     updateTransfertFunction: function (func) {
         this.lookupTableFunction = func;
-        console.log('New LUT function');
+        this.renderView.setLUT(func);
+        this.renderView.forceRedraw();
     }
 });
 

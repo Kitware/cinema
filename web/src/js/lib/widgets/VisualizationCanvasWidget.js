@@ -34,6 +34,10 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         }
     },
 
+    //subclass uses to extend
+    _privateInit: function() {
+    },
+
     initialize: function (settings) {
         var args = this.model.get('arguments');
         this.camera = settings.camera;
@@ -45,6 +49,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             return;
         }
 
+        this._privateInit();
         this.layers = settings.layers || new cinema.models.LayerModel(this.model.defaultLayers());
         this.backgroundColor = settings.backgroundColor || '#ffffff';
         this.orderMapping = {};
