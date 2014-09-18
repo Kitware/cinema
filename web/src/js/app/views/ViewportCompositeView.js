@@ -79,4 +79,7 @@ cinema.viewFactory.registerView('composite-image-stack', 'RenderView', function 
     that.listenTo(visModel, 'change', function () {
         renderChildren();
     });
-}, [ { key: 'pipeline', icon: 'icon-layers', title: 'Pipeline'}, { key: 'view', icon: 'icon-camera', title: 'View'} ]);
+}, [
+    { position: 'right', key: 'pipeline', icon: 'icon-layers', title: 'Pipeline' },
+    { position: 'right', key: 'view',     icon: 'icon-camera', title: 'View' }
+]);
