@@ -40,6 +40,7 @@ cinema.views.ColorTransformationWidget = Backbone.View.extend({
         this.$el.html(cinema.templates.colorTransformation({
             colormaps: this.transferFunctionKeys
         }));
+        this.$('select[data-type="colorMapName"]').trigger('change');
     },
 
     _refresh: function () {
@@ -61,7 +62,7 @@ cinema.views.ColorTransformationWidget = Backbone.View.extend({
 
     updateLighting: function () {
         var lightTerms = {};
-        this.$('input').each(function(){
+        this.$('input').each(function () {
             var me = $(this),
                 name = me.attr('name'),
                 value = Number(me.val());

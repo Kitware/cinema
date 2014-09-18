@@ -143,6 +143,8 @@ cinema.views.VisualizationCanvasWidgetLit = cinema.views.VisualizationCanvasWidg
     _privateInit: function (settings) {
         this.light = new Vector(1,0,0);
         this.LUT = this._RainbowColor;
+        this.lightColor = new Vector(1,1,1);
+        this.lightTerms = { ka: 0.1, kd: 0.6, ks: 0.3, alpha: 20.0 };
     },
 
     setLight: function(_light) {
@@ -151,6 +153,14 @@ cinema.views.VisualizationCanvasWidgetLit = cinema.views.VisualizationCanvasWidg
 
     setLUT: function(_lut) {
         this.LUT = _lut;
+    },
+
+    setLightColor: function (lightColor) {
+      this.lightColor = new Vector(lightColor[0], lightColor[1], lightColor[2]);
+    },
+
+    setLightTerms: function (terms) {
+      this.lightTerms = terms;
     },
 
     _valueOfPixel: function(term, renderTerms) {
@@ -188,8 +198,8 @@ cinema.views.VisualizationCanvasWidgetLit = cinema.views.VisualizationCanvasWidg
             var Color = Vector.fromArray(color);
 
             //apply lighting
-            var ka = 0.1;
-            var lightColor = new Vector(1.0, 1.0, 1.0);
+            var ka = this.lightTerms.ka;
+            var lightColor = this.lightColor;
             var ambientTerm = ka;
             var ambientColor = lightColor.multiply(255).multiply(ka);
             //return [ambientColor.x, ambientColor.y, ambientColor.z, 255.0];
@@ -197,7 +207,7 @@ cinema.views.VisualizationCanvasWidgetLit = cinema.views.VisualizationCanvasWidg
             //todo: foreach light
             var lightPosition = this.light;
             var normal = new Vector(nX,nY,nZ).unit();
-            var kd = 0.6;
+            var kd = this.lightTerms.kd;
             var diffuseTerm = kd * lightPosition.dot(normal);
             var diffuseColor = lightColor.multiply(Color.multiply(diffuseTerm));
             //return [diffuseColor.x, diffuseColor.y, diffuseColor.z, 255];
@@ -205,8 +215,8 @@ cinema.views.VisualizationCanvasWidgetLit = cinema.views.VisualizationCanvasWidg
             //todo: foreach light
             var viewPosition = new Vector(0,0,1);//ensure normalized
             var R = normal.multiply(2.0*lightPosition.dot(normal)).subtract(lightPosition);
-            var ks = 0.3;
-            var alpha = 20.0;
+            var ks = this.lightTerms.ks;
+            var alpha = this.lightTerms.alpha;
             var specularTerm = ks*Math.pow(R.dot(viewPosition), alpha)
             //var specularColor = lightColor.multiply(Color.multiply(specularTerm))
             var specularColor = lightColor.multiply(specularTerm*255)

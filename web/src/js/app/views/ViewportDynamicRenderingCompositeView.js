@@ -54,6 +54,16 @@ cinema.views.ViewportDynamicRenderingCompositeView = Backbone.View.extend({
         this.lookupTableFunction = func;
         this.renderView.setLUT(func);
         this.renderView.forceRedraw();
+    },
+
+    updateLightColor: function (lightColor) {
+        this.renderView.setLightColor(lightColor);
+        this.renderView.forceRedraw();
+    },
+
+    updateLightTerms: function (terms) {
+        this.renderView.setLightTerms(terms);
+        this.renderView.forceRedraw();
     }
 });
 
