@@ -13,8 +13,10 @@ each object, idx in metadata.pipeline
         i.icon-plus-circled
 
       each layer in object.children
-        .c-pipeline-layer-wrapper
-          a.c-layer-visibility-toggle(layer-id="#{layer.ids[0]}", state="on")
+        .c-pipeline-layer-wrapper(id="LayerWrapper-#{idx}-#{layer.ids[0]}", directory-id="#{idx}",
+        layer-id="#{layer.ids[0]}")
+          a.c-remove-layer-toggle(id="LayerVisibility-#{idx}-#{layer.ids[0]}", directory-id="#{idx}",
+            layer-id="#{layer.ids[0]}", state="on", visible="on")
             i.icon-cancel-circled.c-pipeline-icon
           - var colorValue = metadata.layer_fields[layer.ids[0]][0]
           a.c-layer-color-select(directory-id="#{idx}", layer-id="#{layer.ids[0]}", data-toggle="popover",
@@ -31,6 +33,5 @@ each object, idx in metadata.pipeline
       data-trigger="click", color-field="#{colorValue}", tabindex="-1")
         i.icon-brush
       span.c-pipeline-name= object.name
-      a.c-layer-visibility-toggle.hide(
-          layer-id="#{object.ids[0]}", state="on",
-          color-field="#{metadata.layer_fields[object.ids[0]]}")
+      a.c-remove-layer-toggle.hide(layer-id="#{object.ids[0]}", state="on", visible="on",
+      color-field="#{metadata.layer_fields[object.ids[0]]}")
