@@ -28,7 +28,12 @@ cinema.views.RenderViewPage = Backbone.View.extend({
 });
 
 cinema.router.route('renderview', 'renderview', function () {
-    cinema.events.trigger('c:app.showPage', cinema.views.RenderViewPage, {
-        visModel: cinema.standaloneVisModel
-    }, true);
+    cinema.events.trigger(
+        'c:app.showPage',
+        cinema.views.RenderViewPage,
+        { visModel: cinema.standaloneVisModel },
+        true,
+        cinema.views.HeaderViewRender,
+        {}
+    );
 });

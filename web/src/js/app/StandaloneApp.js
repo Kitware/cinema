@@ -34,10 +34,7 @@ cinema.StandaloneApp = Backbone.View.extend({
 
     render: function () {
         this.$el.html(cinema.app.templates.layout());
-
-        new cinema.views.HeaderView({
-            el: this.$('.c-app-header-container')
-        }).render();
+        this.updateHeader();
 
         return this;
     },
@@ -47,15 +44,29 @@ cinema.StandaloneApp = Backbone.View.extend({
      * by route handlers that wish to display a specific view within the
      * app body container.
      */
-    showPage: function (view, settings, render) {
+    showPage: function (view, viewSettings, render, header, headerSettings) {
         /*jshint -W055 */
-        var bodyView = new view(_.extend(settings, {
+        var bodyView = new view(_.extend(viewSettings, {
             el: this.$('.c-app-body-container').off()
         }));
+
+        this.updateHeader(header, headerSettings);
 
         if (render) {
             bodyView.render();
         }
+    },
+
+    /**
+     * Rerender the header given a specific header subclass defaulting to
+     * a bare, view agnostic header.
+     */
+    updateHeader: function (header, settings) {
+        header = header || cinema.views.HeaderView;
+        settings = settings || {};
+        settings.el = this.$('.c-app-header-container');
+
+        new header(settings).render();
     }
 });
 
