@@ -413,7 +413,7 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
             self._argKeys.push(match[1]);
             var arr = args[match[1]].values;
             self._argArrays.push(arr);
-            self._maxOrdinal *= arr.length
+            self._maxOrdinal *= arr.length;
         });
         this._maxOrdinal -= 1;
     },
@@ -456,7 +456,7 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
         var quotient = ordinal;
         var results = {};
 
-        for (var i = this._argArrays.length - 1; i >= 0; i-=1) {
+        for (var i = this._argArrays.length - 1; i >= 0; i -= 1) {
             var r = this.integerDivide(quotient, this._argArrays[i].length);
             results[this._argKeys[i]] = this._argArrays[i][r.rem];
             quotient = r.quo;
