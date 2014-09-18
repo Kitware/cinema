@@ -111,13 +111,13 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
                     }
                     view.computeQuery();
                 });
-                _.each(view.$('.c-remove-layer-toggle'), function(visibilityEl) {
+                _.each(view.$('.c-remove-layer-toggle'), function (visibilityEl) {
                     var VisibilityEl = $(visibilityEl);
                     if (VisibilityEl.attr('state')  === 'on') {
-                        $('input[name="directory-layer-select"][layer-id="' + VisibilityEl.attr('layer-id') + '"]').prop( "checked", true );
+                        $('input[name="directory-layer-select"][layer-id="' + VisibilityEl.attr('layer-id') + '"]').prop("checked", true);
                     }
                     else {
-                        $('input[name="directory-layer-select"][layer-id="' + VisibilityEl.attr('layer-id') + '"]').prop( "checked", false );
+                        $('input[name="directory-layer-select"][layer-id="' + VisibilityEl.attr('layer-id') + '"]').prop("checked", false);
                     }
                 });
             });
