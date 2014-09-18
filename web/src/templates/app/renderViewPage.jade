@@ -1,10 +1,22 @@
 .c-rv-viewport-container
 .c-rv-left-control-area
   each controlPanel in controlPanels
-    .c-control-panel(class="c-rv-#{controlPanel.key}-panel")
-      .c-control-panel-header
-        .c-panel-title
-          i(class="#{controlPanel.icon}")
-          | #{controlPanel.title}
-        a.close(class="c-#{controlPanel.key}-panel-close") &times;
-      .c-control-panel-body(class="c-rv-#{controlPanel.key}-control-container")
+    if controlPanel.position == 'left'
+        .c-control-panel(class="c-rv-#{controlPanel.key}-panel")
+          .c-control-panel-header
+            .c-panel-title
+              i(class="#{controlPanel.icon}")
+              | #{controlPanel.title}
+            a.close(class="c-#{controlPanel.key}-panel-close") &times;
+          .c-control-panel-body(class="c-rv-#{controlPanel.key}-control-container")
+
+.c-rv-right-control-area
+  each controlPanel in controlPanels
+    if controlPanel.position == 'right'
+        .c-control-panel(class="c-rv-#{controlPanel.key}-panel")
+          .c-control-panel-header
+            .c-panel-title
+              i(class="#{controlPanel.icon}")
+              | #{controlPanel.title}
+            a.close(class="c-#{controlPanel.key}-panel-close") &times;
+          .c-control-panel-body(class="c-rv-#{controlPanel.key}-control-container")
