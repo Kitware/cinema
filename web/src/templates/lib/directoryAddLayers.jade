@@ -1,0 +1,8 @@
+.c-directory-layers-container
+  .c-directory-choice(directory-id="#{directoryId}")
+    each layer in metadata.pipeline[directoryId].children
+      .checkbox.c-add-layers-checkbox
+        label
+          input(directory-id="#{directoryId}", layer-id="#{layer.ids[0]}", type="checkbox", name="directory-layer-select",
+                value="#{layer.name}")
+          = layer.name
