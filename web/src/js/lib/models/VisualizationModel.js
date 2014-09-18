@@ -399,26 +399,30 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
      * internal ordered list used in mapping ordinals to relative directory
      * paths.
      */
-    initializeArgArrays: function() {
+    initializeArgArrays: function () {
         var pattern = this.get('name_pattern') || "";
         var args = this.get('arguments') || {};
         var compList = pattern.split('/');
         var re = /{(.+)}/;
         this._argArrays = [];
         this._argKeys = [];
-        for (var idx = 0; idx < compList.length - 1; ++idx) {
-            var match = re.exec(compList[idx]);
-            this._argKeys.push(match[1]);
-            var arr = args[match[1]]['values'];
-            this._argArrays.push(arr);
-        }
+        this._maxOrdinal = 1;
+        var self = this;
+        _.each(compList.slice(0, compList.length - 1), function (value, idx, list) {
+            var match = re.exec(value);
+            self._argKeys.push(match[1]);
+            var arr = args[match[1]].values;
+            self._argArrays.push(arr);
+            self._maxOrdinal *= arr.length
+        });
+        this._maxOrdinal -= 1;
     },
 
     /**
      * Convenience function to return the quotient and remainder from
      * integer division of the arguments
      */
-    integerDivide: function(dividend, divisor) {
+    integerDivide: function (dividend, divisor) {
         return {
             'quo': Math.floor(dividend / divisor),
             'rem': dividend % divisor
@@ -436,9 +440,13 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
      *     }
      *
      */
-    ordinalToObject: function(ordinal) {
+    ordinalToObject: function (ordinal) {
         if (!_.has(this, '_argArrays')) {
             this.initializeArgArrays();
+        }
+
+        if (ordinal > this._maxOrdinal) {
+            throw "Ordinal " + ordinal + " out of range, max ordinal: " + this._maxOrdinal;
         }
 
         // Now proceed to integer divide the ordinal by rightmost length, save
@@ -448,10 +456,10 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
         var quotient = ordinal;
         var results = {};
 
-        for (var i = this._argArrays.length - 1; i >= 0; --i) {
+        for (var i = this._argArrays.length - 1; i >= 0; i-=1) {
             var r = this.integerDivide(quotient, this._argArrays[i].length);
-            results[this._argKeys[i]] = this._argArrays[i][r['rem']];
-            quotient = r['quo'];
+            results[this._argKeys[i]] = this._argArrays[i][r.rem];
+            quotient = r.quo;
         }
 
         return results;
@@ -470,15 +478,15 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
      * from it.
      *
      */
-    objectToPath: function(obj) {
+    objectToPath: function (obj) {
         if (!_.has(this, '_argArrays')) {
             this.initializeArgArrays();
         }
 
         var result = [];
-        for (var key in this._argKeys) {
-            result.push(obj[this._argKeys[key]]);
-        }
+        _.each(this._argKeys, function (value, idx, list) {
+            result.push(obj[value]);
+        });
 
         return result.join('/');
     }
