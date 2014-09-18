@@ -5,19 +5,14 @@
  */
 cinema.views.PipelineControlWidget = Backbone.View.extend({
     events: {
-        'click .c-layer-visibility-toggle': function (e) {
+        'click .c-remove-layer-toggle': function (e) {
             var link = $(e.currentTarget);
+            link.attr('state', 'off');
+            link.parent().fadeOut();
 
-            if (link.attr('state') === 'on') {
-                link.attr('state', 'off').find('i')
-                    .removeClass('icon-eye')
-                    .addClass('icon-eye-off c-icon-disabled');
-            }
-            else {
-                link.attr('state', 'on').find('i')
-                    .removeClass('icon-eye-off c-icon-disabled')
-                    .addClass('icon-eye');
-            }
+            _.each(this.$('.c-pipeline-layers-select'), function (el) {
+                $(el).popover('hide');
+            });
 
             this.computeQuery();
         },
@@ -41,16 +36,16 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
                     .addClass('icon-eye');
             }
 
-            _.each(link.parent().find('.c-layer-visibility-toggle'), function (el) {
-                $(el).attr('state', state);
+            _.each(link.parent().find('.c-remove-layer-toggle'), function (el) {
+                $(el).attr('visible', state);
 
                 if (state === 'on') {
-                    $(el).find('i').removeClass('icon-eye-off c-icon-disabled')
-                                   .addClass('icon-eye');
+                    $(el).find('i').removeClass('icon-cancel-circled c-pipeline-icon-disabled')
+                                   .addClass('icon-cancel-circled  c-pipeline-icon');
                 }
                 else {
-                    $(el).find('i').removeClass('icon-eye')
-                                   .addClass('icon-eye-off c-icon-disabled');
+                    $(el).find('i').removeClass('icon-cancel-circled  c-pipeline-icon')
+                                   .addClass('icon-cancel-circled  c-pipeline-icon-disabled');
                 }
             });
 
@@ -75,6 +70,59 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
 
         var view = this;
 
+        _.each(this.$('.c-pipeline-layers-select'), function (el) {
+            var theEl = $(el),
+                directoryId = theEl.attr('directory-id');
+            theEl.popover('destroy').popover({
+                html: true,
+                container: 'body',
+                placement: 'right',
+                template: '<div class="popover" role="tooltip"><div class="arrow"></div><div class="popover-content c-color-by-popover"></div></div>',
+                content: cinema.templates.directoryAddLayers({
+                    directoryId: directoryId,
+                    metadata: this.model.get('metadata')
+                })
+            }).off('show.bs.popover').on('show.bs.popover', function () {
+                _.each(view.$('.c-pipeline-layers-select'), function (otherEl) {
+                    if ($(otherEl).attr('directory-id') !== directoryId) {
+                        $(otherEl).popover('hide');
+                    }
+                });
+                _.each(view.$('.c-layer-color-select'), function (otherEl) {
+                    $(otherEl).popover('hide');
+                });
+                _.each(view.$('.c-directory-color-select'), function (otherEl) {
+                    $(otherEl).popover('hide');
+                });
+            }).on('shown.bs.popover', function () {
+                $('input[name="directory-layer-select"][layer-id="' + theEl.attr('layer-id') + '"]').attr('checked', 'checked');
+                $('input[name="directory-layer-select"]').change(function () {
+                    var layer = $(this),
+                        layerVisibility = $("#LayerVisibility-" + layer.attr('directory-id') + "-" + layer.attr('layer-id')),
+                        layerWrapper = $("#LayerWrapper-" + layer.attr('directory-id') + "-" + layer.attr('layer-id'));
+
+                    if (layer.is(":checked")) {
+                        layerVisibility.attr('state', 'on');
+                        layerWrapper.fadeIn();
+                    }
+                    else {
+                        layerVisibility.attr('state', 'off');
+                        layerWrapper.fadeOut();
+                    }
+                    view.computeQuery();
+                });
+                _.each(view.$('.c-remove-layer-toggle'), function(visibilityEl) {
+                    var VisibilityEl = $(visibilityEl);
+                    if (VisibilityEl.attr('state')  === 'on') {
+                        $('input[name="directory-layer-select"][layer-id="' + VisibilityEl.attr('layer-id') + '"]').prop( "checked", true );
+                    }
+                    else {
+                        $('input[name="directory-layer-select"][layer-id="' + VisibilityEl.attr('layer-id') + '"]').prop( "checked", false );
+                    }
+                });
+            });
+        }, this);
+
         _.each(this.$('.c-directory-color-select'), function (el) {
             var theEl = $(el),
                 directoryId = theEl.attr('directory-id'),
@@ -96,6 +144,9 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
                     }
                 });
                 _.each(view.$('.c-layer-color-select'), function (otherEl) {
+                    $(otherEl).popover('hide');
+                });
+                _.each(view.$('.c-pipeline-layers-select'), function (otherEl) {
                     $(otherEl).popover('hide');
                 });
             }).on('shown.bs.popover', function () {
@@ -135,6 +186,9 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
                 _.each(view.$('.c-directory-color-select'), function (otherEl) {
                     $(otherEl).popover('hide');
                 });
+                _.each(view.$('.c-pipeline-layers-select'), function (otherEl) {
+                    $(otherEl).popover('hide');
+                });
             }).on('shown.bs.popover', function () {
                 $('input[name=color-by-select][value=' +
                     $(el).attr('color-field') + ']').attr('checked', 'checked');
@@ -157,12 +211,11 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
      * Compute the new query string based on the current state of the widget.
      */
     computeQuery: function () {
-        console.log("computeQuery");
         var q = '';
-        _.each(this.$('.c-layer-visibility-toggle[state=on]'), function (el) {
+        _.each(this.$('.c-remove-layer-toggle[state=on][visible=on]'), function (el) {
             q += $(el).attr('layer-id');
             q += $(el).parent().find('.c-layer-color-select').attr('color-field') ||
-                 $(el).attr('color-field');
+                $(el).attr('color-field');
         });
 
         this.layers.setFromString(q);
