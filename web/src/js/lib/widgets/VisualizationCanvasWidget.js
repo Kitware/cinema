@@ -35,7 +35,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
     },
 
     //subclass uses to extend
-    _privateInit: function() {
+    _privateInit: function () {
     },
 
     initialize: function (settings) {
