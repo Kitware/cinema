@@ -1,0 +1,8 @@
+.c-color-by-container
+  .c-layer-value-choice(directory-id="#{directoryId}", layer-id="#{layerId}")
+    each field in metadata.layer_fields[layerId]
+      .radio.c-color-by-radio
+         label
+           input(directory-id="#{directoryId}", layer-id="#{layerId}", type="radio", name="color-by-select",
+                 value="#{field}")
+           = metadata.fields[field]
