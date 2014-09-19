@@ -14,14 +14,78 @@ cinema.views.VisualizationCanvasWidgetLit = cinema.views.VisualizationCanvasWidg
     },
 
     _privateInit: function (settings) {
-        this.light = new Vector(1, 0, 0);
+        this.lightPosition = [-1, 1, 0];
+        this.worldLight = new Vector(-1, 0, 1);
         this.LUT = this._RainbowColor;
         this.lightColor = new Vector(1, 1, 1);
         this.lightTerms = { ka: 0.1, kd: 0.6, ks: 0.3, alpha: 20.0 };
+        this._forceRedraw = false;
+        this.eye = new Vector(0, 0, 1);
+        /*
+        for (var phi=0; phi <= 360; phi+=30) {
+            var res = this._spherical2CartesianN(phi, 45.0);
+            //console.log("?", phi, 45.0, " : ", res[0].toFixed(3), res[1].toFixed(3), res[2].toFixed(3));
+        }
+        for (var theta=0; theta <= 180; theta+=30) {
+            var res = this._spherical2CartesianN(270.0, theta);
+            //console.log("?",270.0, theta, " : ", res[0].toFixed(3), res[1].toFixed(3), res[2].toFixed(3));
+        }
+        */
+    },
+
+    _spherical2CartesianN: function (phi, theta) {
+        var phiRad = (180.0 - phi) * Math.PI / 180.0;
+        var thetaRad = (180.0 - theta) * Math.PI / 180.0;
+        var x = Math.sin(thetaRad) * Math.cos(phiRad);
+        var y = Math.sin(thetaRad) * Math.sin(phiRad);
+        var z = Math.cos(thetaRad);
+        return [x, y, z];
+    },
+
+    _spherical2Cartesian: function (phi, theta) {
+        return this._spherical2CartesianN(parseFloat(phi), parseFloat(theta));
+    },
+
+    _recomputeLight: function () {
+        //console.log("LIGHT", this.lightPosition[0].toFixed(3), this.lightPosition[1].toFixed(3), this.lightPosition[2].toFixed(3));
+
+        //find eye point
+        //console.log("PT", this._viewpoint.phi, this._viewpoint.theta);
+        this.eye = Vector.fromArray(this._spherical2Cartesian(this._viewpoint.phi, this._viewpoint.theta)).unit();
+        //console.log("EYE", this.eye.x.toFixed(3), this.eye.y.toFixed(3), this.eye.z.toFixed(3));
+
+        //this.worldlight = this.eye;
+        //console.log("WLIGHT", this.worldlight.x.toFixed(3), this.worldlight.y.toFixed(3), this.worldlight.z.toFixed(3));
+        //return;
+
+        //construct a coordinate system relative to eye point
+        var at = new Vector(0, 0, 0); //assumption always looking at 0
+        var aprox_up = this.eye.add(new Vector(0, 0, 1)).unit(); //assumption, north is always up
+
+        var t0 = at.subtract(this.eye);
+        var t1 = aprox_up.subtract(this.eye);
+        var right = t0.cross(t1).unit();
+
+        t0 = right.subtract(this.eye);
+        t1 = at.subtract(this.eye);
+        var up = t0.cross(t1).unit();
+        //console.log("RIGHT", right.x.toFixed(3), right.y.toFixed(3), right.z.toFixed(3));
+        //console.log("UP", up.x.toFixed(3), up.y.toFixed(3), up.z.toFixed(3));
+
+        //scale down so we can alway have room before normalization
+        var rm = right.multiply(this.lightPosition[0] * 0.3);
+        //console.log("rm", rm.x.toFixed(3), rm.y.toFixed(3), rm.z.toFixed(3));
+        var um = up.multiply(this.lightPosition[1] * 0.3);
+        //console.log("um", um.x.toFixed(3), um.y.toFixed(3), um.z.toFixed(3));
+
+        this.worldlight = this.eye.multiply(0.3).add(rm).add(um).unit();
+        //console.log("WLIGHT", this.worldlight.x.toFixed(3), this.worldlight.y.toFixed(3), this.worldlight.z.toFixed(3));
     },
 
     setLight: function (_light) {
-        this.light = Vector.fromArray(_light).unit();
+        if (this.lightPosition !== _light) {
+            this.lightPosition = _light;
+        }
     },
 
     setLUT: function (_lut) {
@@ -59,10 +123,13 @@ cinema.views.VisualizationCanvasWidgetLit = cinema.views.VisualizationCanvasWidg
 
         if (renderTerms.canLight) {
             //Get all terms required for color of this pixel
-            var nX = this._valueOfPixel('nX', renderTerms),
-                nY = this._valueOfPixel('nY', renderTerms),
-                nZ = this._valueOfPixel('nZ', renderTerms),
+            var nX = this._realValueOfPixel('nX', renderTerms),
+                nY = this._realValueOfPixel('nY', renderTerms),
+                nZ = this._realValueOfPixel('nZ', renderTerms),
                 value = this._valueOfPixel(renderTerms.scalarArray, renderTerms);
+
+            //to debug normals, use this
+            //return [(nX+1)*128,(nY+1)*128,(nZ+1)*128,255];
 
             //through LUT
             var toColor = value;
@@ -79,20 +146,20 @@ cinema.views.VisualizationCanvasWidgetLit = cinema.views.VisualizationCanvasWidg
             //return [ambientColor.x, ambientColor.y, ambientColor.z, 255.0];
 
             //todo: foreach light
-            var lightPosition = this.light;
+            var lightPosition = this.worldlight;
             var normal = new Vector(nX, nY, nZ).unit();
+
             var kd = this.lightTerms.kd;
             var diffuseTerm = kd * lightPosition.dot(normal);
-            var diffuseColor = lightColor.multiply(Color.multiply(diffuseTerm));
+            var diffuseColor = Color.multiply(diffuseTerm);
             //return [diffuseColor.x, diffuseColor.y, diffuseColor.z, 255];
 
             //todo: foreach light
-            var viewPosition = new Vector(0, 0, 1);//ensure normalized
+            var viewPosition = this.eye;
             var R = normal.multiply(2.0 * lightPosition.dot(normal)).subtract(lightPosition);
             var ks = this.lightTerms.ks;
             var alpha = this.lightTerms.alpha;
             var specularTerm = ks * Math.pow(R.dot(viewPosition), alpha);
-            //var specularColor = lightColor.multiply(Color.multiply(specularTerm))
             var specularColor = lightColor.multiply(specularTerm * 255);
             //return [specularColor.x, specularColor.y, specularColor.z, 255];
 
@@ -296,8 +363,36 @@ cinema.views.VisualizationCanvasWidgetLit = cinema.views.VisualizationCanvasWidg
         compositeCtx.putImageData(frontBuffer, 0, 0);
     },
 
+    showViewpoint: function () {
+        var changed = true,
+            viewpoint = {
+                phi: this.camera.phi(),
+                theta: this.camera.theta(),
+                time: this.camera.time()
+            };
+        if (this._viewpoint.phi === viewpoint.phi &&
+            this._viewpoint.theta === viewpoint.theta &&
+            this._viewpoint.time === viewpoint.time) {
+            changed = false;
+        }
+        this._viewpoint = viewpoint;
+        if (this._forceRedraw || changed) {
+            changed = true;
+            this._forceRedraw = false;
+            this._recomputeLight();
+        }
+        if (changed) {
+            this.compositeManager.downloadData(this._viewpoint);
+        } else {
+            this.drawImage();
+        }
+        return this;
+    },
+
+
     forceRedraw: function () {
-        this._viewpoint.phi = "NONSENSE";
+        this._forceRedraw = true;
         this.showViewpoint();
     }
+
 });

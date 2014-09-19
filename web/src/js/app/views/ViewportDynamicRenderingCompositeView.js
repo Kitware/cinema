@@ -45,13 +45,11 @@ cinema.views.ViewportDynamicRenderingCompositeView = Backbone.View.extend({
     */
 
     updateLight: function (vectorLight) {
-        this.lightDirection = vectorLight;
         this.renderView.setLight(vectorLight);
         this.renderView.forceRedraw();
     },
 
     updateTransfertFunction: function (func) {
-        this.lookupTableFunction = func;
         this.renderView.setLUT(func);
         this.renderView.forceRedraw();
     },
