@@ -67,6 +67,7 @@ cinema.views.PipelineAnimationWidget = Backbone.View.extend({
             throw "Animation widget requires a viewport.";
         }
         this.camera = settings.viewport.camera;
+        this.toolbarView = new cinema.views.ViewControlToolbar({el: settings.toolbarContainer});
         this.listenTo(this.model, 'change', function () {
             this.render();
         });
@@ -95,6 +96,7 @@ cinema.views.PipelineAnimationWidget = Backbone.View.extend({
             maxTheta: this.camera.thetas.length - 1,
             stepTheta: 1
         }));
+        this.toolbarView.render();
     },
 
     _refresh: function () {
