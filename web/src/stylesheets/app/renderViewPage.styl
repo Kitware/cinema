@@ -1,4 +1,8 @@
 $opacityDuration = 0.4s
+$textColor = #666
+$highlightTextColor = #333
+$disabledColor = #aaa
+$disabledHighlightTextColor = #666
 
 .c-rv-left-control-area
   width 300px
@@ -18,7 +22,10 @@ $opacityDuration = 0.4s
   display inline-block
   font-size 15px
   font-weight bold
-  color #666
+  color $textColor
+
+.c-panel-toolbar
+  float right
 
 .c-control-panel
   border-radius 3px
@@ -51,3 +58,17 @@ $opacityDuration = 0.4s
 
 .small-combobox
   height 1.5em
+
+.c-rv-icon
+  color $textColor
+  cursor pointer
+  border-radius 3px
+
+  &:hover
+    background-color $disabledColor
+
+.c-rv-icon-disabled
+  color $disabledColor
+
+  &:hover
+    color $disabledHighlightTextColor

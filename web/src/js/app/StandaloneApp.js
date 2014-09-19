@@ -1,6 +1,6 @@
 cinema.StandaloneApp = Backbone.View.extend({
     events: {
-        'click .c-control-panel-header a.close': function (e) {
+        'click .c-control-panel-header .panel-close': function (e) {
             $(e.currentTarget).parents('.c-control-panel').fadeOut();
         }
     },
@@ -20,6 +20,7 @@ cinema.StandaloneApp = Backbone.View.extend({
 
         // This should go away once we have more than one visModel.
         cinema.standaloneVisModel = this.visModel;
+        cinema.viewFactory.updateRootModel(this.visModel);
 
         this.render();
 

@@ -32,6 +32,7 @@ cinema.views.ViewportCompositeView = Backbone.View.extend({
         });
 
         this.listenTo(this.camera, 'change', this._refreshCamera);
+        this.listenTo(cinema.events, 'c:resetCamera', this.renderView.resetCamera);
     },
 
     _refreshCamera: function () {
@@ -63,7 +64,8 @@ cinema.viewFactory.registerView('composite-image-stack', 'RenderView', function 
     var pipelineAnimationWidget = new cinema.views.PipelineAnimationWidget({
         el: that.$('.c-rv-view-control-container'),
         model: that.visModel,
-        viewport: viewportView
+        viewport: viewportView,
+        toolbarContainer: that.$('.c-rv-view-panel .c-panel-toolbar')
     });
 
     var renderChildren = function () {

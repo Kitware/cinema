@@ -5,9 +5,9 @@
         .c-control-panel(class="c-rv-#{controlPanel.key}-panel")
           .c-control-panel-header
             .c-panel-title
-              i(class="#{controlPanel.icon}")
+              i.c-rv-icon(class="#{controlPanel.icon}").panel-close(class="c-#{controlPanel.key}-panel-close")
               | #{controlPanel.title}
-            a.close(class="c-#{controlPanel.key}-panel-close") &times;
+            .c-panel-toolbar
           .c-control-panel-body(class="c-rv-#{controlPanel.key}-control-container")
 
 .c-rv-right-control-area
@@ -16,7 +16,7 @@
         .c-control-panel(class="c-rv-#{controlPanel.key}-panel")
           .c-control-panel-header
             .c-panel-title
-              i(class="#{controlPanel.icon}")
+              i.c-rv-icon(class="#{controlPanel.icon}").panel-close(class="c-#{controlPanel.key}-panel-close")
               | #{controlPanel.title}
-            a.close(class="c-#{controlPanel.key}-panel-close") &times;
+            .c-panel-toolbar
           .c-control-panel-body(class="c-rv-#{controlPanel.key}-control-container")
