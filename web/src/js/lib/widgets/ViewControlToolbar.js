@@ -1,7 +1,6 @@
 cinema.views.ViewControlToolbar = Backbone.View.extend({
     events: {
         'click .c-play-viewcontrol': function () {
-            ;
         },
 
         'click .c-resize-viewcontrol': function () {
