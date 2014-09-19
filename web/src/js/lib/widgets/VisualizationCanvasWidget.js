@@ -38,6 +38,17 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
     _privateInit: function () {
     },
 
+    /**
+     * This widget should be initialized with a visModel as the model parameter
+     * and optionally a pre-existing CompositeImageManager.
+     *
+     * @param model The VisualizationModel being rendered.
+     * @param [layers] A LayerModel to use. If none is passed, creates one
+     *        internally.
+     * @param [compositeManager] A CompositeImageManager to use. If none is
+     *        passed, uses the one that is set as the imageManager property of
+     *        the visModel. If that is not set, creates one internally.
+     */
     initialize: function (settings) {
         var args = this.model.get('arguments');
         this.camera = settings.camera;
@@ -56,9 +67,10 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         this.compositeCache = {};
         this._viewpoint = {};
 
-        this.compositeManager = new cinema.utilities.CompositeImageManager({
-            visModel: this.model
-        });
+        this.compositeManager = settings.compositeManager || this.model.imageManager ||
+            new cinema.utilities.CompositeImageManager({
+                visModel: this.model
+            });
 
         this._computeLayerOffset();
         this._first = true;
@@ -66,15 +78,16 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         this.listenTo(this.compositeManager, 'c:error', function (e) {
             this.trigger('c:error', e);
         });
-        this.listenTo(this.compositeManager, 'c:data.ready', function (data) {
-            this._writeCompositeBuffer(data);
+        this.listenTo(this.compositeManager, 'c:data.ready', function (data, viewpoint) {
+            if (viewpoint === this._viewpoint) {
+                this._writeCompositeBuffer(data);
 
-            if (this._first) {
-                this._first = false;
-                this.resetCamera();
+                if (this._first) {
+                    this._first = false;
+                    this.resetCamera();
+                }
+                this.drawImage();
             }
-
-            this.drawImage();
         });
         this.listenTo(this.camera, 'change', this.drawImage);
         this.listenTo(this.layers, 'change', this.updateQuery);
@@ -201,6 +214,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
 
         // Draw buffer to composite canvas
         compositeCtx.putImageData(frontBuffer, 0, 0);
+        this.trigger('c:composited');
     },
 
     /**
@@ -211,8 +225,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
     drawImage: function () {
         var renderCanvas = this.$('.c-vis-render-canvas')[0],
             compositeCanvas = this.$('.c-vis-composite-buffer')[0],
-            w = this.$el.parent().width(),
-            h = this.$el.parent().height(),
+            w = this.$el.width(),
+            h = this.$el.height(),
             iw = compositeCanvas.width,
             ih = compositeCanvas.height;
 
@@ -235,6 +249,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             compositeCanvas,
             0,   0, iw, ih,  // Source image   [Location,Size]
             tx, ty, tw, th); // Target drawing [Location,Size]
+
+        this.trigger('c:drawn');
     },
 
     /**
@@ -242,8 +258,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
      * centered and zoomed to fit within the parent container.
      */
     resetCamera: function () {
-        var w = this.$el.parent().width(),
-            h = this.$el.parent().height(),
+        var w = this.$el.width(),
+            h = this.$el.height(),
             iw = this.$('.c-vis-composite-buffer').width(),
             ih = this.$('.c-vis-composite-buffer').height();
 
@@ -274,7 +290,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         }
         this._viewpoint = viewpoint;
         if (changed) {
-            this.compositeManager.updateViewpoint(this._viewpoint);
+            this.compositeManager.downloadData(this._viewpoint);
         } else {
             this.drawImage();
         }

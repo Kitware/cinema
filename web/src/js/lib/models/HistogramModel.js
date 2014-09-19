@@ -1,7 +1,6 @@
 /**
  * This model holds the histogram data for a particular layer combination.
  */
-
 cinema.models.HistogramModel = Backbone.Model.extend({
     constructor: function (settings) {
         Backbone.Model.apply(this, arguments);

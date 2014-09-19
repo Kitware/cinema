@@ -31,10 +31,11 @@ cinema.views.SearchPage = Backbone.View.extend({
             model: this.visModel
         });
 
-        this.histogramModel = new cinema.models.HistogramModel({
-            layerModel: pipelineControlView.layers,
-            basePath: this.visModel.basePath
+        this.searchModel = new cinema.models.SearchModel({
+            layerModel: pipelineControlView.layers
         });
+
+        this.searchModel.on('c:done', this._showResults, this);
 
         var renderChildren = function () {
             pipelineControlView.render();
@@ -42,6 +43,7 @@ cinema.views.SearchPage = Backbone.View.extend({
 
         if (this.visModel.loaded()) {
             renderChildren();
+            this.searchModel.compute();
         }
 
         this.listenTo(this.visModel, 'change', function () {
@@ -49,7 +51,7 @@ cinema.views.SearchPage = Backbone.View.extend({
         });
 
         this.listenTo(pipelineControlView.layers, 'change', function () {
-            this.executeSearch();
+            this.searchModel.compute();
         }, this);
     },
 
@@ -57,16 +59,42 @@ cinema.views.SearchPage = Backbone.View.extend({
         this.$('.c-search-results-list-area').empty();
     },
 
-    executeSearch: function () {
+    _showResults: function () {
+        this.resultIndex = 0;
         this.clearResults();
-        this.histogramModel.off('changed').on('changed', function () {
-            this._showResults();
-        }, this).fetch();
+        this.$('.c-search-result-message').text(
+            this.searchModel.results.length + ' results');
+
+        this._showNextResult();
     },
 
-    showResults: function () {
-        // TODO grab the results and show them
-        console.log(this.histogramModel);
+    _showNextResult: function () {
+        if (this.searchModel.results.length <= this.resultIndex) {
+            return;
+        }
+
+        var viewpoint = this.searchModel.results[this.resultIndex];
+        var el = $(cinema.app.templates.searchResultContainer({
+            viewpoint: viewpoint
+        }));
+
+        el.appendTo(this.$('.c-search-results-list-area'));
+
+        var camera = new cinema.models.CameraModel({
+            info: this.visModel
+        });
+        camera.setViewpoint(viewpoint);
+
+        new cinema.views.VisualizationCanvasWidget({
+            el: el,
+            model: this.visModel,
+            camera: camera,
+            layers: this.searchModel.layerModel
+        }).on('c:drawn', function () {
+            // TODO figure out why drawImage is happening more than it should.
+            this.resultIndex += 1;
+            this._showNextResult();
+        }, this).render().showViewpoint();
     }
 });
 
