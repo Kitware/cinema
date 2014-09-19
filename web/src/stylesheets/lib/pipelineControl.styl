@@ -1,52 +1,57 @@
+$textColor = #666
+$highlightTextColor = #333
+$disabledColor = #aaa
+$disabledHighlightTextColor = #666
+
 .c-pipeline-element-header
   .c-pipeline-name
     padding-left 4px
     font-weight bold
     line-height 1
-    color #444
+    color $textColor
 
 .c-icon-disabled
-  color #aaa
+  color $disabledColor
 
   &:hover
-    color #666
+    color $disabledHighlightTextColor
 
 .c-pipeline-icon
-  color #666
+  color $textColor
 
   &:hover
-    color #333
+    color $highlightTextColor
 
 .c-pipeline-icon-disabled
-  color #aaa
+  color $disabledColor
 
   &:hover
-    color #666
+    color $disabledHighlightTextColor
 
 .c-directory-color-select
-  color #666
+  color $textColor
 
   &:hover
-    color #333
+    color $highlightTextColor
 
   &:focus
     outline-style none
 
 .c-layer-color-select
-  color #666
+  color $textColor
 
   &:hover
-    color #333
+    color $highlightTextColor
 
   &:focus
     outline-style none
 
 .c-pipeline-layers-select
   float right
-  color #666
+  color $textColor
 
   &:hover
-    color #333
+    color $highlightTextColor
 
   &:focus
     outline-style none
