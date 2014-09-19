@@ -175,6 +175,17 @@ cinema.views.VisualizationCanvasWidgetLit = cinema.views.VisualizationCanvasWidg
                 255.0];
     },
 
+    _findLayer: function (order) {
+        //todo: precompue like computeCompositeOffset does
+        for (var i = 0; i < order.length; i += 1) {
+            var offset = this.layerOffset[order[i]];
+            if (offset > -1) {
+                return order[i];
+            }
+        }
+        return -1;
+    },
+
 
     /**
      * Computes the composite image and writes it into the composite buffer.
@@ -314,7 +325,7 @@ cinema.views.VisualizationCanvasWidgetLit = cinema.views.VisualizationCanvasWidg
                     renderTerms.canLight = false;
                     if (canLight) {
                         //does this layer have lighting parameters?
-                        layer = order.substr(0, 1);
+                        layer = this._findLayer(order);
                         if (layer in lightTermsOffsets) {
                             //yes
                             var Offsets = {
