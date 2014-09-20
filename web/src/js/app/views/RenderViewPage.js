@@ -24,6 +24,11 @@ cinema.views.RenderViewPage = Backbone.View.extend({
             controlPanels: cinema.viewFactory.getControls('RenderView')
         }));
         cinema.viewFactory.createView(this, 'RenderView');
+
+        this.$('i[title]').tooltip({
+            placement: 'auto',
+            delay: {show: 200}
+        });
     }
 });
 
