@@ -1,4 +1,5 @@
 $headerTextColor = #fdfcfc
+$headerHighlightColor = #555
 $headerHeight = 40px
 
 .c-header-content
@@ -11,6 +12,18 @@ $headerHeight = 40px
   font-weight bold
   font-size 20px
 
+.c-header-icon-container
+  float left
+  i
+    line-height $headerHeight
+    color $headerTextColor
+    cursor pointer
+    border-radius 3px
+    padding 5px
+
+    &:hover
+      background-color $headerHighlightColor
+
 .c-header-buttons-container
   float right
   a
@@ -21,4 +34,4 @@ $headerHeight = 40px
     padding 5px
 
     &:hover
-      background-color #555
+      background-color $headerHighlightColor

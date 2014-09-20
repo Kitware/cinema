@@ -4,7 +4,7 @@ cinema.views.HeaderView = Backbone.View.extend({
             cinema.router.navigate('search', {trigger: true});
         },
 
-        'click .c-view-button': function () {
+        'click .c-cinema-icon': function () {
             cinema.router.navigate('renderview', {trigger: true});
         },
 

@@ -17,7 +17,7 @@ cinema.views.ViewControlToolbar = Backbone.View.extend({
         this.$el.html(this._template(this._templateOptions));
 
         this.$('a[title]').tooltip({
-            placement: 'auto',
+            placement: 'bottom',
             delay: {show: 200}
         });
     }
