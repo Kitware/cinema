@@ -74,10 +74,7 @@ class CompositeHandler(object):
                 if layer_toggle[layer] != '_':
                     offset = self.offset[layer+layer_toggle[layer]]
                     self.order_map[order] = offset * self.dimensions[1]
-                    #print order,layer_toggle[layer],layer,offset
                     break
-
-        #print self.order_map
 
     def load_images(self, query):
         index = 0
@@ -94,16 +91,20 @@ class CompositeHandler(object):
         start_time = time.time()
 
         self.compute_composite_order(query)
-        #self.load_images(query)
 
-        img_path = os.path.join(self.base_path, "rgb.jpg")
-        new_file = os.path.join(self.base_path, "%s.jpg" % query)
-        spriteImg = Image.open(img_path)
+        # Convert query into a set of nested directories and then create them
+        pathComponents = [query[i:i+2] for i in range(0, len(query), 2)]
+        image_path = os.path.join(self.base_path, *pathComponents)
+        if not os.path.exists(image_path):
+            os.makedirs(image_path)
+        new_file = os.path.join(image_path, "composite.jpg")
+
+        # Copy the "all-background" sub-image out of the sprite into this image
         box = (0,                                             # left
-               self.maxOffset * self.dimensions[1],   # upper
+               self.maxOffset * self.dimensions[1],           # upper
                self.dimensions[0],                            # right
-               (self.maxOffset + 1) * self.dimensions[1])           # lower
-        region = spriteImg.crop(box)
+               (self.maxOffset + 1) * self.dimensions[1])     # lower
+        region = self.spriteImg.crop(box)
         img = Image.new("RGB", (self.dimensions[0], self.dimensions[1]))
         img.paste(region, (0, 0, self.dimensions[0], self.dimensions[1]))
 
@@ -119,17 +120,7 @@ class CompositeHandler(object):
 
             x = (pixelIdx-1) % self.dimensions[0]
             y = (pixelIdx-1) / self.dimensions[0]
-            img.putpixel((x,y), spriteImg.getpixel((x,y+pixelInfo)))
-
-            # if isinstance(order, int):
-            #     pixelIdx += order
-            # elif self.order_map[order]:
-            #     x = pixelIdx % self.dimensions[0]
-            #     y = pixelIdx / self.dimensions[0]
-            #     img.putpixel((x,y), self.images[self.order_map[order]].getpixel((x,y)))
-            #     pixelIdx += 1
-            # else:
-            #     pixelIdx += 1
+            img.putpixel((x,y), self.spriteImg.getpixel((x,y+pixelInfo)))
 
         print "Process time", str(time.time() - start_time)
         img.save(new_file)
@@ -137,6 +128,9 @@ class CompositeHandler(object):
 
 
     def process_all(self):
+        img_path = os.path.join(self.base_path, "rgb.jpg")
+        self.spriteImg = Image.open(img_path)
+
         queries = []
         base_query = ""
         for layer in self.layers:
