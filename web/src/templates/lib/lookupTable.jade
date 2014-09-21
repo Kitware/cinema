@@ -1,0 +1,6 @@
+.row
+    label.col-sm-4.control-label(style="top:4px;position:relative;"). Presets
+    .col-sm-8
+        select(data-type="lutName").form-control.input-sm
+            each name in luts
+                option #{name}
