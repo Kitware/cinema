@@ -33,11 +33,11 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
         return 'no-match';
     },
 
-    getFilePattern: function(args, ignore) {
+    getFilePattern: function(args, ignoreList) {
         var keySet = args || {},
             result = this.get('name_pattern') || '',
             kp = ['{','}'],
-            ignore = ignore || [];
+            ignore = ignoreList || [];
 
         _.each(keySet, function(value, key) {
             if (!_.contains(ignore, key)) {

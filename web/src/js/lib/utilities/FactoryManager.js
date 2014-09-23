@@ -75,7 +75,7 @@
         if (this.visModel && this.visModel.loaded()) {
             return this.factoryMap[viewType][this.visModel.getDataType()].constructor(viewPointer, this.visModel);
         }
-        return noOp
+        return noOp;
     };
 
     prototype.getControls = function (viewType) {
