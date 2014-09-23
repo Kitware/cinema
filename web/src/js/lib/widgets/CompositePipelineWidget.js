@@ -6,7 +6,7 @@
 cinema.views.CompositePipelineWidget = Backbone.View.extend({
     initialize: function (settings) {
         this.model = settings.model;
-        this.fields = settings.fields || new cinema.models.FieldModel({ info: that.model });
+        this.fields = settings.fields || new cinema.models.FieldModel({ info: this.model });
         this.viewpoint = settings.viewpoint || new cinema.models.ViewPointModel({ fields: this.fields });
         this.layers = settings.layers || new cinema.models.LayerModel(this.model.defaultLayers());
         this.toolbarSelector = settings.toolbarContainer || '.c-panel-toolbar';
