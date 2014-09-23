@@ -3,8 +3,12 @@ cinema.views.ViewportDynamicRenderingCompositeView = Backbone.View.extend({
     initialize: function (opts) {
         this.$el.html(cinema.app.templates.viewport());
 
-        this.camera = opts.camera || new cinema.models.CameraModel({
+        this.fields = opts.fields || new cinema.models.FieldModel({
             info: this.model
+        });
+
+        this.viewpoint = opts.viewpoint ||  new cinema.models.ViewPointModel({
+            fields: this.fields
         });
 
         this.layers = opts.layers || new cinema.models.LayerModel(
@@ -14,13 +18,14 @@ cinema.views.ViewportDynamicRenderingCompositeView = Backbone.View.extend({
         this.renderView = new cinema.views.VisualizationCanvasWidgetLit({
             el: this.$('.c-viewport-renderer-container'),
             model: this.model,
-            camera: this.camera,
+            fields: this.fields,
+            viewpoint: this.viewpoint,
             layers: this.layers
         }).render();
 
         this.mouseInteractor = new cinema.utilities.RenderViewMouseInteractor({
             renderView: this.renderView,
-            camera: this.camera
+            camera: this.viewpoint
         }).enableMouseWheelZoom({
             maxZoomLevel: 10,
             zoomIncrement: 0.05,
@@ -31,7 +36,9 @@ cinema.views.ViewportDynamicRenderingCompositeView = Backbone.View.extend({
             keyModifiers: null
         });
 
-        this.listenTo(this.camera, 'change', this._refreshCamera);
+        this.listenTo(this.fields, 'change', this._refreshCamera);
+        this.listenTo(this.viewpoint, 'change', this._refreshCamera);
+        this.listenTo(cinema.events, 'c:resetCamera', this.renderView.resetCamera);
     },
 
     _refreshCamera: function () {
@@ -67,11 +74,22 @@ cinema.views.ViewportDynamicRenderingCompositeView = Backbone.View.extend({
 
 // Register Composite view to the factory
 cinema.viewFactory.registerView('composite-image-stack-light', 'RenderView', function (that, visModel) {
+     var fieldsModel = new cinema.models.FieldModel({
+        info: that.visModel
+    });
+
+    var viewpointModel = new cinema.models.ViewPointModel({
+        fields: fieldsModel
+    });
+
     var layers = new cinema.models.LayerModel(that.visModel.defaultLayers());
+
     var viewportView = new cinema.views.ViewportDynamicRenderingCompositeView({
         el: that.$('.c-rv-viewport-container'),
         model: that.visModel,
-        layers: layers
+        layers: layers,
+        fields: fieldsModel,
+        viewpoint: viewpointModel
     });
 
     var pipelineControlView = new cinema.views.PipelineControlWidget({
@@ -86,16 +104,19 @@ cinema.viewFactory.registerView('composite-image-stack-light', 'RenderView', fun
         viewport: viewportView
     });
 
-    var pipelineAnimationWidget = new cinema.views.PipelineAnimationWidget({
+    var fieldsControlWidget = new cinema.views.FieldsControlWidget({
         el: that.$('.c-rv-view-control-container'),
         model: that.visModel,
-        viewport: viewportView
+        viewport: viewportView,
+        fields: fieldsModel,
+        toolbarContainer: that.$('.c-rv-view-panel .c-panel-toolbar'),
+        exclude: ['layer', 'field', 'filename']
     });
 
     var renderChildren = function () {
         viewportView.render();
         pipelineControlView.render();
-        pipelineAnimationWidget.render();
+        fieldsControlWidget.render();
         colorTransformationView.render();
     };
 

@@ -1,6 +1,5 @@
 cinema.views.FieldsControlWidget = Backbone.View.extend({
     events: {
-
         'change input': function (e) {
             var el = $(e.target),
                 field = el.closest('.c-field-control').attr('field_id'),
@@ -35,7 +34,23 @@ cinema.views.FieldsControlWidget = Backbone.View.extend({
             throw "Animation widget requires a viewport.";
         }
         this.model = settings.model;
-        this.order = this.model.get("control").order;
+        this.exclude = settings.exclude || [];
+
+        if(this.model.has("control")) {
+            this.order = this.model.get("control").order;
+        } else {
+            this.order = [];
+            var that = this;
+
+            // Create an ordered list of fields
+            _.each(this.model.get("arguments"), function (value, key, list) {
+                that.order.push(key);
+            });
+
+            // FIXME should reorder that list at some point
+        }
+        this.order = _.difference(this.order, this.exclude);
+
         this.fields = settings.fields;
         this.toolbarView = new cinema.views.ViewControlToolbar({el: settings.toolbarContainer});
 
@@ -63,7 +78,7 @@ cinema.views.FieldsControlWidget = Backbone.View.extend({
                 time: 'Tau'
             };
 
-        _.each(newFieldMapWithIcons, function(value, key, list){
+        _.each(newFieldMapWithIcons, function (value, key, list) {
             if (_.has(iconMap, key)) {
                 newFieldMapWithIcons[key].icon = iconMap[key];
                 if (_.has(iconLabelMap, key)) {

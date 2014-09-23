@@ -51,7 +51,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
      */
     initialize: function (settings) {
         var args = this.model.get('arguments');
-        this.camera = settings.camera;
+        this.fields = settings.fields;
+        this.viewpoint = settings.viewpoint;
 
         if (!this.model.loaded()) {
             this.listenToOnce(this.model, 'change', function () {
@@ -65,7 +66,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         this.backgroundColor = settings.backgroundColor || '#ffffff';
         this.orderMapping = {};
         this.compositeCache = {};
-        this._viewpoint = {};
+        this._fields = {};
 
         this.compositeManager = settings.compositeManager || this.model.imageManager ||
             new cinema.utilities.CompositeImageManager({
@@ -78,8 +79,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         this.listenTo(this.compositeManager, 'c:error', function (e) {
             this.trigger('c:error', e);
         });
-        this.listenTo(this.compositeManager, 'c:data.ready', function (data, viewpoint) {
-            if (viewpoint === this._viewpoint) {
+        this.listenTo(this.compositeManager, 'c:data.ready', function (data, fields) {
+            if (fields === this._fields) {
                 this._writeCompositeBuffer(data);
 
                 if (this._first) {
@@ -89,7 +90,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
                 this.drawImage();
             }
         });
-        this.listenTo(this.camera, 'change', this.drawImage);
+        this.listenTo(this.fields, 'change', this.drawImage);
+        this.listenTo(this.viewpoint, 'change', this.drawImage);
         this.listenTo(this.layers, 'change', this.updateQuery);
     },
 
@@ -236,8 +238,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         });
         renderCanvas.getContext('2d').clearRect(0, 0, w, h);
 
-        var zoomLevel = this.camera.get('zoom'),
-            drawingCenter = this.camera.get('center');
+        var zoomLevel = this.viewpoint.get('zoom'),
+            drawingCenter = this.viewpoint.get('center');
 
         var tw = Math.floor(iw * zoomLevel),
             th = Math.floor(ih * zoomLevel);
@@ -263,7 +265,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             iw = this.$('.c-vis-composite-buffer').width(),
             ih = this.$('.c-vis-composite-buffer').height();
 
-        this.camera.set({
+        this.viewpoint.set({
             zoom: Math.min(w / iw, h / ih),
             center: [w / 2, h / 2]
         });
@@ -277,20 +279,22 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
      * @return this, for chainability
      */
     showViewpoint: function () {
-        var changed = true,
-            viewpoint = {
-                phi: this.camera.phi(),
-                theta: this.camera.theta(),
-                time: this.camera.time()
-            };
-        if (this._viewpoint.phi === viewpoint.phi &&
-            this._viewpoint.theta === viewpoint.theta &&
-            this._viewpoint.time === viewpoint.time) {
-            changed = false;
+        var changed = false,
+            fields = this.fields.getFields();
+
+        // Search for change
+        for (var key in fields) {
+            if (_.has(this._fields, key)) {
+                if (this._fields[key] !== fields[key]) {
+                    changed = true;
+                }
+            } else {
+                changed = true;
+            }
         }
-        this._viewpoint = viewpoint;
+        this._fields = _.extend(this._fields, fields);
         if (changed) {
-            this.compositeManager.downloadData(this._viewpoint);
+            this.compositeManager.downloadData(this._fields);
         } else {
             this.drawImage();
         }
@@ -301,7 +305,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         this.orderMapping = {};
         this.compositeCache = {};
         this._computeLayerOffset();
-        this._viewpoint = {}; // force redraw
+        this._fields = {}; // force redraw
         this.showViewpoint();
     },
 
