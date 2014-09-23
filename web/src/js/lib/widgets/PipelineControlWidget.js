@@ -10,7 +10,7 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
     },
 
     initialize: function (settings) {
-        var defaultLayers = this.model.defaultLayers();
+        var defaultLayers = this.model.getDefaultPipelineSetup();
         this.layers = settings.layers || new cinema.models.LayerModel(defaultLayers);
         this.listenTo(this.model, 'change', this.render);
     },

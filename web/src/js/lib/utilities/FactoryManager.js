@@ -33,6 +33,8 @@
         // FIXME TODO
     }
 
+    function noOp() {}
+
     // Public methods ---------------------------------------------------------
 
     /**
@@ -70,11 +72,14 @@
      */
     prototype.createView = function (viewPointer, viewType) {
         this.trigger('change');
-        return this.factoryMap[viewType][this.visModel.getDataType()].constructor(viewPointer, this.visModel);
+        if (this.visModel && this.visModel.loaded()) {
+            return this.factoryMap[viewType][this.visModel.getDataType()].constructor(viewPointer, this.visModel);
+        }
+        return noOp
     };
 
     prototype.getControls = function (viewType) {
-        if (this.visModel) {
+        if (this.visModel && this.visModel.loaded()) {
             return this.factoryMap[viewType][this.visModel.getDataType()].controls;
         }
         return [];

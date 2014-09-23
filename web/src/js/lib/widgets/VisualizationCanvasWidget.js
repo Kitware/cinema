@@ -50,7 +50,6 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
      *        the visModel. If that is not set, creates one internally.
      */
     initialize: function (settings) {
-        var args = this.model.get('arguments');
         this.fields = settings.fields;
         this.viewpoint = settings.viewpoint;
 
@@ -62,13 +61,14 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         }
 
         this._privateInit();
-        this.layers = settings.layers || new cinema.models.LayerModel(this.model.defaultLayers());
+        this.compositeModel = new cinema.decorators.Composite(this.model);
+        this.layers = settings.layers || new cinema.models.LayerModel(this.compositeModel.getDefaultPipelineSetup());
         this.backgroundColor = settings.backgroundColor || '#ffffff';
         this.orderMapping = {};
         this.compositeCache = {};
         this._fields = {};
 
-        this.compositeManager = settings.compositeManager || this.model.imageManager ||
+        this.compositeManager = settings.compositeManager ||
             new cinema.utilities.CompositeImageManager({
                 visModel: this.model
             });
@@ -123,8 +123,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             if (query[i + 1] === '_') {
                 this.layerOffset[layer] = -1;
             } else {
-                this.layerOffset[layer] = this.model.numberOfLayers() - 1 -
-                    this.model.get('metadata').offset[query.substr(i, 2)];
+                this.layerOffset[layer] = this.compositeModel.getSpriteSize() -
+                    this.compositeModel.getOffset()[query.substr(i, 2)];
             }
         }
     },
@@ -159,8 +159,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         var renderCanvas = this.$('.c-vis-render-canvas')[0],
             compositeCanvas = this.$('.c-vis-composite-buffer')[0],
             spriteCanvas = this.$('.c-vis-spritesheet-buffer')[0],
-            dim = this.model.imageDimensions(),
-            spritesheetDim = this.model.spritesheetDimensions(),
+            dim = this.compositeModel.getImageSize(),
+            spritesheetDim = this.compositeModel.getSpriteImageSize(),
             spriteCtx = spriteCanvas.getContext('2d'),
             compositeCtx = compositeCanvas.getContext('2d'),
             composite = this.compositeCache[data.key];
@@ -189,7 +189,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             frontBuffer = compositeCtx.getImageData(0, 0, dim[0], dim[1]);
         } else { // Otherwise use the bottom spritesheet image as a background
             frontBuffer = spriteCtx.getImageData(
-                0, (this.model.numberOfLayers() - 1) * dim[1], dim[0], dim[1]);
+                0, this.compositeModel.getSpriteSize() * dim[1], dim[0], dim[1]);
         }
 
         var frontPixels = frontBuffer.data;

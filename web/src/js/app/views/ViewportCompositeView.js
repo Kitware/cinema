@@ -48,6 +48,8 @@ cinema.views.ViewportCompositeView = Backbone.View.extend({
 
 // Register Composite view to the factory
 cinema.viewFactory.registerView('composite-image-stack', 'RenderView', function (that, visModel) {
+    var compositeModel = new cinema.decorators.Composite(that.visModel);
+
     var fieldsModel = new cinema.models.FieldModel({
         info: that.visModel
     });
@@ -56,11 +58,11 @@ cinema.viewFactory.registerView('composite-image-stack', 'RenderView', function 
         fields: fieldsModel
     });
 
-    var layers = new cinema.models.LayerModel(that.visModel.defaultLayers());
+    var layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup());
 
     var viewportView = new cinema.views.ViewportCompositeView({
         el: that.$('.c-rv-viewport-container'),
-        model: that.visModel,
+        model: compositeModel,
         layers: layers,
         fields: fieldsModel,
         viewpoint: viewpointModel
@@ -68,7 +70,7 @@ cinema.viewFactory.registerView('composite-image-stack', 'RenderView', function 
 
     var compositePipeline = new cinema.views.CompositePipelineWidget({
         el: that.$('.c-rv-tools-panel'),
-        model: that.visModel,
+        model: compositeModel,
         fields: fieldsModel,
         viewpoint: viewpointModel,
         layers: layers,
