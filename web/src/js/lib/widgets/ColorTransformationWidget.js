@@ -14,12 +14,12 @@ cinema.views.ColorTransformationWidget = Backbone.View.extend({
         if (!settings.viewport) {
             throw "Color Transformation widget requires a viewport.";
         }
-        this.camera = settings.viewport.camera;
+        this.viewpoint = settings.viewport.viewpoint;
         this.viewport = settings.viewport;
         this.listenTo(this.model, 'change', function () {
             this.render();
         });
-        this.listenTo(this.camera, 'change', this._refresh);
+        this.listenTo(this.viewpoint, 'change', this._refresh);
         this.transferFunctionMap = {};
         this.transferFunctionKeys = [];
 

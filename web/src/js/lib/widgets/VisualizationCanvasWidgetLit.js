@@ -51,7 +51,7 @@ cinema.views.VisualizationCanvasWidgetLit = cinema.views.VisualizationCanvasWidg
 
         //find eye point
         //console.log("PT", this._viewpoint.phi, this._viewpoint.theta);
-        this.eye = Vector.fromArray(this._spherical2Cartesian(this._viewpoint.phi, this._viewpoint.theta)).unit();
+        this.eye = Vector.fromArray(this._spherical2Cartesian(this.fields.getField('phi'), this.fields.getField('theta'))).unit();
         //console.log("EYE", this.eye.x.toFixed(3), this.eye.y.toFixed(3), this.eye.z.toFixed(3));
 
         //this.worldlight = this.eye;
@@ -375,25 +375,27 @@ cinema.views.VisualizationCanvasWidgetLit = cinema.views.VisualizationCanvasWidg
     },
 
     showViewpoint: function () {
-        var changed = true,
-            viewpoint = {
-                phi: this.camera.phi(),
-                theta: this.camera.theta(),
-                time: this.camera.time()
-            };
-        if (this._viewpoint.phi === viewpoint.phi &&
-            this._viewpoint.theta === viewpoint.theta &&
-            this._viewpoint.time === viewpoint.time) {
-            changed = false;
+        var changed = false,
+            fields = this.fields.getFields();
+
+        // Search for change
+        for (var key in fields) {
+            if (_.has(this._fields, key)) {
+                if (this._fields[key] !== fields[key]) {
+                    changed = true;
+                }
+            } else {
+                changed = true;
+            }
         }
-        this._viewpoint = viewpoint;
+        this._fields = _.extend(this._fields, fields);
         if (this._forceRedraw || changed) {
             changed = true;
             this._forceRedraw = false;
             this._recomputeLight();
         }
         if (changed) {
-            this.compositeManager.downloadData(this._viewpoint);
+            this.compositeManager.downloadData(this._fields);
         } else {
             this.drawImage();
         }
