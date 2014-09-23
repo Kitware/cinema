@@ -32,7 +32,8 @@ cinema.views.SearchPage = Backbone.View.extend({
         });
 
         this.searchModel = new cinema.models.SearchModel({
-            layerModel: pipelineControlView.layers
+            layerModel: pipelineControlView.layers,
+            visModel: this.visModel
         });
 
         this.searchModel.on('c:done', this._showResults, this);
@@ -53,10 +54,26 @@ cinema.views.SearchPage = Backbone.View.extend({
         this.listenTo(pipelineControlView.layers, 'change', function () {
             this.searchModel.compute();
         }, this);
+
+        var view = this;
+
+        Scrollpoints.add(this.$('.c-search-page-bottom')[0], function () {
+            if (view.searchModel.results) {
+                view._showNextResult();
+            }
+        }, {
+            when: 'entered',
+            once: false
+        });
     },
 
     clearResults: function () {
         this.$('.c-search-results-list-area').empty();
+    },
+
+    /** Returns whether we are at the bottom of the page */
+    _canScroll: function () {
+        return !this.$('.c-search-page-bottom').visible(true);
     },
 
     _showResults: function () {
@@ -80,20 +97,30 @@ cinema.views.SearchPage = Backbone.View.extend({
 
         el.appendTo(this.$('.c-search-results-list-area'));
 
-        var camera = new cinema.models.CameraModel({
+        var fieldModel = new cinema.models.FieldModel({
             info: this.visModel
         });
-        camera.setViewpoint(viewpoint);
+        fieldModel.setField('time', viewpoint.time);
+        fieldModel.setField('phi', viewpoint.phi);
+        fieldModel.setField('theta', viewpoint.theta);
+
+        var vpModel = new cinema.models.ViewPointModel({
+            info: this.visModel,
+            fields: fieldModel
+        });
 
         new cinema.views.VisualizationCanvasWidget({
             el: el,
             model: this.visModel,
-            camera: camera,
+            fields: fieldModel,
+            viewpoint: vpModel,
             layers: this.searchModel.layerModel
         }).on('c:drawn', function () {
-            // TODO figure out why drawImage is happening more than it should.
             this.resultIndex += 1;
-            this._showNextResult();
+
+            if (!this._canScroll()) {
+                this._showNextResult();
+            }
         }, this).render().showViewpoint();
     }
 });

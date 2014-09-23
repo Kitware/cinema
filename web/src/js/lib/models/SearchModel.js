@@ -7,6 +7,7 @@ cinema.models.SearchModel = Backbone.Model.extend({
         Backbone.Model.apply(this, arguments);
 
         this.layerModel = settings.layerModel;
+        this.visModel = settings.visModel;
         this.query = settings.query || null;
     },
 
@@ -17,12 +18,15 @@ cinema.models.SearchModel = Backbone.Model.extend({
     compute: function () {
         this.results = [];
 
-        // TODO implement search filtering. This generates some
-        // fake results for the moment.
-        this.results = [
-            {time: '3', phi: '20.0', theta: '90'},
-            {time: '4', phi: '0.0', theta: '115.0'}
-        ];
+        var i;
+        for (i = 0; i < this.visModel.imageCount(); i++) {
+            var viewpoint = this.visModel.ordinalToObject(i);
+
+            // TODO filter based on query.
+            this.results.push(viewpoint);
+        }
+        // TODO sort results.
+
         this.trigger('c:done');
     }
 });

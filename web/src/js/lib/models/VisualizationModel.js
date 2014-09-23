@@ -184,7 +184,7 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
         if (!_.has(this, '_lengthPhi')) {
             var args = this.get('arguments') || {};
             if (_.has(args, 'phi')) {
-                this._lengthPhi = args.phi.values.length - 1;
+                this._lengthPhi = args.phi.values.length;
             }
             else {
                 this._lengthPhi = 0;
@@ -198,7 +198,7 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
         if (!_.has(this, '_lengthTheta')) {
             var args = this.get('arguments') || {};
             if (_.has(args, 'theta')) {
-                this._lengthTheta = args.theta.values.length - 1;
+                this._lengthTheta = args.theta.values.length;
             }
             else {
                 this._lengthTheta = 0;
@@ -212,7 +212,7 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
         if (!_.has(this, '_lengthTime')) {
             var args = this.get('arguments') || {};
             if (_.has(args, 'time')) {
-                this._lengthTime = args.time.values.length - 1;
+                this._lengthTime = args.time.values.length;
             }
             else {
                 this._lengthTime = 0;
@@ -220,6 +220,10 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
         }
 
         return this._lengthTime;
+    },
+
+    imageCount: function () {
+        return this.lengthPhi() * this.lengthTime() * this.lengthTheta();
     },
 
     maximumTime: function () {
