@@ -50,7 +50,7 @@ cinema.views.FieldsControlWidget = Backbone.View.extend({
     },
 
     _annotateFields: function (fieldsMap) {
-        var newFieldMapWithIcones = _.extend({}, fieldsMap),
+        var newFieldMapWithIcons = _.extend({}, fieldsMap),
             iconMap = {
                 phi: 'icon-resize-horizontal',
                 theta: 'icon-resize-vertical',
@@ -63,17 +63,18 @@ cinema.views.FieldsControlWidget = Backbone.View.extend({
                 time: 'Tau'
             };
 
-        for (var key in newFieldMapWithIcones) {
+        _.each(newFieldMapWithIcons, function(value, key, list){
             if (_.has(iconMap, key)) {
-                newFieldMapWithIcones[key].icon = iconMap[key];
+                newFieldMapWithIcons[key].icon = iconMap[key];
                 if (_.has(iconLabelMap, key)) {
-                    newFieldMapWithIcones[key].iconlabel = iconLabelMap[key];
+                    newFieldMapWithIcons[key].iconlabel = iconLabelMap[key];
                 } else {
-                    newFieldMapWithIcones[key].iconlabel = 'nbsp';
+                    newFieldMapWithIcons[key].iconlabel = 'nbsp';
                 }
             }
-        }
-        return newFieldMapWithIcones;
+        });
+
+        return newFieldMapWithIcons;
     },
 
     render: function () {

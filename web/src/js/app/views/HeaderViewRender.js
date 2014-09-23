@@ -3,11 +3,7 @@ cinema.views.HeaderViewRender = cinema.views.HeaderView.extend({
         'click .c-rh-visibility-button': function (e) {
             var origin = $(e.target),
                 panel = $('.' + origin.attr('container-class'));
-            if(panel.is(':visible')) {
-                panel.fadeOut();
-            } else {
-                panel.fadeIn();
-            }
+            panel.fadeToggle();
         }
     },
 
