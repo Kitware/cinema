@@ -66,25 +66,18 @@ cinema.viewFactory.registerView('composite-image-stack', 'RenderView', function 
         viewpoint: viewpointModel
     });
 
-    var pipelineControlView = new cinema.views.PipelineControlWidget({
-        el: that.$('.c-rv-pipeline-control-container'),
+    var compositePipeline = new cinema.views.CompositePipelineWidget({
+        el: that.$('.c-rv-tools-panel'),
         model: that.visModel,
-        layers: layers
-    });
-
-    var fieldsControlWidget = new cinema.views.FieldsControlWidget({
-        el: that.$('.c-rv-view-control-container'),
-        model: that.visModel,
-        viewport: viewportView,
         fields: fieldsModel,
-        toolbarContainer: that.$('.c-rv-view-panel .c-panel-toolbar'),
-        exclude: ['layer', 'field', 'filename']
+        viewpoint: viewpointModel,
+        layers: layers,
+        toolbarSelector: '.c-panel-toolbar'
     });
 
     var renderChildren = function () {
         viewportView.render();
-        pipelineControlView.render();
-        fieldsControlWidget.render();
+        compositePipeline.render();
     };
 
     if (that.visModel.loaded()) {
@@ -95,6 +88,5 @@ cinema.viewFactory.registerView('composite-image-stack', 'RenderView', function 
         renderChildren();
     });
 }, [
-    { position: 'right', key: 'pipeline', icon: 'icon-layers', title: 'Pipeline' },
-    { position: 'right', key: 'view',     icon: 'icon-camera', title: 'View' }
+    { position: 'right', key: 'tools',     icon: 'icon-tools', title: 'Tools' }
 ]);

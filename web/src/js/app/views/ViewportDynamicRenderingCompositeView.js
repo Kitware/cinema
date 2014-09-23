@@ -92,10 +92,13 @@ cinema.viewFactory.registerView('composite-image-stack-light', 'RenderView', fun
         viewpoint: viewpointModel
     });
 
-    var pipelineControlView = new cinema.views.PipelineControlWidget({
-        el: that.$('.c-rv-pipeline-control-container'),
+    var compositePipeline = new cinema.views.CompositePipelineWidget({
+        el: that.$('.c-rv-tools-panel'),
         model: that.visModel,
-        layers: layers
+        fields: fieldsModel,
+        viewpoint: viewpointModel,
+        layers: layers,
+        toolbarSelector: '.c-panel-toolbar'
     });
 
     var colorTransformationView = new cinema.views.ColorTransformationWidget({
@@ -104,19 +107,10 @@ cinema.viewFactory.registerView('composite-image-stack-light', 'RenderView', fun
         viewport: viewportView
     });
 
-    var fieldsControlWidget = new cinema.views.FieldsControlWidget({
-        el: that.$('.c-rv-view-control-container'),
-        model: that.visModel,
-        viewport: viewportView,
-        fields: fieldsModel,
-        toolbarContainer: that.$('.c-rv-view-panel .c-panel-toolbar'),
-        exclude: ['layer', 'field', 'filename']
-    });
 
     var renderChildren = function () {
         viewportView.render();
-        pipelineControlView.render();
-        fieldsControlWidget.render();
+        compositePipeline.render();
         colorTransformationView.render();
     };
 
@@ -128,7 +122,6 @@ cinema.viewFactory.registerView('composite-image-stack-light', 'RenderView', fun
         renderChildren();
     });
 }, [
-    { position: 'right', key: 'pipeline',       icon: 'icon-layers', title: 'Pipeline'},
-    { position: 'right', key: 'view',           icon: 'icon-camera', title: 'View'},
+    { position: 'right', key: 'tools',     icon: 'icon-tools', title: 'Tools' },
     { position: 'left',  key: 'colorTransform', icon: 'icon-tint',   title: 'Color Transformation'}
 ]);
