@@ -2,7 +2,7 @@
   each fieldName in order
     .c-field-control(field_id="#{fieldName}")
       if fields[fieldName].icon
-        i(class="#{fields[fieldName].icon}",title="#{fields[fieldName].label}")
+        i(class="#{fields[fieldName].icon}",title="#{fields[fieldName].label}") &#{fields[fieldName].iconlabel};
       else
         label. #{fields[fieldName].label}
       if fields[fieldName].type === 'range'

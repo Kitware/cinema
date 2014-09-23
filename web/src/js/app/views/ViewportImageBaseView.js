@@ -32,6 +32,7 @@ cinema.views.ViewportImageBaseView = Backbone.View.extend({
         });
 
         this.listenTo(this.fields, 'change', this._refreshFields);
+        this.listenTo(cinema.events, 'c:resetCamera', this.renderView.resetCamera);
         this._refreshFields();
     },
 
@@ -61,7 +62,8 @@ cinema.viewFactory.registerView('parametric-image-stack', 'RenderView', function
         el: that.$('.c-rv-view-control-container'),
         model: that.visModel,
         viewport: viewportView,
-        fields: fieldsModel
+        fields: fieldsModel,
+        toolbarContainer: that.$('.c-rv-view-panel .c-panel-toolbar')
     });
 
     var renderChildren = function () {
