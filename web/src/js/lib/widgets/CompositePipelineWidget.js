@@ -11,8 +11,6 @@ cinema.views.CompositePipelineWidget = Backbone.View.extend({
         this.layers = settings.layers || new cinema.models.LayerModel(this.model.defaultLayers());
         this.toolbarSelector = settings.toolbarContainer || '.c-panel-toolbar';
 
-        console.log(this.$(this.toolbarSelector));
-
         this.$('.c-control-panel-body').html(cinema.templates.compositePipelineWidget());
 
         this.pipeline = new cinema.views.PipelineControlWidget({

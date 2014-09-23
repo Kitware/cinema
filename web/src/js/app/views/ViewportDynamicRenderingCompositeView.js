@@ -12,7 +12,7 @@ cinema.views.ViewportDynamicRenderingCompositeView = Backbone.View.extend({
         });
 
         this.layers = opts.layers || new cinema.models.LayerModel(
-            this.model.defaultLayers()
+            this.model.getDefaultPipelineSetup()
         );
 
         this.renderView = new cinema.views.VisualizationCanvasWidgetLit({
@@ -74,19 +74,21 @@ cinema.views.ViewportDynamicRenderingCompositeView = Backbone.View.extend({
 
 // Register Composite view to the factory
 cinema.viewFactory.registerView('composite-image-stack-light', 'RenderView', function (that, visModel) {
-     var fieldsModel = new cinema.models.FieldModel({
-        info: that.visModel
+     var compositeModel = new cinema.decorators.Composite(that.visModel);
+
+    var fieldsModel = new cinema.models.FieldModel({
+        info: compositeModel
     });
 
     var viewpointModel = new cinema.models.ViewPointModel({
         fields: fieldsModel
     });
 
-    var layers = new cinema.models.LayerModel(that.visModel.defaultLayers());
+    var layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup());
 
     var viewportView = new cinema.views.ViewportDynamicRenderingCompositeView({
         el: that.$('.c-rv-viewport-container'),
-        model: that.visModel,
+        model: compositeModel,
         layers: layers,
         fields: fieldsModel,
         viewpoint: viewpointModel
@@ -94,7 +96,7 @@ cinema.viewFactory.registerView('composite-image-stack-light', 'RenderView', fun
 
     var compositePipeline = new cinema.views.CompositePipelineWidget({
         el: that.$('.c-rv-tools-panel'),
-        model: that.visModel,
+        model: compositeModel,
         fields: fieldsModel,
         viewpoint: viewpointModel,
         layers: layers,
@@ -103,7 +105,7 @@ cinema.viewFactory.registerView('composite-image-stack-light', 'RenderView', fun
 
     var colorTransformationView = new cinema.views.ColorTransformationWidget({
         el: that.$('.c-rv-colorTransform-control-container'),
-        model: that.visModel,
+        model: compositeModel,
         viewport: viewportView
     });
 

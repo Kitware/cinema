@@ -202,8 +202,8 @@ cinema.views.VisualizationCanvasWidgetLit = cinema.views.VisualizationCanvasWidg
             renderCanvas = this.$('.c-vis-render-canvas')[0],
             compositeCanvas = this.$('.c-vis-composite-buffer')[0],
             spriteCanvas = this.$('.c-vis-spritesheet-buffer')[0],
-            dim = this.model.imageDimensions(),
-            spritesheetDim = this.model.spritesheetDimensions(),
+            dim = this.model.getImageSize(),
+            spritesheetDim = this.model.getSpriteImageSize(),
             spriteCtx = spriteCanvas.getContext('2d'),
             compositeCtx = compositeCanvas.getContext('2d'),
             composite = this.compositeCache[data.key];
@@ -232,7 +232,7 @@ cinema.views.VisualizationCanvasWidgetLit = cinema.views.VisualizationCanvasWidg
             frontBuffer = compositeCtx.getImageData(0, 0, dim[0], dim[1]);
         } else { // Otherwise use the bottom spritesheet image as a background
             frontBuffer = spriteCtx.getImageData(
-                0, (this.model.numberOfLayers() - 1) * dim[1], dim[0], dim[1]);
+                0, this.model.getSpriteSize() * dim[1], dim[0], dim[1]);
         }
 
 
@@ -274,7 +274,7 @@ cinema.views.VisualizationCanvasWidgetLit = cinema.views.VisualizationCanvasWidg
                 if (p.hasOwnProperty(k)) {
                     layer = k.substr(0, 1);
                     var field = k.substr(1, 1);
-                    var offset = (this.model.numberOfLayers() - 1 - p[k]) * isize;
+                    var offset = (this.model.getSpriteSize() - p[k]) * isize;
                     if (field === pnX) {
                         if (lightTermsOffsets[layer]) {
                             lightTermsOffsets[layer].nX = offset;

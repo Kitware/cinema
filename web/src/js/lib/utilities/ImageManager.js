@@ -31,20 +31,6 @@
     var prototype = cinema.utilities.ImageManager.prototype;
 
     /**
-     * Helper method to transform fields into a path.
-     */
-    prototype._getDataPath = function (fields) {
-        var path = this.visModel.get('name_pattern'),
-            toKey = ['{','}'];
-        for (var key in fields) {
-            if (fields.hasOwnProperty(key)) {
-                path = path.replace(toKey.join(key), fields[key]);
-            }
-        }
-        return path;
-    };
-
-    /**
      * Downloads the image data asynchronously and stores it in the cache for
      * the given key, storing it in the "image" key in the cache entry.
      */
@@ -77,7 +63,7 @@
     };
 
     prototype.updateFields = function (fields) {
-        var key = this._getDataPath(fields);
+        var key = this.visModel.getFilePattern(fields);
         this._activeKey = key;
 
         if (_.has(this._cache, key)) {

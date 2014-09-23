@@ -127,7 +127,7 @@
      *                  "theta" keys.
      */
     prototype.downloadData = function (viewpoint) {
-        var key = this.visModel.objectToPath(viewpoint) + '/{filename}';
+        var key = this.visModel.getFilePattern(viewpoint, ['filename']);
 
         if (_.has(this._cache, key)) {
             if (this._cache[key].ready) {
