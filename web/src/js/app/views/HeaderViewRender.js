@@ -2,8 +2,8 @@ cinema.views.HeaderViewRender = cinema.views.HeaderView.extend({
     events: {
         'click .c-rh-visibility-button': function (e) {
             var origin = $(e.target),
-                containerSelector = origin.attr('container-class');
-            $('.' + containerSelector).fadeIn();
+                panel = $('.' + origin.attr('container-class'));
+            panel.fadeToggle();
         }
     },
 

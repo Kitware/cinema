@@ -130,8 +130,9 @@ cinema.views.StaticImageVisualizationCanvasWidget = Backbone.View.extend({
     resetCamera: function () {
         var w = this.$el.parent().width(),
             h = this.$el.parent().height(),
-            iw = this.$('.c-vis-render-canvas').width(),
-            ih = this.$('.c-vis-render-canvas').height();
+            imageToDraw = this.imageManager.getImage(),
+            iw = imageToDraw ? imageToDraw.width : 500,
+            ih = imageToDraw ? imageToDraw.height : 500;
 
         this.viewpoint.set({
             zoom: Math.min(w / iw, h / ih),

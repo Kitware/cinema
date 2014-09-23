@@ -37,6 +37,7 @@ cinema.views.FieldsControlWidget = Backbone.View.extend({
         this.model = settings.model;
         this.order = this.model.get("control").order;
         this.fields = settings.fields;
+        this.toolbarView = new cinema.views.ViewControlToolbar({el: settings.toolbarContainer});
 
         this.listenTo(this.model, 'change', function () {
             this.render();
@@ -49,20 +50,31 @@ cinema.views.FieldsControlWidget = Backbone.View.extend({
     },
 
     _annotateFields: function (fieldsMap) {
-        var newFieldMapWithIcones = _.extend({}, fieldsMap),
+        var newFieldMapWithIcons = _.extend({}, fieldsMap),
             iconMap = {
                 phi: 'icon-resize-horizontal',
                 theta: 'icon-resize-vertical',
                 time: 'icon-clock',
                 contourIdx: 'icon-layers'
+            },
+            iconLabelMap = {
+                phi: 'Phi',
+                theta: 'Theta',
+                time: 'Tau'
             };
 
-        for (var key in newFieldMapWithIcones) {
+        _.each(newFieldMapWithIcons, function(value, key, list){
             if (_.has(iconMap, key)) {
-                newFieldMapWithIcones[key].icon = iconMap[key];
+                newFieldMapWithIcons[key].icon = iconMap[key];
+                if (_.has(iconLabelMap, key)) {
+                    newFieldMapWithIcons[key].iconlabel = iconLabelMap[key];
+                } else {
+                    newFieldMapWithIcons[key].iconlabel = 'nbsp';
+                }
             }
-        }
-        return newFieldMapWithIcones;
+        });
+
+        return newFieldMapWithIcons;
     },
 
     render: function () {
@@ -70,6 +82,7 @@ cinema.views.FieldsControlWidget = Backbone.View.extend({
             fields: this._annotateFields(this.fields.getFieldsMap()),
             order: this.order
         }));
+        this.toolbarView.render();
     },
 
     _refresh: function () {
