@@ -7,20 +7,25 @@
     .color-group
       display block
       height 5px
+      .color.c-swatch-color
+        position relative
+        display inline-block
+        top -2px
+        width 5px
+        height 5px
+        cursor pointer
 
-    .color
-      display inline-block
-      width 5px
-      height 5px
-      cursor pointer
-
-  .color.c-lookuptable-color
+  .c-lookuptable-color
     position:relative;
     background-color green
     width 100%
     height 45px
+    border 2px
+    border-style solid
+    border-color black
 
   canvas.c-lookuptable-canvas
+    margin-top 5px
     width 280px
     height 50px
 

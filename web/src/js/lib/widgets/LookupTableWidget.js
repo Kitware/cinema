@@ -1,5 +1,6 @@
 cinema.views.LookupTableWidget = Backbone.View.extend({
     events: {
+        'click .color': 'updateColor'
     },
 
     registerLUT: function (name, func) {
@@ -176,6 +177,16 @@ cinema.views.LookupTableWidget = Backbone.View.extend({
 
     change: function (param, value) {
         this._refresh();
+    },
+
+    updateColor: function (event) {
+        var me = $(event.target);
+        var color = me.attr('color').split(',');
+        color[0] = Number(color[0]);
+        color[1] = Number(color[1]);
+        color[2] = Number(color[2]);
+        console.log(color);
+        this.$('.c-lookuptable-color').css('background', "rgb(" + color.join(', ') + ")");
     },
 
     updateViewPort: function (event) {

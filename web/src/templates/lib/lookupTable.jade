@@ -4,9 +4,9 @@
         if i % 31 === 0
           .color-group
               each color in colors.slice(i, i + 31)
-                .color(style="background: rgb(#{color.r},#{color.g},#{color.b})", color="#{color.r},#{color.g},#{color.b}")
+                .color.c-swatch-color(style="background: rgb(#{color.r},#{color.g},#{color.b})", color="#{color.r},#{color.g},#{color.b}")
   .col-sm-4
-    .color.c-lookuptable-color(style="background: rgb(0,255,0)", color="0,255,0")
+    .c-lookuptable-color(style="background: rgb(0,255,0)")
 
 canvas.c-lookuptable-canvas(width="280", height="50")
 
