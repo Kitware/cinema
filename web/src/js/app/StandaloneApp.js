@@ -14,10 +14,6 @@ cinema.StandaloneApp = Backbone.View.extend({
             infoFile: 'info.json'
         });
 
-        this.visModel.imageManager = new cinema.utilities.CompositeImageManager({
-            visModel: this.visModel
-        });
-
         // This should go away once we have more than one visModel.
         cinema.standaloneVisModel = this.visModel;
         cinema.viewFactory.updateRootModel(this.visModel);
@@ -67,7 +63,7 @@ cinema.StandaloneApp = Backbone.View.extend({
         settings = settings || {};
         settings.el = this.$('.c-app-header-container');
 
-        new header(settings).render();
+        new header(settings).render(); // jshint ignore:line
     }
 });
 

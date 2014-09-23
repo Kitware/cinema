@@ -2,4 +2,4 @@ extends header
 block buttons
   each controlPanel in controlPanels
     a(title="#{controlPanel.title}")
-      i(class="#{controlPanel.icon}" class="c-rh-#{controlPanel.key}-button")
+      i.c-rh-visibility-button(class="#{controlPanel.icon}", container-class="c-rv-#{controlPanel.key}-panel")

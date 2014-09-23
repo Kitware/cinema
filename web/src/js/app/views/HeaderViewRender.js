@@ -1,15 +1,15 @@
 cinema.views.HeaderViewRender = cinema.views.HeaderView.extend({
     events: {
-        'click .c-rh-pipeline-button': function () {
-            cinema.events.trigger('c:app.show-pipeline-controls');
-        },
-        'click .c-rh-view-button': function () {
-            cinema.events.trigger('c:app.show-view-controls');
+        'click .c-rh-visibility-button': function (e) {
+            var origin = $(e.target),
+                containerSelector = origin.attr('container-class');
+            $('.' + containerSelector).fadeIn();
         }
     },
 
     initialize: function () {
         this._template = cinema.app.templates.renderHeader;
+        this.listenTo(cinema.viewFactory, 'change', this.render);
     },
 
     render: function () {

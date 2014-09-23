@@ -43,9 +43,7 @@
      */
     prototype.updateRootModel = function (newVizModel) {
         this.visModel = newVizModel;
-
-        // Need to trigger event to let the app know that the model is different
-        // FIXME TODO
+        this.trigger('change');
     };
 
     /**
@@ -71,6 +69,7 @@
      * @param viewType The type of the view that we want to build.
      */
     prototype.createView = function (viewPointer, viewType) {
+        this.trigger('change');
         return this.factoryMap[viewType][this.visModel.getDataType()].constructor(viewPointer, this.visModel);
     };
 

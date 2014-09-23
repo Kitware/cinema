@@ -55,12 +55,6 @@ cinema.viewFactory.registerView('composite-image-stack', 'RenderView', function 
         layers: layers
     });
 
-    cinema.events.on('c:app.show-pipeline-controls', function () {
-        that.$('.c-rv-pipeline-panel').fadeIn();
-    }, that).on('c:app.show-view-controls', function () {
-        that.$('.c-rv-view-panel').fadeIn();
-    }, that);
-
     var pipelineAnimationWidget = new cinema.views.PipelineAnimationWidget({
         el: that.$('.c-rv-view-control-container'),
         model: that.visModel,
