@@ -9,7 +9,7 @@
             compositeManager = new cinema.utilities.CompositeImageManager({ visModel: model }),
             fieldsModel = new cinema.models.FieldModel({ info: model }),
             viewpointModel = new cinema.models.ViewPointModel({ fields: fieldsModel }),
-            layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup()),
+            layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup(), { info: model }),
             renderer = new cinema.views.VisualizationCanvasWidget({
                 el: $('.c-body-container', container),
                 model: compositeModel,

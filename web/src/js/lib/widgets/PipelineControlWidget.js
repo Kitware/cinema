@@ -13,162 +13,112 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
         var defaultLayers = this.model.getDefaultPipelineSetup();
         this.layers = settings.layers || new cinema.models.LayerModel(defaultLayers);
         this.listenTo(this.model, 'change', this.render);
+        this.listenTo(this.layers, 'change', this._layerChangeHandler);
+        this.render();
     },
 
     render: function () {
-        var metadata = this.model.get('metadata');
-        if (!metadata) {
+        var metadata,
+            popovers,
+            view = this;
+        if (!this.model.loaded()) {
             return;
         }
+
+        metadata = this.model.get('metadata');
+
         this.$el.html(cinema.templates.pipelineControl({
             metadata: metadata
         }));
 
-        var view = this;
+        popovers = this.$('[data-toggle="popover"]')
+            .popover('destroy')
+            .off('show.bs.popover')
+            .on('show.bs.popover', this._hidePopovers)
+            .off('shown.bs.popover');
 
-        _.each(this.$('.c-pipeline-layers-select'), function (el) {
-            var theEl = $(el),
-                directoryId = theEl.attr('directory-id');
-            theEl.popover('destroy').popover({
-                html: true,
-                container: 'body',
-                placement: 'left',
-                template: '<div class="popover" role="tooltip"><div class="arrow"></div><div class="popover-content c-color-by-popover"></div></div>',
-                content: cinema.templates.directoryAddLayers({
-                    directoryId: directoryId,
-                    metadata: this.model.get('metadata')
-                })
-            }).off('show.bs.popover').on('show.bs.popover', function () {
-                _.each(view.$('.c-pipeline-layers-select'), function (selectEl) {
-                    if ($(selectEl).attr('directory-id') !== directoryId) {
-                        $(selectEl).popover('hide');
+        popovers.filter('.c-pipeline-layers-select')
+            .each(function () {
+                var directoryId = $(this).parent().attr('directory-id');
+
+                $(this).popover({
+                    html: true,
+                    placement: 'left',
+                    template: '<div class="popover" role="tooltip"><div class="arrow"></div><div class="popover-content c-layer-add-remove"></div></div>',
+                    container: view.el,
+                    content: cinema.templates.directoryAddLayers({
+                        directoryId: directoryId,
+                        metadata: view.model.get('metadata')
+                    })
+                });
+            })
+            .on('shown.bs.popover', function () {
+                var input = view.$('input'),
+                    layers = view.layers;
+
+                input.each(function () {
+                    var $this = $(this);
+                    $this.prop('checked', layers.status($this.attr('layer-id')) !== 'closed');
+                });
+
+                // Change the layer model on selection changes.
+                input.change(function () {
+                    var $this = $(this),
+                        layerId = $this.attr('layer-id');
+
+                    if ($this.prop('checked')) {
+                        layers.open(layerId);
+                    } else {
+                        layers.close(layerId);
                     }
                 });
-                view.$('.c-directory-color-select,.c-layer-color-select').popover('hide');
-            }).on('shown.bs.popover', function () {
-                $('input[name="directory-layer-select"][layer-id="' + theEl.attr('layer-id') + '"]').attr('checked', 'checked');
-                $('input[name="directory-layer-select"]').change(function () {
-                    var layer = $(this);
-                    view.addOrRemoveLayer(layer);
-                    view.computeQuery();
+            });
+
+        popovers.filter('.c-directory-color-select,.c-layer-color-select')
+            .each(function () {
+                var $this = $(this),
+                    directoryId = $this.parent().attr('directory-id'),
+                    metadata = view.model.get('metadata'),
+                    layerId = $this.parent().attr('layer-id') || metadata.pipeline[directoryId].ids[0];
+                $(this).popover({
+                    html: true,
+                    container: view.el,
+                    placement: 'right',
+                    template: '<div class="popover" role="tooltip"><div class="arrow"></div><div class="popover-content c-color-by-popover"></div></div>',
+                    content: cinema.templates.colorByChooser({
+                        directoryId: directoryId,
+                        layerId: layerId,
+                        metadata: metadata
+                    })
                 });
-                _.each(view.$('.c-remove-layer-toggle'), function (visibilityEl) {
-                    view.toggleVisibiltyOfLayer(visibilityEl);
+            })
+            .on('shown.bs.popover', function () {
+                var input = view.$('input'),
+                    layerId = input.attr('layer-id'),
+                    directoryId = input.attr('directory-id'),
+                    layers = view.layers;
+
+                if (directoryId !== '-1') {
+                    // convert directory id's as numeric layer id's
+                    // for the layer model
+                    layerId = Number(directoryId);
+                }
+
+                // Set the initial state of the color selection dialog.
+                input.each(function () {
+                    $(this).prop('checked', $(this).attr('value') === layers.color(layerId));
+                });
+
+                // Attach handlers.
+                input.change(function () {
+                    var color = $(this).attr('value');
+                    layers.color(layerId, color);
                 });
             });
-        }, this);
 
-        _.each(this.$('.c-directory-color-select'), function (el) {
-            var theEl = $(el),
-                directoryId = theEl.attr('directory-id'),
-                layerId = theEl.attr('layer-id');
-            theEl.popover('destroy').popover({
-                html: true,
-                container: 'body',
-                placement: 'right',
-                template: '<div class="popover" role="tooltip"><div class="arrow"></div><div class="popover-content c-color-by-popover"></div></div>',
-                content: cinema.templates.directoryColorByChooser({
-                    directoryId: directoryId,
-                    layerId: layerId,
-                    metadata: this.model.get('metadata')
-                })
-            }).off('show.bs.popover').on('show.bs.popover', function () {
-                _.each(view.$('.c-directory-color-select'), function (otherEl) {
-                    if ($(otherEl).attr('directory-id') !== directoryId) {
-                        $(otherEl).popover('hide');
-                    }
-                });
-                view.$('.c-pipeline-layers-select,.c-layer-color-select').popover('hide');
-            }).on('shown.bs.popover', function () {
-                $('input[name=color-by-select][value=' + theEl.attr('color-field') + ']').attr('checked', 'checked');
-                $('input[name=color-by-select]').change(function () {
-                    var color = $(this).val();
-                    theEl.attr('color-field', color);
-                    _.each(view.$('.c-layer-color-select'), function (otherEl) {
-                        if ($(otherEl).attr('directory-id') === directoryId) {
-                            $(otherEl).attr('color-field', color);
-                        }
-                    });
-                    view.computeQuery();
-                });
-            });
-        }, this);
-
-        _.each(this.$('.c-layer-color-select'), function (el) {
-            var directoryId = $(el).attr('directory-id'),
-                layerId = $(el).attr('layer-id');
-            $(el).popover('destroy').popover({
-                html: true,
-                placement: 'right',
-                template: '<div class="popover" role="tooltip"><div class="arrow"></div><div class="popover-content c-color-by-popover"></div></div>',
-                content: cinema.templates.colorByChooser({
-                    directoryId: directoryId,
-                    layerId: layerId,
-                    metadata: this.model.get('metadata')
-                })
-            }).off('show.bs.popover').on('show.bs.popover', function () {
-                _.each(view.$('.c-layer-color-select'), function (otherEl) {
-                    if ($(otherEl).attr('layer-id') !== layerId) {
-                        $(otherEl).popover('hide');
-                    }
-                });
-                view.$('.c-pipeline-layers-select,.c-directory-color-select').popover('hide');
-            }).on('shown.bs.popover', function () {
-                $('input[name=color-by-select][value=' + $(el).attr('color-field') + ']').attr('checked', 'checked');
-                $('input[name=color-by-select]').change(function () {
-                    $(el).attr('color-field', $(this).val());
-                    view.computeQuery();
-                });
-            });
-        }, this);
-
-        this.computeQuery();
+        this._layerChangeHandler();
 
         return this;
-    },
-
-    /**
-     * Compute the new query string based on the current state of the widget.
-     */
-    computeQuery: function () {
-        var q = '';
-        _.each(this.$('.c-remove-layer-toggle[state=on][visible=on]'), function (el) {
-            q += $(el).attr('layer-id');
-            q += $(el).parent().find('.c-layer-color-select').attr('color-field') ||
-                $(el).attr('color-field');
-        });
-
-        this.layers.setFromString(q);
-    },
-
-    /**
-     * Add or remove a layer from a directory of the widget.
-     */
-    addOrRemoveLayer: function (layer) {
-        var layerVisibility = $("#LayerVisibility-" + layer.attr('directory-id') + "-" + layer.attr('layer-id')),
-            layerWrapper = $("#LayerWrapper-" + layer.attr('directory-id') + "-" + layer.attr('layer-id'));
-
-        if (layer.is(":checked")) {
-            layerVisibility.attr('state', 'on');
-            layerWrapper.fadeIn();
-        }
-        else {
-            layerVisibility.attr('state', 'off');
-            layerWrapper.fadeOut();
-        }
-    },
-
-    /**
-     * Toggle the visibility of a layer from a directory of the widget.
-     */
-    toggleVisibiltyOfLayer: function (el) {
-        var El = $(el);
-        if (El.attr('state') === 'on') {
-            $('input[name="directory-layer-select"][layer-id="' + El.attr('layer-id') + '"]').prop("checked", true);
-        }
-        else {
-            $('input[name="directory-layer-select"][layer-id="' + El.attr('layer-id') + '"]').prop("checked", false);
-        }
     },
 
     /**
@@ -178,11 +128,68 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
      */
     removeLayerToggle: function (e) {
         var link = $(e.currentTarget);
-        link.attr('state', 'off');
-        link.parent().fadeOut();
 
-        this.$('.c-pipeline-layers-select').popover('hide');
-        this.computeQuery();
+        this._hidePopovers();
+        this.layers.close(link.parent().attr('layer-id'));
+    },
+
+    /**
+     * Update the view properties according to the layer model.
+     * This will:
+     *   1. Open or close layer widgets
+     *   2. Update icons according to layer visibility
+     */
+    _layerChangeHandler: function () {
+        var view = this,
+            layers = this.layers;
+
+        function updateIcon(icon, state) {
+            if (state === 'rendered') {
+                icon.removeClass('c-icon-disabled')
+                    .addClass('c-icon-enabled');
+
+                if (icon.hasClass('icon-eye-off')) {
+                    icon.removeClass('icon-eye-off')
+                        .addClass('icon-eye');
+                }
+
+            } else {
+                icon.removeClass('c-icon-enabled')
+                    .addClass('c-icon-disabled');
+
+                if (icon.hasClass('icon-eye')) {
+                    icon.removeClass('icon-eye')
+                        .addClass('icon-eye-off');
+                }
+            }
+
+        }
+
+        this.$('i.c-pipeline-icon').each(function () {
+            var $this = $(this),
+                layerId = $this.parent().parent().attr('layer-id'),
+                directoryId = $this.parent().parent().attr('directory-id'),
+                state;
+
+            if (directoryId !== '-1') {
+                layerId = Number(directoryId);
+            }
+
+            state = view.layers.status(layerId);
+            updateIcon($this, state);
+        });
+
+        this.$('.c-pipeline-layer-wrapper').each(function () {
+            var $this = $(this),
+                layerId = $this.attr('layer-id');
+            if (layers.status(layerId) === 'closed') {
+                // remove layer control
+                $this.fadeOut();
+            } else {
+                // add layer control
+                $this.fadeIn();
+            }
+        });
     },
 
     /**
@@ -192,32 +199,28 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
      */
     togglePipelineVisibility: function (e) {
         var link = $(e.currentTarget),
-            state;
+            layers = this.layers,
+            layerId, directoryId;
 
-        if (link.attr('state') === 'on') {
-            state = 'off';
-            link.attr('state', state).find('i')
-                .removeClass('icon-eye')
-                .addClass('icon-eye-off c-icon-disabled');
+        directoryId = link.parent().attr('directory-id');
+        layerId = link.parent().attr('layer-id');
+        if (!layerId) {
+            layerId = Number(directoryId);
         }
-        else {
-            state = 'on';
-            link.attr('state', state).find('i')
-                .removeClass('icon-eye-off c-icon-disabled')
-                .addClass('icon-eye');
+
+
+        if (this.layers.status(layerId) === 'hidden') {
+            layers.show(layerId);
+        } else {
+            layers.hide(layerId);
         }
-        _.each(link.parent().find('.c-remove-layer-toggle'), function (el) {
-            $(el).attr('visible', state);
-            if (state === 'on') {
-                $(el).find('i').removeClass('icon-cancel-circled c-pipeline-icon-disabled')
-                    .addClass('icon-cancel-circled  c-pipeline-icon');
-            }
-            else {
-                $(el).find('i').removeClass('icon-cancel-circled  c-pipeline-icon')
-                    .addClass('icon-cancel-circled  c-pipeline-icon-disabled');
-            }
-        });
-        this.computeQuery();
+    },
+
+    /**
+     * Hide all popovers except `this`.
+     */
+    _hidePopovers: function () {
+        var popovers = $('[data-toggle="popover"]');
+        popovers.not(this).popover('hide');
     }
-
 });
