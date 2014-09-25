@@ -9,10 +9,10 @@ $(function () {
     });
 
     // Make empty route redirect to #view
-    cinema.router.route('', 'index_redirect', function (viewType) {
-        cinema.viewType = 'view';
-        cinema.view.render();
-    });
+    // cinema.router.route('', 'index_redirect', function (viewType) {
+    //     cinema.viewType = 'view';
+    //     cinema.view.render();
+    // });
 
     cinema.router.route(':viewType', '', function (viewType) {
         cinema.viewType = viewType;

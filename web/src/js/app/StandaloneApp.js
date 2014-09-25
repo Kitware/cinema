@@ -47,6 +47,10 @@ cinema.StandaloneApp = Backbone.View.extend({
     },
 
     render: function () {
+        if (!this.model.loaded()) {
+            return;
+        }
+
         // Make sure we have a view type valid
         if (cinema.viewType === null || cinema.viewType === undefined || cinema.viewType === '' || !_.contains(this.allowedViewType, cinema.viewType)) {
             cinema.viewType = 'view';
