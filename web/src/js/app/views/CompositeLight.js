@@ -28,7 +28,7 @@
                 keyModifiers: null
             }),
             compositePipeline = new cinema.views.CompositePipelineWidget({
-                el: $('.c-rv-tools-panel', container),
+                el: $('.c-tools-panel', container),
                 model: compositeModel,
                 fields: fieldsModel,
                 viewpoint: viewpointModel,
@@ -36,7 +36,7 @@
                 toolbarSelector: '.c-panel-toolbar'
             }),
             colorTransformationView = new cinema.views.ColorTransformationWidget({
-                el: $('.c-rv-colorTransform-control-container', container),
+                el: $('.c-colorTransform-control-container', container),
                 model: compositeModel,
                 viewport: renderer
             }),

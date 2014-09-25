@@ -13,7 +13,7 @@
             fieldsModel = new cinema.models.FieldModel({ info: model }),
             viewpointModel = new cinema.models.ViewPointModel({ fields: fieldsModel }),
             renderer = new cinema.views.StaticImageVisualizationCanvasWidget({
-                el: $('.body-content', container),
+                el: $('.c-body-container', container),
                 model: model,
                 fields: fieldsModel,
                 viewpoint: viewpointModel

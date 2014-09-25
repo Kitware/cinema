@@ -47,6 +47,10 @@ cinema.StandaloneApp = Backbone.View.extend({
     },
 
     render: function () {
+        if (!this.model.loaded()) {
+            return;
+        }
+
         // Make sure we have a view type valid
         if (cinema.viewType === null || cinema.viewType === undefined || cinema.viewType === '' || !_.contains(this.allowedViewType, cinema.viewType)) {
             cinema.viewType = 'view';
@@ -61,7 +65,7 @@ cinema.StandaloneApp = Backbone.View.extend({
         // Handle header bar base on application type (workbench/cinema)
         if (cinema.model.getDataType() === 'workbench') {
             // Workbench Cinema App
-            this.$('.header-left').html(cinema.app.templates.headerLeft({icon: 'icon-cinema', title: 'Workbench'}));
+            this.$('.header-left').html(cinema.app.templates.headerLeft({icon: 'icon-cinema', title: 'Workbench', active: cinema.viewType, views: this.views}));
             this.$('.header-right').html(cinema.app.templates.workbenchControl());
         } else {
             // Single Cinema App
