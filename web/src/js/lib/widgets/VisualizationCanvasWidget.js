@@ -80,7 +80,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             this.trigger('c:error', e);
         });
         this.listenTo(this.compositeManager, 'c:data.ready', function (data, fields) {
-            if (fields === this._fields) {
+            if (_.isEqual(fields, this._fields)) {
                 this._writeCompositeBuffer(data);
 
                 if (this._first) {
@@ -278,7 +278,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
      * do not pass this, simply renders the current this.viewpoint value.
      * @return this, for chainability
      */
-    showViewpoint: function () {
+    showViewpoint: function (forced) {
         var changed = false,
             fields = this.fields.getFields();
 
@@ -293,7 +293,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             }
         }
         this._fields = _.extend(this._fields, fields);
-        if (changed) {
+        if (changed || forced) {
             this.compositeManager.downloadData(this._fields);
         } else {
             this.drawImage();

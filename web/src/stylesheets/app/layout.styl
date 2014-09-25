@@ -1,10 +1,18 @@
 $baseColor = #333
+$opacityDuration = 0.4s
+$textColor = #666
+$highlightTextColor = #333
+$disabledColor = #aaa
+$disabledHighlightTextColor = #666
 
 body
   color $baseColor
   font-family sans-serif
   margin 0
   padding 0
+  position absolute
+  width 100%
+  min-height 100%
 
 i
   -webkit-user-select none
@@ -14,21 +22,77 @@ i
 a
   cursor pointer
 
-.dropdown-menu>li>a
-  padding-left 6px
-
-.c-app-header-container
+.c-header-container
   background-color $baseColor
   height 40px
   width 100%
   position fixed
   top 0
-  z-index 1000
+  z-index 100
 
-.c-app-body-container
+.c-body-container
   position absolute
   left 0
   right 0
   top 40px
   bottom 0
   z-index 0
+
+.c-control-container
+  width 300px
+  position absolute
+  top 50px
+  z-index 10
+
+  &.left
+    left 10px
+
+  &.right
+    right 10px
+
+  .c-panel-title
+    display inline-block
+    font-size 15px
+    font-weight bold
+    color $textColor
+
+  .c-panel-toolbar
+    float right
+
+  .c-control-panel
+    border-radius 3px
+    background-color rgba(255, 255, 255, 0.5)
+    -webkit-transition background-color $opacityDuration ease-in-out
+    -moz-transition background-color $opacityDuration ease-in-out
+    -ms-transition background-color $opacityDuration ease-in-out
+    -o-transition background-color $opacityDuration ease-in-out
+    transition background-color $opacityDuration ease-in-out
+    border 1px solid #d3d3d3
+    margin-bottom 10px
+
+    &:hover
+      background-color rgba(255, 255, 255, 0.88)
+
+    .c-control-panel-header
+      padding 6px 10px 6px 7px
+      background-color rgba(210, 210, 210, 1.0)
+
+    .c-control-panel-body
+      padding 6px 9px
+
+    &.closed
+      display none
+
+.c-icon
+  color $textColor
+  cursor pointer
+  border-radius 3px
+
+  &:hover
+    background-color $disabledColor
+
+.c-icon-disabled
+  color $disabledColor
+
+  &:hover
+    color $disabledHighlightTextColor

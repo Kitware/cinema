@@ -2,9 +2,26 @@ $headerTextColor = #fdfcfc
 $headerHighlightColor = #555
 $headerHeight = 40px
 
-.c-header-content
+.c-header-container
   color $headerTextColor
   padding 0 12px 0 18px
+
+  .btn-group
+    margin-left 25px
+    top -2px
+
+  .btn
+    background-color #555
+    color #999
+    width 40px
+
+    &.active
+      background-color #222
+      color #fff
+
+.c-app-icon
+  font-size 20px
+  margin-right 10px
 
 .c-app-title
   display inline-block
@@ -12,7 +29,7 @@ $headerHeight = 40px
   font-weight bold
   font-size 20px
 
-.c-header-icon-container
+.header-left
   float left
   i
     line-height $headerHeight
@@ -24,7 +41,7 @@ $headerHeight = 40px
     &:hover
       background-color $headerHighlightColor
 
-.c-header-buttons-container
+.header-right
   float right
   a
     line-height $headerHeight

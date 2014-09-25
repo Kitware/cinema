@@ -57,7 +57,8 @@ cinema.views.ColorTransformationWidget = Backbone.View.extend({
         color[1] = Number(color[1]);
         color[2] = Number(color[2]);
 
-        this.viewport.updateLightColor(color);
+        this.viewport.setLightColor(color);
+        this.trigger('change');
     },
 
     updateLighting: function () {
@@ -70,7 +71,8 @@ cinema.views.ColorTransformationWidget = Backbone.View.extend({
             lightTerms[name] = value;
         });
 
-        this.viewport.updateLightTerms(lightTerms);
+        this.viewport.setLightTerms(lightTerms);
+        this.trigger('change');
     },
 
     updateViewPort: function (event) {
@@ -84,9 +86,11 @@ cinema.views.ColorTransformationWidget = Backbone.View.extend({
                     idx = Number(me.attr('data-coordinate'));
                 vectorLight[idx] = Number(me.val());
             });
-            this.viewport.updateLight(vectorLight);
+            this.viewport.setLight(vectorLight);
+            this.trigger('change');
         } else if (type === 'colorMapName') {
-            this.viewport.updateTransfertFunction(this.transferFunctionMap[origin.val()]);
+            this.viewport.setLUT(this.transferFunctionMap[origin.val()]);
+            this.trigger('change');
         }
     }
 });

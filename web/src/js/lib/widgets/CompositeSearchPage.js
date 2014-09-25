@@ -1,7 +1,7 @@
 /**
  * This is the top-level body page for the search UI.
  */
-cinema.views.SearchPage = Backbone.View.extend({
+cinema.views.CompositeSearchPage = Backbone.View.extend({
     events: {
         'click .c-search-filter-apply': function (e) {
             e.preventDefault();
@@ -19,7 +19,7 @@ cinema.views.SearchPage = Backbone.View.extend({
     },
 
     render: function () {
-        this.$el.html(cinema.app.templates.searchPage());
+        this.$el.html(cinema.templates.compositeSearchPage());
 
         this.$('[title]').tooltip({
             placement: 'bottom',
@@ -62,10 +62,16 @@ cinema.views.SearchPage = Backbone.View.extend({
     _showResults: function () {
         this.resultIndex = 0;
         this.clearResults();
-        this.$('.c-search-result-message').text(
-            this.searchModel.results.length + ' results');
+        // The issue is that the this.$el is detached and needs
+        // to be re-assign with the setElement method.
 
-        this._showNextResult();
+        console.log("Search parent element: " + this.$el.lenght);
+        console.log("Search result msg element: " + this.$('.c-search-result-message').lenght);
+
+        // this.$('.c-search-result-message').text(
+        //     this.searchModel.results.length + ' results');
+
+        // this._showNextResult();
     },
 
     _showNextResult: function () {
@@ -74,21 +80,21 @@ cinema.views.SearchPage = Backbone.View.extend({
         }
 
         var viewpoint = this.searchModel.results[this.resultIndex];
-        var el = $(cinema.app.templates.searchResultContainer({
+        var el = $(cinema.templates.compositeSearchResultContainer({
             viewpoint: viewpoint
         }));
 
         el.appendTo(this.$('.c-search-results-list-area'));
 
-        var camera = new cinema.models.CameraModel({
-            info: this.visModel
-        });
-        camera.setViewpoint(viewpoint);
+        var fieldsModel = new cinema.models.FieldModel({ info: this.visModel }),
+            viewpointModel = new cinema.models.ViewPointModel({ fields: fieldsModel });
+
+        // FIXME viewpointModel.setViewpoint(viewpoint);
 
         new cinema.views.VisualizationCanvasWidget({
             el: el,
             model: this.visModel,
-            camera: camera,
+            viewpoint: viewpointModel,
             layers: this.searchModel.layerModel
         }).on('c:drawn', function () {
             // TODO figure out why drawImage is happening more than it should.
@@ -96,10 +102,4 @@ cinema.views.SearchPage = Backbone.View.extend({
             this._showNextResult();
         }, this).render().showViewpoint();
     }
-});
-
-cinema.router.route('search', 'search', function () {
-    cinema.events.trigger('c:app.showPage', cinema.views.SearchPage, {
-        visModel: cinema.standaloneVisModel
-    }, true);
 });

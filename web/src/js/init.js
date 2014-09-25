@@ -13,6 +13,7 @@ if (!window.console) {
 
 var cinema = {
     models: {},
+    viewType: null,
     collections: {},
     utilities: {},
     decorators: {},
