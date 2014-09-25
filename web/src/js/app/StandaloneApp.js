@@ -61,7 +61,7 @@ cinema.StandaloneApp = Backbone.View.extend({
         // Handle header bar base on application type (workbench/cinema)
         if (cinema.model.getDataType() === 'workbench') {
             // Workbench Cinema App
-            this.$('.header-left').html(cinema.app.templates.headerLeft({icon: 'icon-cinema', title: 'Workbench'}));
+            this.$('.header-left').html(cinema.app.templates.headerLeft({icon: 'icon-cinema', title: 'Workbench', active: cinema.viewType, views: this.views}));
             this.$('.header-right').html(cinema.app.templates.workbenchControl());
         } else {
             // Single Cinema App

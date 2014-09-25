@@ -46,11 +46,11 @@
             var root = $(rootSelector);
             renderer.setElement($('.c-body-container', root)).render();
             compositePipeline.setElement($('.c-tools-panel', root)).render();
-            refreshCamera(true);
+            renderer.showViewpoint(true);
         }
 
-        function refreshCamera (force) {
-            renderer.showViewpoint(force);
+        function refreshCamera () {
+            renderer.showViewpoint();
         }
 
         function resetCamera () {

@@ -1,0 +1,13 @@
+mixin workbench-item
+  .c-dv-layout-item
+    .c-dv-add-item
+
+.c-dv-layout-container.container-fluid
+    - var irow = 0, icol = 0, item = 0, w = Math.floor(12/layout.cols), h = Math.floor( 12/layout.rows)
+    while irow < layout.rows
+      div(class=["c-dv-layout-row", "row", "c-dv-row-height-" + "#{h}"], row-index="#{irow}")
+        while icol < layout.cols
+          div(class=["c-dv-layout-item-container", "col-md-" + "#{w}"], col-index="#{icol}", item-index="#{item}")
+            +workbench-item
+          - icol++; item++
+      - irow++; icol = 0
