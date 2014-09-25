@@ -52,7 +52,9 @@ cinema.views.FieldsControlWidget = Backbone.View.extend({
         this.order = _.difference(this.order, this.exclude);
 
         this.fields = settings.fields;
-        this.toolbarView = new cinema.views.ViewControlToolbar({el: settings.toolbarContainer});
+        this.toolbarSelector = settings.toolbarSelector;
+        this.toolbarRootView = settings.toolbarRootView || this;
+        this.toolbarView = new cinema.views.ViewControlToolbar({el: $(this.toolbarSelector, this.toolbarRootView) });
 
         this.listenTo(this.model, 'change', function () {
             this.render();
@@ -97,7 +99,7 @@ cinema.views.FieldsControlWidget = Backbone.View.extend({
             fields: this._annotateFields(this.fields.getFieldsMap()),
             order: this.order
         }));
-        this.toolbarView.render();
+        this.toolbarView.setElement($(this.toolbarSelector, this.toolbarRootView.$el)).render();
     },
 
     _refresh: function () {

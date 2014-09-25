@@ -1,7 +1,22 @@
 cinema.StandaloneApp = Backbone.View.extend({
     events: {
+        // Handle control panel close action
         'click .c-control-panel-header .panel-close': function (e) {
             $(e.currentTarget).parents('.c-control-panel').fadeOut();
+        },
+
+        // Handle control panel toggle visibility action
+        'click .c-visibility-button': function (e) {
+            var origin = $(e.target),
+                panel = $('.' + origin.attr('container-class'));
+            panel.fadeToggle();
+        },
+
+        // Handle view navigation
+        'click .view-navigation': function (e) {
+            var origin = $(e.target).closest('.view-navigation'),
+                viewRoute = origin.attr('data-link');
+            cinema.router.navigate('#' + viewRoute, { trigger: true });
         }
     },
 
@@ -9,65 +24,60 @@ cinema.StandaloneApp = Backbone.View.extend({
         this.dataRoot = settings.dataRoot;
         this.staticRoot = settings.staticRoot;
 
-        this.visModel = new cinema.models.VisualizationModel({
+        // When additional view type are added just expand the given list
+        this.allowedViewType = ['view', 'search', 'cost'];
+        this.views = [
+            { label: 'Exploration', name: 'view', icon: 'icon-compass-1'},
+            { label: 'Search', name: 'search', icon: 'icon-search'},
+            { label: 'Cost', name: 'cost', icon: 'icon-dollar'},
+        ];
+
+        this.model = new cinema.models.VisualizationModel({
             basePath: this.dataRoot,
             infoFile: 'info.json'
         });
-
-        // This should go away once we have more than one visModel.
-        cinema.standaloneVisModel = this.visModel;
-        cinema.viewFactory.updateRootModel(this.visModel);
-
-        this.render();
-
-        cinema.events.on('c:app.showPage', this.showPage, this);
+        cinema.model = this.model;
 
         Backbone.history.start({
             pushState: false
         });
 
-        this.visModel.fetch();
+        this.listenTo(this.model, 'change', this.render);
+        this.model.fetch();
     },
 
     render: function () {
-        this.$el.html(cinema.app.templates.layout());
-        this.updateHeader();
+        // Make sure we have a view type valid
+        if (cinema.viewType === null || cinema.viewType === undefined || cinema.viewType === '' || !_.contains(this.allowedViewType, cinema.viewType)) {
+            cinema.viewType = 'view';
+        }
+
+        // Find out what the view needs as control panel container
+        var controls = cinema.viewFactory.getViewControls('body', cinema.viewType, cinema.model);
+
+        // Create container for control panels
+        this.$el.html(cinema.app.templates.layout({controls:controls}));
+
+        // Handle header bar base on application type (workbench/cinema)
+        if (cinema.model.getDataType() === 'workbench') {
+            // Workbench Cinema App
+            this.$('.header-left').html(cinema.app.templates.headerLeft({icon: 'icon-cinema', title: 'Workbench'}));
+            this.$('.header-right').html(cinema.app.templates.workbenchControl());
+        } else {
+            // Single Cinema App
+            this.$('.header-left').html(cinema.app.templates.headerLeft({icon: 'icon-cinema', title: 'Cinema', active: cinema.viewType, views: this.views}));
+            this.$('.header-right').html(cinema.app.templates.cinemaControl({controls:controls}));
+        }
+
+        // Fill the layout base on the type of the view and model.
+        cinema.viewFactory.render('body', cinema.viewType, cinema.model);
+
+        // Create nice tooltip for the full page
+        this.$('[title]').tooltip({
+            placement: 'bottom',
+            delay: {show: 200}
+        });
 
         return this;
-    },
-
-    /**
-     * Shows a new page within the main body view. This should be called
-     * by route handlers that wish to display a specific view within the
-     * app body container.
-     */
-    showPage: function (view, viewSettings, render, header, headerSettings) {
-        /*jshint -W055 */
-        var bodyView = new view(_.extend(viewSettings, {
-            el: this.$('.c-app-body-container').off()
-        }));
-
-        this.updateHeader(header, headerSettings);
-
-        if (render) {
-            bodyView.render();
-        }
-    },
-
-    /**
-     * Rerender the header given a specific header subclass defaulting to
-     * a bare, view agnostic header.
-     */
-    updateHeader: function (header, settings) {
-        header = header || cinema.views.HeaderView;
-        settings = settings || {};
-        settings.el = this.$('.c-app-header-container');
-
-        new header(settings).render(); // jshint ignore:line
     }
-});
-
-// Make empty route redirect to #renderview
-cinema.router.route('', 'index_redirect', function () {
-    cinema.router.navigate('renderview', {trigger: true});
 });

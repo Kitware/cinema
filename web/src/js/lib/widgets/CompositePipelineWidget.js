@@ -12,7 +12,6 @@ cinema.views.CompositePipelineWidget = Backbone.View.extend({
         this.toolbarSelector = settings.toolbarContainer || '.c-panel-toolbar';
 
         this.$('.c-control-panel-body').html(cinema.templates.compositePipelineWidget());
-
         this.pipeline = new cinema.views.PipelineControlWidget({
             el: this.$('.c-pipeline-content'),
             model: this.model,
@@ -24,14 +23,16 @@ cinema.views.CompositePipelineWidget = Backbone.View.extend({
             model: this.model,
             viewport: this.viewpoint,
             fields: this.fields,
-            toolbarContainer: this.$(this.toolbarSelector),
+            toolbarSelector: this.toolbarSelector,
+            toolbarRootView: this,
             exclude: ['layer', 'field', 'filename']
         });
         this.render();
     },
 
     render: function () {
-        this.pipeline.render();
-        this.controls.render();
+        this.$('.c-control-panel-body').html(cinema.templates.compositePipelineWidget());
+        this.pipeline.setElement(this.$('.c-pipeline-content')).render();
+        this.controls.setElement(this.$('.c-control-content')).render();
     }
 });

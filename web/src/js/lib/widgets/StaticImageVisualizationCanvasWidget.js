@@ -83,9 +83,6 @@ cinema.views.StaticImageVisualizationCanvasWidget = Backbone.View.extend({
      * onto the render canvas.
      */
     drawImage: function () {
-        // Make sure the canvas is there
-        this.render();
-
         var canvas = this.$('.c-vis-render-canvas'),
             renderCanvas = canvas[0],
             imageToDraw = this.imageManager.getImage(),
@@ -93,9 +90,9 @@ cinema.views.StaticImageVisualizationCanvasWidget = Backbone.View.extend({
             h = this.$el.parent().height(),
             iw = imageToDraw ? imageToDraw.width : 500,
             ih = imageToDraw ? imageToDraw.height : 500,
-            ctx = renderCanvas.getContext('2d');
+            ctx = renderCanvas ? renderCanvas.getContext('2d') : null;
 
-        if (imageToDraw === null) {
+        if (imageToDraw === null || ctx === null) {
             return;
         }
 
