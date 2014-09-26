@@ -35,21 +35,22 @@
                 layers: layers,
                 toolbarSelector: '.c-panel-toolbar'
             }),
-            colorTransformationView = new cinema.views.ColorTransformationWidget({
-                el: $('.c-colorTransform-control-container', container),
+            colorTransformationView = new cinema.views.LookupTableWidget({
+                el: $('.c-rendering-panel', container),
                 model: compositeModel,
+                toolbarSelector: '.c-panel-toolbar',
                 viewport: renderer
             }),
             controlList = [
-                { position: 'right', key: 'tools',     icon: 'icon-tools', title: 'Tools' },
-                { position: 'left',  key: 'colorTransform', icon: 'icon-tint',   title: 'Color Transformation'}
+                { position: 'left',  key: 'rendering', icon: 'icon-picture',   title: 'Rendering'},
+                { position: 'right', key: 'tools',     icon: 'icon-tools', title: 'Tools' }
             ];
 
             function render () {
                 var root = $(rootSelector);
                 renderer.setElement($('.c-body-container', root)).render();
                 compositePipeline.setElement($('.c-tools-panel', root)).render();
-                colorTransformationView.setElement($('.c-colorTransform-control-container', root)).render();
+                colorTransformationView.setElement($('.c-rendering-panel', root)).render();
                 refreshCamera(true);
             }
 

@@ -106,8 +106,9 @@ cinema.views.LookupTableWidget = Backbone.View.extend({
         this.clampMinimum = this.xMinimum;
         this.clampMaximum = this.xMaximum;
         this.clampMidpoint = this.mapToClampedRange(0.5);
+        this.toolbarSelector = settings.toolbarSelector;
 
-        this.toolbarRendering = new cinema.views.RenderingControlToolbar({el: settings.toolbarContainer});
+        this.toolbarRendering = new cinema.views.RenderingControlToolbar({el: settings.toolbarSelector});
 
         this.listenTo(this.model, 'change', function () {
             this.render();
@@ -221,18 +222,20 @@ cinema.views.LookupTableWidget = Backbone.View.extend({
     },
 
     render:  function () {
-        this.$el.html(cinema.templates.lookupTable({
+        this.$('.c-control-panel-body').html(cinema.templates.lookupTable({
             luts: this.lutKeys,
             colors: this.swatchColors
         }));
-        this.toolbarRendering.render();
+        this.toolbarRendering.setElement(this.$(this.toolbarSelector)).render();
         this.$('.c-minimum-x').html(this.clampMinimum.toFixed(3));
         this.$('.c-midpoint-x').html(this.clampMidpoint.toFixed(3));
         this.$('.c-maximum-x').html(this.clampMaximum.toFixed(3));
         this.$('select[data-type="lutName"]').trigger('change');
         this.lookuptableCanvas = this.$('.c-lookuptable-canvas')[0];
-        this.context = this.lookuptableCanvas.getContext('2d');
-        this.drawLookupTable();
+        if(this.lookuptableCanvas) {
+            this.context = this.lookuptableCanvas.getContext('2d');
+            this.drawLookupTable();
+        }
     },
 
     drawControlPoints: function (ih, iw) {
