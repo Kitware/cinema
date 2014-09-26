@@ -78,7 +78,9 @@ cinema.viewFactory.registerView('composite-image-stack', 'RenderView', function 
     var lookupTableView = new cinema.views.LookupTableWidget({
         el: that.$('.c-rv-lookuptable-control-container'),
         model: that.visModel,
-        viewport: viewportView
+        viewport: viewportView,
+        toolbarContainer: that.$('.c-rv-lookuptable-panel .c-panel-toolbar')
+
     });
 
     var renderChildren = function () {
@@ -96,5 +98,5 @@ cinema.viewFactory.registerView('composite-image-stack', 'RenderView', function 
     });
 }, [
     { position: 'right', key: 'tools',       icon: 'icon-tools',    title: 'Tools' },
-    { position: 'left',  key: 'lookuptable', icon: 'icon-colormap', title: 'Lookup Table' }
+    { position: 'left',  key: 'lookuptable', icon: 'icon-picture', title: 'Rendering' }
 ]);

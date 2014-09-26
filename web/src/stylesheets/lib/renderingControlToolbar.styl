@@ -1,0 +1,26 @@
+$textColor = #666
+$highlightTextColor = #333
+$disabledColor = #aaa
+$disabledHighlightTextColor = #666
+
+.c-renderingcontrol-icon
+  color $textColor
+  cursor pointer
+  border-radius 3px
+
+  &:hover
+    background-color $disabledColor
+
+.c-renderingcontrol-icon-disabled
+  color $disabledColor
+
+  &:hover
+    color $disabledHighlightTextColor
+
+select.input-sm.c-lookuptable-select
+  height 20px
+  line-height 20px
+  margin-left 5px
+  color $textColor
+  font-weight bold
+  background-color rgba(210, 210, 210, 1.0)
