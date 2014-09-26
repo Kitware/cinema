@@ -1,0 +1,9 @@
+.c-renderingcontrol-toolbar-container
+  block buttons
+  a(title="Edit")
+    i.icon-pencil-1.c-renderingcontrol-icon.c-edit-lookuptable
+  a(title="Lighting")
+    i.icon-lightbulb.c-renderingcontrol-icon.c-edit-lighting
+  select(data-type="lutName").input-sm.c-lookuptable-select
+    each name in luts
+      option #{name}

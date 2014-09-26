@@ -1,0 +1,75 @@
+.c-lookuptable
+    .c-lookuptable-edit(state="on")
+       .row
+         .col-sm-9.c-lookuptable-swatches
+           each c, i in colors
+             if i % 31 === 0
+               .color-group
+                  each color in colors.slice(i, i + 31)
+                    .color.c-swatch-color(style="background: rgb(#{color.r},#{color.g},#{color.b})", color="#{color.r},#{color.g},#{color.b}")
+         input.input-sm.c-lookuptable-x(type="number", name="x")
+         .c-lookuptable-color(style="background: rgb(0,255,0)")
+
+       hr.c-rendering-hr
+
+    .row
+      .col-sm-12
+         canvas.c-lookuptable-canvas(width="280", height="25")
+
+    .c-lookuptable-labels
+      .row
+        .col-sm-4
+          label.c-minimum-x
+        .col-sm-4
+          label.c-midpoint-x
+        .col-sm-4
+          label.c-maximum-x
+
+    .c-lighting-edit(state="on")
+
+      hr.c-rendering-hr
+
+      .row
+        .col-sm-10.pull-right
+          select.c-lighting-select(data-type="light",data-coordinate="0").form-control.input-sm
+            option(value="-1") Left
+            option(value="0") Center
+            option(value="1") Right
+        b.pull-right(style="top:4px;position:relative;")
+          i.icon-resize-horizontal
+
+      .row
+        .col-sm-10.pull-right
+          select.c-lighting-select(data-type="light",data-coordinate="1").form-control.input-sm
+            option(value="1") Top
+            option(value="0") Center
+            option(value="-1") Bottom
+        b.pull-right(style="top:4px;position:relative;")
+          i.icon-resize-vertical
+
+      .row
+        .col-sm-10.pull-right
+          .input-group
+            input.input-sm.form-control(type="number", min="0", max="1", step="0.1", value="0.1", placeholder="Ambient term", name="ka").third-width
+            input.input-sm.form-control(type="number", min="0", max="1", step="0.1", value="0.6", placeholder="Diffuse term", name="kd").third-width
+            input.input-sm.form-control(type="number", min="0", max="1", step="0.1", value="0.3", placeholder="Specular term", name="ks").third-width
+        b.pull-right(style="top:4px;position:relative;")
+          i.icon-ajust(title="Light terms (Ambient/Diffuse/Specular)")
+
+      .row
+        .col-sm-10.pull-right
+          input.c-lighting-select.input-sm.form-control(type="number", min="0", max="10000", value="20", step="1", placeholder="Alpha Specular", name="alpha")
+        b.pull-right(style="top:4px;position:relative;")
+          i.icon-sun(title="Alpha Specular value")
+
+      .row
+        .col-sm-10.pull-right
+          .color.c-light-color(style="background: #FFFFFF;",color="1,1,1")
+          .color.c-light-color(style="background: #cccccc;",color=".8,.8,.8")
+          .color.c-light-color(style="background: #999999;",color=".6,.6,.6")
+          .color.c-light-color(style="background: #FF0000;",color="1,0,0")
+          .color.c-light-color(style="background: #00FF00;",color="0,1,0")
+          .color.c-light-color(style="background: #0000FF;",color="0,0,1")
+          .color.c-light-color(style="background: #FF00FF;",color="1,0,1")
+        b.pull-right(style="top:4px;position:relative;")
+          i.icon-tint(title="Light color")
