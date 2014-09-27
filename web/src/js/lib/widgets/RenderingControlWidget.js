@@ -33,9 +33,9 @@ cinema.views.RenderingControlWidget = Backbone.View.extend({
             var mousePosition = this.getMouseX(this.lookuptableCanvas, e);
             this.findControlPoint(this.lookuptableCanvas, mousePosition.x);
             if (this.selectedControlPoint !== -1) {
-                var color = [ this.controlPoints[this.selectedControlPoint].r,
-                    this.controlPoints[this.selectedControlPoint].g,
-                    this.controlPoints[this.selectedControlPoint].b ];
+                var color = [ (255 * this.controlPoints[this.selectedControlPoint].r).toFixed(0),
+                              (255 * this.controlPoints[this.selectedControlPoint].g).toFixed(0),
+                              (255 * this.controlPoints[this.selectedControlPoint].b).toFixed(0) ];
                 this.$('.c-lookuptable-color').css('background', "rgb(" + color.join(', ') + ")");
                 this.$('.c-lookuptable-x').val(this.mapToClampedRange(this.controlPoints[this.selectedControlPoint].x));
             }
@@ -46,7 +46,7 @@ cinema.views.RenderingControlWidget = Backbone.View.extend({
     mouseUp: function (e) {
         if (this.editLookupTable) {
             this.mousePressed = false;
-            var mousePosition = this.getMouseX(this.lookuptableCanvas, e);
+            this.updateLookupTable();
         }
     },
 
@@ -67,30 +67,27 @@ cinema.views.RenderingControlWidget = Backbone.View.extend({
                     }
                 );
                 this.selectedControlPoint = frontItem;
-                color = [ this.controlPoints[this.selectedControlPoint].r,
-                    this.controlPoints[this.selectedControlPoint].g,
-                    this.controlPoints[this.selectedControlPoint].b ];
+                color = [ (255 * this.controlPoints[this.selectedControlPoint].r).toFixed(0),
+                          (255 * this.controlPoints[this.selectedControlPoint].g).toFixed(0),
+                          (255 * this.controlPoints[this.selectedControlPoint].b).toFixed(0) ];
                 this.$('.c-lookuptable-color').css('background', "rgb(" + color.join(', ') + ")");
                 this.$('.c-lookuptable-x').val(this.mapToClampedRange(this.controlPoints[this.selectedControlPoint].x));
                 this.drawLookupTable();
+                this.updateLookupTable();
             }
             else {
                 if (this.selectedControlPoint !== 0 && this.selectedControlPoint !== (this.controlPoints.length - 1)) {
-                    color = [ this.controlPoints[this.selectedControlPoint].r,
-                        this.controlPoints[this.selectedControlPoint].g,
-                        this.controlPoints[this.selectedControlPoint].b ];
+                    color = [ (255 * this.controlPoints[this.selectedControlPoint].r).toFixed(0),
+                              (255 * this.controlPoints[this.selectedControlPoint].g).toFixed(0),
+                              (255 * this.controlPoints[this.selectedControlPoint].b).toFixed(0) ];
                     this.$('.c-lookuptable-color').css('background', "rgb(" + color.join(', ') + ")");
                     this.controlPoints.splice(this.selectedControlPoint, 1);
                     this.selectedControlPoint = -1;
                     this.drawLookupTable();
+                    this.updateLookupTable();
                 }
             }
         }
-    },
-
-    registerLUT: function (name, func) {
-        this.lutKeys.push(name);
-        this.lutMap[name] = func;
     },
 
     initialize: function (settings) {
@@ -110,6 +107,7 @@ cinema.views.RenderingControlWidget = Backbone.View.extend({
         this.clampMidpoint = this.mapToClampedRange(0.5);
         this.mousePressed = false;
         this.selectedControlPoint = -1;
+        this.lutName = "spectral";
 
         this.listenTo(this.model, 'change', function () {
             this.render();
@@ -121,18 +119,18 @@ cinema.views.RenderingControlWidget = Backbone.View.extend({
         this.renderingModel = new cinema.models.RenderingModel({
             url: '/rendering/rendering.json'
         });
-        this.listenTo(this.renderingModel, 'change', this.readyMethod);
+        this.listenTo(this.renderingModel, 'change', this.readyRenderingModel);
         this.renderingModel.fetch();
     },
 
-    readyMethod: function () {
+    readyRenderingModel: function () {
         var lookuptables = this.renderingModel.getData('lookuptables'),
             swatches = this.renderingModel.getData('swatches');
 
         this.lutMap = {};
         this.lutKeys = _.keys(lookuptables);
-        this.swatchColors = swatches["colors"];
-        this.controlPoints = lookuptables["rainbow"]["controlpoints"];
+        this.swatchColors = swatches.colors;
+        this.controlPoints = this.renderingModel.getControlPoints(this.lutName);
         this.render();
     },
 
@@ -146,17 +144,17 @@ cinema.views.RenderingControlWidget = Backbone.View.extend({
             this.$('.c-minimum-x').html(this.clampMinimum.toFixed(3));
             this.$('.c-midpoint-x').html(this.clampMidpoint.toFixed(3));
             this.$('.c-maximum-x').html(this.clampMaximum.toFixed(3));
-            var lutSelect = this.$('select[data-type="lutName"]');
-            lutSelect.empty();
-            for (var j = 0; j < this.lutKeys.length; j++){
-                lutSelect.append("<option value='" +this.lutKeys[j]+ "'>" +this.lutKeys[j]+ "</option>");
-            }
-            lutSelect.trigger('change');
             this.lookuptableCanvas = this.$('.c-lookuptable-canvas')[0];
             if (this.lookuptableCanvas) {
                 this.context = this.lookuptableCanvas.getContext('2d');
                 this.drawLookupTable();
             }
+            var lutSelect = this.$('select[data-type="lutName"]');
+            lutSelect.empty();
+            for (var j = 0; j < this.lutKeys.length; j = j + 1){
+                lutSelect.append("<option value='" +this.lutKeys[j]+ "'>" +this.lutKeys[j]+ "</option>");
+            }
+            lutSelect.trigger('change');
         }
     },
 
@@ -171,8 +169,10 @@ cinema.views.RenderingControlWidget = Backbone.View.extend({
             this.context.strokeStyle = 'black';
             this.context.stroke();
             this.context.beginPath();
-            this.context.fillStyle = "rgb(R,G,B)".replace(/R/g, this.controlPoints[i].r)
-                .replace(/G/g, this.controlPoints[i].g).replace(/B/g, this.controlPoints[i].b);
+            this.context.fillStyle = "rgb(R,G,B)"
+                .replace(/R/g, (255 * this.controlPoints[i].r).toFixed(0))
+                .replace(/G/g, (255 * this.controlPoints[i].g).toFixed(0))
+                .replace(/B/g, (255 * this.controlPoints[i].b).toFixed(0));
             this.context.arc(this.controlPoints[i].x * iw, y, radius, 0, 2 * Math.PI, false);
             this.context.fill();
             this.context.lineWidth = 2;
@@ -213,8 +213,10 @@ cinema.views.RenderingControlWidget = Backbone.View.extend({
         this.context.rect(0, 0, iw, ih);
         var grd = this.context.createLinearGradient(0, 0, iw, 0);
         for (i = 0; i < this.controlPoints.length; i = i + 1) {
-            grd.addColorStop(this.controlPoints[i].x, "rgb(R,G,B)".replace(/R/g, this.controlPoints[i].r)
-                .replace(/G/g, this.controlPoints[i].g).replace(/B/g, this.controlPoints[i].b));
+            grd.addColorStop(this.controlPoints[i].x, "rgb(R,G,B)"
+                .replace(/R/g, (255 * this.controlPoints[i].r).toFixed(0))
+                .replace(/G/g, (255 * this.controlPoints[i].g).toFixed(0))
+                .replace(/B/g, (255 * this.controlPoints[i].b).toFixed(0)));
         }
         this.context.fillStyle = grd;
         this.context.fill();
@@ -322,10 +324,11 @@ cinema.views.RenderingControlWidget = Backbone.View.extend({
         color[2] = Number(color[2]);
         this.$('.c-lookuptable-color').css('background', "rgb(" + color.join(', ') + ")");
         if (this.selectedControlPoint !== -1) {
-            this.controlPoints[this.selectedControlPoint].r = color[0];
-            this.controlPoints[this.selectedControlPoint].g = color[1];
-            this.controlPoints[this.selectedControlPoint].b = color[2];
+            this.controlPoints[this.selectedControlPoint].r = color[0]/255.0;
+            this.controlPoints[this.selectedControlPoint].g = color[1]/255.0;
+            this.controlPoints[this.selectedControlPoint].b = color[2]/255.0;
             this.drawLookupTable();
+            this.updateLookupTable();
         }
     },
 
@@ -333,7 +336,6 @@ cinema.views.RenderingControlWidget = Backbone.View.extend({
         var me = $(event.target),
             x,
             x0to1;
-        console.log("updateControlPoint");
         if (!(me.validity && !me.validity.valid))
         {
             x = Number(me.val());
@@ -364,6 +366,7 @@ cinema.views.RenderingControlWidget = Backbone.View.extend({
                     this.$('.c-midpoint-x').html(this.clampMidpoint.toFixed(3));
                     this.$('.c-lookuptable-x').val(this.mapToClampedRange(this.controlPoints[this.selectedControlPoint].x));
                 }
+                this.updateLookupTable();
             }
             else if (this.selectedControlPoint === (this.controlPoints.length - 1)) {
                 if (x < this.xMinimum) {
@@ -391,6 +394,7 @@ cinema.views.RenderingControlWidget = Backbone.View.extend({
                     this.$('.c-midpoint-x').html(this.clampMidpoint.toFixed(3));
                     this.$('.c-lookuptable-x').val(this.mapToClampedRange(this.controlPoints[this.selectedControlPoint].x));
                 }
+                this.updateLookupTable();
             }
             else {
                 if (x > this.mapToClampedRange(this.controlPoints[this.selectedControlPoint + 1].x)) {
@@ -409,6 +413,7 @@ cinema.views.RenderingControlWidget = Backbone.View.extend({
                     this.drawLookupTable();
                     this.$('.c-lookuptable-x').val(this.mapToClampedRange(this.controlPoints[this.selectedControlPoint].x));
                 }
+                this.updateLookupTable();
             }
         }
     },
@@ -420,9 +425,8 @@ cinema.views.RenderingControlWidget = Backbone.View.extend({
         color[1] = Number(color[1]);
         color[2] = Number(color[2]);
 
-        console.log("updateLightColor");
-
-        /* this.viewport.updateLightColor(color); */
+        this.viewport.setLightColor(color);
+        this.viewport.forceRedraw();
     },
 
     updateLighting: function () {
@@ -431,18 +435,30 @@ cinema.views.RenderingControlWidget = Backbone.View.extend({
             var me = $(this),
                 name = me.attr('name'),
                 value = Number(me.val());
-
             lightTerms[name] = value;
         });
+        this.updateLightTerms(lightTerms);
+    },
 
-        console.log("updateLighting");
-        /* this.viewport.updateLightTerms(lightTerms); */
+    updateLight: function (vectorLight) {
+        this.viewport.setLight(vectorLight);
+        this.viewport.forceRedraw();
+    },
+
+    updateLightTerms: function (terms) {
+        this.viewport.setLightTerms(terms);
+        this.viewport.forceRedraw();
+    },
+
+    updateLookupTable: function () {
+        var lutFunction = this.renderingModel.getLookupTableFunction(this.lutName);
+        this.viewport.setLUT(lutFunction);
+        this.viewport.forceRedraw();
     },
 
     updateViewPort: function (event) {
         var origin = $(event.target),
-            type = origin.attr('data-type'),
-            that = this;
+            type = origin.attr('data-type');
         if (type === 'light') {
             var vectorLight = [0, 0, 1];
             this.$('select[data-type="light"]').each(function () {
@@ -450,14 +466,13 @@ cinema.views.RenderingControlWidget = Backbone.View.extend({
                     idx = Number(me.attr('data-coordinate'));
                 vectorLight[idx] = Number(me.val());
             });
-            /* this.viewport.updateLight(vectorLight); */
+            this.updateLight(vectorLight);
         }
-        /*
-        else if (type === 'colorMapName') {
-            this.viewport.updateTransferFunction(this.transferFunctionMap[origin.val()]);
+        else if (type === 'lutName') {
+            this.lutName = origin.val();
+            this.controlPoints = this.renderingModel.getControlPoints(this.lutName);
+            this.updateLookupTable();
+            this.drawLookupTable();
         }
-        */
-        console.log("updateViewPort");
     }
-
 });
