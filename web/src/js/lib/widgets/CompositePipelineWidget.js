@@ -12,6 +12,10 @@ cinema.views.CompositePipelineWidget = Backbone.View.extend({
         this.toolbarSelector = settings.toolbarContainer || '.c-panel-toolbar';
 
         this.$('.c-control-panel-body').html(cinema.templates.compositePipelineWidget());
+
+        this.listenTo(cinema.events, 'c:editpipelines', this.hidePipelineEditor);
+        this.listenTo(cinema.events, 'c:editcontrols', this.hideControlEditor);
+
         this.pipeline = new cinema.views.PipelineControlWidget({
             el: this.$('.c-pipeline-content'),
             model: this.model,
@@ -34,5 +38,36 @@ cinema.views.CompositePipelineWidget = Backbone.View.extend({
         this.$('.c-control-panel-body').html(cinema.templates.compositePipelineWidget());
         this.pipeline.setElement(this.$('.c-pipeline-content')).render();
         this.controls.setElement(this.$('.c-control-content')).render();
-    }
+    },
+
+    hidePipelineEditor: function () {
+        var link = this.$('.c-pipeline-edit'),
+            state;
+        if (link.attr('state') === 'on') {
+            state = 'off';
+            link.attr('state', state);
+            link.fadeOut();
+        }
+        else {
+            state = 'on';
+            link.attr('state', state);
+            link.fadeIn();
+        }
+    },
+
+    hideControlEditor: function () {
+        var link = this.$('.c-control-edit'),
+            state;
+        if (link.attr('state') === 'on') {
+            state = 'off';
+            link.attr('state', state);
+            link.fadeOut();
+        }
+        else {
+            state = 'on';
+            link.attr('state', state);
+            link.fadeIn();
+        }
+    },
+
 });
