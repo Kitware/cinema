@@ -1,4 +1,4 @@
-cinema.views.LookupTableWidget = Backbone.View.extend({
+cinema.views.RenderingControlWidget = Backbone.View.extend({
     events: {
         'change .c-lookuptable-x': 'updateControlPoint',
         'click .c-swatch-color': 'updateColor',
@@ -100,15 +100,16 @@ cinema.views.LookupTableWidget = Backbone.View.extend({
         this.fields = settings.viewport.fields;
         this.viewpoint = settings.viewport.viewpoint;
         this.viewport = settings.viewport;
+        this.toolbarSelector = settings.toolbarSelector;
+        this.toolbarRendering = new cinema.views.RenderingControlToolbar({el: settings.toolbarSelector});
         this.editLookupTable = true;
-        this.xMinimum = -19657.00;
-        this.xMaximum = 5678.29;
+        this.xMinimum = 0.0;
+        this.xMaximum = 1.0;
         this.clampMinimum = this.xMinimum;
         this.clampMaximum = this.xMaximum;
         this.clampMidpoint = this.mapToClampedRange(0.5);
-        this.toolbarSelector = settings.toolbarSelector;
-
-        this.toolbarRendering = new cinema.views.RenderingControlToolbar({el: settings.toolbarSelector});
+        this.mousePressed = false;
+        this.selectedControlPoint = -1;
 
         this.listenTo(this.model, 'change', function () {
             this.render();
@@ -117,124 +118,45 @@ cinema.views.LookupTableWidget = Backbone.View.extend({
         this.listenTo(cinema.events, 'c:editlookuptable', this.hideLookupTableEditor);
         this.listenTo(cinema.events, 'c:editlighting', this.hideLightingEditor);
 
-        this.lutMap = {};
-        this.lutKeys = [];
-        this.swatchColors = [
-            {r: 255, g: 255, b: 255}, {r: 204, g: 255, b: 255}, {r: 204, g: 204, b: 255}, {r: 204, g: 204, b: 255},
-            {r: 204, g: 204, b: 255}, {r: 204, g: 204, b: 255}, {r: 204, g: 204, b: 255}, {r: 204, g: 204, b: 255},
-            {r: 204, g: 204, b: 255}, {r: 204, g: 204, b: 255}, {r: 204, g: 204, b: 255}, {r: 255, g: 204, b: 255},
-            {r: 255, g: 204, b: 204}, {r: 255, g: 204, b: 204}, {r: 255, g: 204, b: 204}, {r: 255, g: 204, b: 204},
-            {r: 255, g: 204, b: 204}, {r: 255, g: 204, b: 204}, {r: 255, g: 204, b: 204}, {r: 255, g: 204, b: 204},
-            {r: 255, g: 204, b: 204}, {r: 255, g: 255, b: 204}, {r: 204, g: 255, b: 204}, {r: 204, g: 255, b: 204},
-            {r: 204, g: 255, b: 204}, {r: 204, g: 255, b: 204}, {r: 204, g: 255, b: 204}, {r: 204, g: 255, b: 204},
-            {r: 204, g: 255, b: 204}, {r: 204, g: 255, b: 204}, {r: 204, g: 255, b: 204}, {r: 204, g: 204, b: 204},
-            {r: 153, g: 255, b: 255}, {r: 153, g: 204, b: 255}, {r: 153, g: 153, b: 255}, {r: 153, g: 153, b: 255},
-            {r: 153, g: 153, b: 255}, {r: 153, g: 153, b: 255}, {r: 153, g: 153, b: 255}, {r: 153, g: 153, b: 255},
-            {r: 153, g: 153, b: 255}, {r: 204, g: 153, b: 255}, {r: 255, g: 153, b: 255}, {r: 255, g: 153, b: 204},
-            {r: 255, g: 153, b: 153}, {r: 255, g: 153, b: 153}, {r: 255, g: 153, b: 153}, {r: 255, g: 153, b: 153},
-            {r: 255, g: 153, b: 153}, {r: 255, g: 153, b: 153}, {r: 255, g: 153, b: 153}, {r: 255, g: 204, b: 153},
-            {r: 255, g: 255, b: 153}, {r: 204, g: 255, b: 153}, {r: 153, g: 255, b: 153}, {r: 153, g: 255, b: 153},
-            {r: 153, g: 255, b: 153}, {r: 153, g: 255, b: 153}, {r: 153, g: 255, b: 153}, {r: 153, g: 255, b: 153},
-            {r: 153, g: 255, b: 153}, {r: 153, g: 255, b: 204}, {r: 204, g: 204, b: 204}, {r: 102, g: 255, b: 255},
-            {r: 102, g: 204, b: 255}, {r: 102, g: 153, b: 255}, {r: 102, g: 102, b: 255}, {r: 102, g: 102, b: 255},
-            {r: 102, g: 102, b: 255}, {r: 102, g: 102, b: 255}, {r: 102, g: 102, b: 255}, {r: 153, g: 102, b: 255},
-            {r: 204, g: 102, b: 255}, {r: 255, g: 102, b: 255}, {r: 255, g: 102, b: 204}, {r: 255, g: 102, b: 153},
-            {r: 255, g: 102, b: 102}, {r: 255, g: 102, b: 102}, {r: 255, g: 102, b: 102}, {r: 255, g: 102, b: 102},
-            {r: 255, g: 102, b: 102}, {r: 255, g: 153, b: 102}, {r: 255, g: 204, b: 102}, {r: 255, g: 255, b: 102},
-            {r: 204, g: 255, b: 102}, {r: 153, g: 255, b: 102}, {r: 102, g: 255, b: 102}, {r: 102, g: 255, b: 102},
-            {r: 102, g: 255, b: 102}, {r: 102, g: 255, b: 102}, {r: 102, g: 255, b: 102}, {r: 102, g: 255, b: 153},
-            {r: 102, g: 255, b: 204}, {r: 153, g: 153, b: 153}, {r:  51, g: 255, b: 255}, {r:  51, g: 204, b: 255},
-            {r:  51, g: 153, b: 255}, {r:  51, g: 102, b: 255}, {r:  51, g:  51, b: 255}, {r:  51, g:  51, b: 255},
-            {r:  51, g:  51, b: 255}, {r: 102, g:  51, b: 255}, {r: 153, g:  51, b: 255}, {r: 204, g:  51, b: 255},
-            {r: 255, g:  51, b: 255}, {r: 255, g:  51, b: 204}, {r: 255, g:  51, b: 153}, {r: 255, g:  51, b: 102},
-            {r: 255, g:  51, b:  51}, {r: 255, g:  51, b:  51}, {r: 255, g:  51, b:  51}, {r: 255, g: 102, b:  51},
-            {r: 255, g: 153, b:  51}, {r: 255, g: 204, b:  51}, {r: 255, g: 255, b:  51}, {r: 204, g: 255, b:  51},
-            {r: 153, g: 244, b:  51}, {r: 102, g: 255, b:  51}, {r:  51, g: 255, b:  51}, {r:  51, g: 255, b:  51},
-            {r:  51, g: 255, b:  51}, {r:  51, g: 255, b: 102}, {r:  51, g: 255, b: 153}, {r:  51, g: 255, b: 204},
-            {r: 153, g: 153, b: 153}, {r:   0, g: 255, b: 255}, {r:   0, g: 204, b: 255}, {r:   0, g: 153, b: 255},
-            {r:   0, g: 102, b: 255}, {r:   0, g:  51, b: 255}, {r:   0, g:   0, b: 255}, {r:  51, g:   0, b: 255},
-            {r: 102, g:   0, b: 255}, {r: 153, g:   0, b: 255}, {r: 204, g:   0, b: 255}, {r: 255, g:   0, b: 255},
-            {r: 255, g:   0, b: 204}, {r: 255, g:   0, b: 153}, {r: 255, g:   0, b: 102}, {r: 255, g:   0, b:  51},
-            {r: 255, g:   0, b:   0}, {r: 255, g:  51, b:   0}, {r: 255, g: 102, b:   0}, {r: 255, g: 153, b:   0},
-            {r: 255, g: 204, b:   0}, {r: 255, g: 255, b:   0}, {r: 204, g: 255, b:   0}, {r: 153, g: 255, b:   0},
-            {r: 102, g: 255, b:   0}, {r:  51, g: 255, b:   0}, {r:   0, g: 255, b:   0}, {r:   0, g: 255, b:  51},
-            {r:   0, g: 255, b: 102}, {r:   0, g: 255, b: 153}, {r:   0, g: 255, b: 204}, {r: 102, g: 102, b: 102},
-            {r:   0, g: 204, b: 204}, {r:   0, g: 204, b: 204}, {r:   0, g: 153, b: 204}, {r:   0, g: 102, b: 204},
-            {r:   0, g:  51, b: 204}, {r:   0, g:   0, b: 204}, {r:  51, g:   0, b: 204}, {r: 102, g:   0, b: 204},
-            {r: 153, g:   0, b: 204}, {r: 204, g:   0, b: 204}, {r: 204, g:   0, b: 204}, {r: 204, g:   0, b: 204},
-            {r: 204, g:   0, b: 153}, {r: 204, g:   0, b: 102}, {r: 204, g:   0, b:  51}, {r: 204, g:   0, b:   0},
-            {r: 204, g:  51, b:   0}, {r: 204, g: 102, b:   0}, {r: 204, g: 153, b:   0}, {r: 204, g: 204, b:   0},
-            {r: 204, g: 204, b:   0}, {r: 204, g: 204, b:   0}, {r: 153, g: 204, b:   0}, {r: 102, g: 204, b:   0},
-            {r:  51, g: 204, b:   0}, {r:   0, g: 204, b:   0}, {r:   0, g: 204, b:  51}, {r:   0, g: 204, b: 102},
-            {r:   0, g: 204, b: 153}, {r:   0, g: 204, b: 204}, {r: 102, g: 102, b: 102}, {r:   0, g: 153, b: 153},
-            {r:   0, g: 153, b: 153}, {r:   0, g: 153, b: 153}, {r:   0, g: 102, b: 153}, {r:   0, g:  51, b: 153},
-            {r:   0, g:   0, b: 153}, {r:  51, g:   0, b: 153}, {r: 102, g:   0, b: 153}, {r: 153, g:   0, b: 153},
-            {r: 153, g:   0, b: 153}, {r: 153, g:   0, b: 153}, {r: 153, g:   0, b: 153}, {r: 153, g:   0, b: 153},
-            {r: 153, g:   0, b: 102}, {r: 153, g:   0, b:  51}, {r: 153, g:   0, b:   0}, {r: 153, g:  51, b:   0},
-            {r: 153, g: 102, b:   0}, {r: 153, g: 153, b:   0}, {r: 153, g: 153, b:   0}, {r: 153, g: 153, b:   0},
-            {r: 153, g: 153, b:   0}, {r: 153, g: 153, b:   0}, {r: 102, g: 153, b:   0}, {r:  51, g: 153, b:   0},
-            {r:   0, g: 153, b:   0}, {r:   0, g: 153, b:  51}, {r:   0, g: 153, b: 102}, {r:   0, g: 153, b: 153},
-            {r:   0, g: 153, b: 153}, {r:  51, g:  51, b:  51}, {r:   0, g: 102, b: 102}, {r:   0, g: 102, b: 102},
-            {r:   0, g: 102, b: 102}, {r:   0, g: 102, b: 102}, {r:   0, g:  51, b: 102}, {r:   0, g:   0, b: 102},
-            {r:  51, g:   0, b: 102}, {r: 102, g:   0, b: 102}, {r: 102, g:   0, b: 102}, {r: 102, g:   0, b: 102},
-            {r: 102, g:   0, b: 102}, {r: 102, g:   0, b: 102}, {r: 102, g:   0, b: 102}, {r: 102, g:   0, b: 102},
-            {r: 102, g:   0, b:  51}, {r: 102, g:   0, b:   0}, {r: 102, g:  51, b:   0}, {r: 102, g: 102, b:   0},
-            {r: 102, g: 102, b:   0}, {r: 102, g: 102, b:   0}, {r: 102, g: 102, b:   0}, {r: 102, g: 102, b:   0},
-            {r: 102, g: 102, b:   0}, {r: 102, g: 102, b:   0}, {r:  51, g: 102, b:   0}, {r:   0, g: 102, b:   0},
-            {r:   0, g: 102, b:  51}, {r:   0, g: 102, b: 102}, {r:   0, g: 102, b: 102}, {r:   0, g: 102, b: 102},
-            {r:   0, g:   0, b:   0}, {r:   0, g:  51, b:  51}, {r:   0, g:  51, b:  51}, {r:   0, g:  51, b:  51},
-            {r:   0, g:  51, b:  51}, {r:   0, g:  51, b:  51}, {r:   0, g:   0, b:  51}, {r:  51, g:   0, b:  51},
-            {r:  51, g:   0, b:  51}, {r:  51, g:   0, b:  51}, {r:  51, g:   0, b:  51}, {r:  51, g:   0, b:  51},
-            {r:  51, g:   0, b:  51}, {r:  51, g:   0, b:  51}, {r:  51, g:   0, b:  51}, {r:  51, g:   0, b:  51},
-            {r:  51, g:   0, b:   0}, {r:  51, g:  51, b:   0}, {r:  51, g:  51, b:   0}, {r:  51, g:  51, b:   0},
-            {r:  51, g:  51, b:   0}, {r:  51, g:  51, b:   0}, {r:  51, g:  51, b:   0}, {r:  51, g:  51, b:   0},
-            {r:  51, g:  51, b:   0}, {r:   0, g:  51, b:   0}, {r:   0, g:  51, b:  51}, {r:   0, g:  51, b:  51},
-            {r:   0, g:  51, b:  51}, {r:   0, g:  51, b:  51}, {r:  51, g:  51, b:  51}
-        ];
-        this.controlPoints = [
-            {x: 0.00, r:    0, g:    0, b:  255},
-            {x: 0.25, r:    0, g:  255, b:  255},
-            {x: 0.50, r:    0, g:  255, b:    0},
-            {x: 0.75, r:  255, g:  255, b:    0},
-            {x: 1.00, r:  255, g:    0, b:    0}
-        ];
-        this.mousePressed = false;
-        this.selectedControlPoint = -1;
-
-        this.initializeLUTs();
+        this.renderingModel = new cinema.models.RenderingModel({
+            url: '/rendering/rendering.json'
+        });
+        this.listenTo(this.renderingModel, 'change', this.readyMethod);
+        this.renderingModel.fetch();
     },
 
-    initializeLUTs: function () {
-        var lutBuilder = new cinema.utilities.LookupTableBuilder();
-        this.registerLUT("Gray", function (value) {
-            var v = Math.floor(value * 255);
-            return [v, v, v];
-        });
-        this.registerLUT("Rainbow", lutBuilder.buildLUT([
-            0.0, 0.0, 0.0, 1.0,
-            1.0, 1.0, 0.0, 0.0
-        ]));
-        this.registerLUT("Cold To Warm", lutBuilder.buildLUT([
-            0.0, 0.231373, 0.298039, 0.752941,
-            0.5, 0.865003, 0.865003, 0.865003,
-            1.0, 0.705882, 0.0156863, 0.14902
-        ]));
+    readyMethod: function () {
+        var lookuptables = this.renderingModel.getData('lookuptables'),
+            swatches = this.renderingModel.getData('swatches');
+
+        this.lutMap = {};
+        this.lutKeys = _.keys(lookuptables);
+        this.swatchColors = swatches["colors"];
+        this.controlPoints = lookuptables["rainbow"]["controlpoints"];
+        this.render();
     },
 
     render:  function () {
-        this.$('.c-control-panel-body').html(cinema.templates.lookupTable({
-            luts: this.lutKeys,
-            colors: this.swatchColors
-        }));
-        this.toolbarRendering.setElement(this.$(this.toolbarSelector)).render();
-        this.$('.c-minimum-x').html(this.clampMinimum.toFixed(3));
-        this.$('.c-midpoint-x').html(this.clampMidpoint.toFixed(3));
-        this.$('.c-maximum-x').html(this.clampMaximum.toFixed(3));
-        this.$('select[data-type="lutName"]').trigger('change');
-        this.lookuptableCanvas = this.$('.c-lookuptable-canvas')[0];
-        if(this.lookuptableCanvas) {
-            this.context = this.lookuptableCanvas.getContext('2d');
-            this.drawLookupTable();
+        if (this.renderingModel.loaded()) {
+            this.$('.c-control-panel-body').html(cinema.templates.renderingControl({
+                luts: this.lutKeys,
+                colors: this.swatchColors
+            }));
+            this.toolbarRendering.setElement(this.$(this.toolbarSelector)).render();
+            this.$('.c-minimum-x').html(this.clampMinimum.toFixed(3));
+            this.$('.c-midpoint-x').html(this.clampMidpoint.toFixed(3));
+            this.$('.c-maximum-x').html(this.clampMaximum.toFixed(3));
+            var lutSelect = this.$('select[data-type="lutName"]');
+            lutSelect.empty();
+            for (var j = 0; j < this.lutKeys.length; j++){
+                lutSelect.append("<option value='" +this.lutKeys[j]+ "'>" +this.lutKeys[j]+ "</option>");
+            }
+            lutSelect.trigger('change');
+            this.lookuptableCanvas = this.$('.c-lookuptable-canvas')[0];
+            if (this.lookuptableCanvas) {
+                this.context = this.lookuptableCanvas.getContext('2d');
+                this.drawLookupTable();
+            }
         }
     },
 
