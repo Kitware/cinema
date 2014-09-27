@@ -21,6 +21,7 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         this.lightTerms = { ka: 0.1, kd: 0.6, ks: 0.3, alpha: 20.0 };
         this._forceRedraw = false;
         this.eye = new Vector(0, 0, 1);
+        this.count = 0;
         /*
         for (var phi=0; phi <= 360; phi+=30) {
             var res = this._spherical2CartesianN(phi, 45.0);
@@ -123,10 +124,10 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
 
         if (renderTerms.canLight) {
             //Get all terms required for color of this pixel
-            var nX = this._realValueOfPixel('nX', renderTerms),
-                nY = this._realValueOfPixel('nY', renderTerms),
-                nZ = this._realValueOfPixel('nZ', renderTerms),
-                value = this._valueOfPixel(renderTerms.scalarArray, renderTerms);
+            var vnX = this._realValueOfPixel('vnX', renderTerms),
+                vnY = this._realValueOfPixel('vnY', renderTerms),
+                vnZ = this._realValueOfPixel('vnZ', renderTerms),
+                value = this._valueOfPixel('layer', renderTerms);
 
             //to debug normals, use this
             //return [(nX+1)*128,(nY+1)*128,(nZ+1)*128,255];
@@ -147,7 +148,7 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
 
             //todo: foreach light
             var lightPosition = this.worldlight;
-            var normal = new Vector(nX, nY, nZ).unit();
+            var normal = new Vector(vnX, vnY, vnZ).unit();
 
             var kd = this.lightTerms.kd;
             var diffuseTerm = kd * lightPosition.dot(normal);
@@ -185,7 +186,6 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         }
         return -1;
     },
-
 
     /**
      * Computes the composite image and writes it into the composite buffer.
@@ -247,60 +247,41 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         //lightTermsOffsets to have start address into spritemap for each layer
         var canLight = false;
         var lightTermsOffsets = {};
-        var pnX = -1, pnY = -1, pnZ = -1, pV = -1;
-        var scalarArray = 'vRTData'; //pick any array we have values for
-        renderTerms.scalarArray = scalarArray;
+        var pnX = -1, pnY = -1, pnZ = -1;
         var p = this.model.attributes.metadata.fields;
         for (var key in p) {
             if (p.hasOwnProperty(key)) {
-                if (p[key] === 'nX') {
+                if (p[key] === 'vnX' || p[key] === 'nX') {
                     pnX = key;
                 }
-                if (p[key] === 'nY') {
+                if (p[key] === 'vnY' || p[key] === 'nY') {
                     pnY = key;
                 }
-                if (p[key] === 'nZ') {
+                if (p[key] === 'vnZ' || p[key] === 'nZ') {
                     pnZ = key;
-                }
-                if (p[key] === scalarArray) {
-                    pV = key;
                 }
             }
         }
-        if (pnX !== -1 && pnY !== -1 && pnZ !== -1 && pV !== -1) {
+        if (pnX !== -1 && pnY !== -1 && pnZ !== -1) {
             canLight = true;
             p = this.model.attributes.metadata.offset;
             for (var k in p) {
                 if (p.hasOwnProperty(k)) {
                     layer = k.substr(0, 1);
                     var field = k.substr(1, 1);
-                    var offset = (this.model.getSpriteSize() - p[k]) * isize;
-                    if (field === pnX) {
-                        if (lightTermsOffsets[layer]) {
-                            lightTermsOffsets[layer].nX = offset;
-                        } else {
-                            lightTermsOffsets[layer] = {'nX': offset};
+                    if (field === pnX || field === pnY || field === pnZ) {
+                        var offset = (this.model.getSpriteSize() - p[k]) * isize;
+                        if (!lightTermsOffsets[layer]) {
+                            lightTermsOffsets[layer] = {};
                         }
-                    }
-                    if (field === pnY) {
-                        if (lightTermsOffsets[layer]) {
-                            lightTermsOffsets[layer].nY = offset;
-                        } else {
-                            lightTermsOffsets[layer] = {'nY': offset};
+                        if (field === pnX) {
+                            lightTermsOffsets[layer].vnX = offset;
                         }
-                    }
-                    if (field === pnZ) {
-                        if (lightTermsOffsets[layer]) {
-                            lightTermsOffsets[layer].nZ = offset;
-                        } else {
-                            lightTermsOffsets[layer] = {'nZ': offset};
+                        if (field === pnY) {
+                            lightTermsOffsets[layer].vnY = offset;
                         }
-                    }
-                    if (field === pV) {
-                        if (lightTermsOffsets[layer]) {
-                            lightTermsOffsets[layer][scalarArray] = offset;
-                        } else {
-                            lightTermsOffsets[layer] = { scalarArray: offset };
+                        if (field === pnZ) {
+                            lightTermsOffsets[layer].vnZ = offset;
                         }
                     }
                 }
@@ -320,7 +301,9 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
                     orderOffset *= isize;
                     orderOffset += localIdx;
 
-                    renderTerms.layer = [ pixelBuffer[orderOffset + 0], pixelBuffer[orderOffset + 1], pixelBuffer[orderOffset + 2] ];
+                    renderTerms.layer = [ pixelBuffer[orderOffset + 0],
+                                          pixelBuffer[orderOffset + 1],
+                                          pixelBuffer[orderOffset + 2] ];
 
                     renderTerms.canLight = false;
                     if (canLight) {
@@ -329,31 +312,24 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
                         if (layer in lightTermsOffsets) {
                             //yes
                             var Offsets = {
-                                'nX': lightTermsOffsets[layer].nX,
-                                'nY': lightTermsOffsets[layer].nY,
-                                'nZ': lightTermsOffsets[layer].nZ
+                                'vnX': lightTermsOffsets[layer].vnX,
+                                'vnY': lightTermsOffsets[layer].vnY,
+                                'vnZ': lightTermsOffsets[layer].vnZ
                             };
-                            Offsets[scalarArray] = lightTermsOffsets[layer][scalarArray];
-
-                            renderTerms.nX = [
-                                pixelBuffer[Offsets.nX + localIdx + 0],
-                                pixelBuffer[Offsets.nX + localIdx + 1],
-                                pixelBuffer[Offsets.nX + localIdx + 2]
+                            renderTerms.vnX = [
+                                pixelBuffer[Offsets.vnX + localIdx + 0],
+                                pixelBuffer[Offsets.vnX + localIdx + 1],
+                                pixelBuffer[Offsets.vnX + localIdx + 2]
                             ];
-                            renderTerms.nY = [
-                                pixelBuffer[Offsets.nY + localIdx + 0],
-                                pixelBuffer[Offsets.nY + localIdx + 1],
-                                pixelBuffer[Offsets.nY + localIdx + 2]
+                            renderTerms.vnY = [
+                                pixelBuffer[Offsets.vnY + localIdx + 0],
+                                pixelBuffer[Offsets.vnY + localIdx + 1],
+                                pixelBuffer[Offsets.vnY + localIdx + 2]
                             ];
-                            renderTerms.nZ = [
-                                pixelBuffer[Offsets.nZ + localIdx + 0],
-                                pixelBuffer[Offsets.nZ + localIdx + 1],
-                                pixelBuffer[Offsets.nZ + localIdx + 2]
-                            ];
-                            renderTerms[scalarArray] = [
-                                pixelBuffer[Offsets[scalarArray] + localIdx + 0],
-                                pixelBuffer[Offsets[scalarArray] + localIdx + 1],
-                                pixelBuffer[Offsets[scalarArray] + localIdx + 2]
+                            renderTerms.vnZ = [
+                                pixelBuffer[Offsets.vnZ + localIdx + 0],
+                                pixelBuffer[Offsets.vnZ + localIdx + 1],
+                                pixelBuffer[Offsets.vnZ + localIdx + 2]
                             ];
                             renderTerms.canLight = true;
                         }
@@ -393,6 +369,7 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
             changed = true;
             this._forceRedraw = false;
             this._recomputeLight();
+            this.count = 0;
         }
         if (changed) {
             this.compositeManager.downloadData(this._controls);
