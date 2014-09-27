@@ -90,8 +90,8 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
                 //this.drawImage();
             }
         });
-        this.listenTo(this.fields, 'change', this.drawImage);
-        this.listenTo(this.viewpoint, 'change', this.drawImage);
+        // this.listenTo(this.fields, 'change', this.drawImage);
+        // this.listenTo(this.viewpoint, 'change', this.drawImage);
         this.listenTo(this.layers, 'change', this.updateQuery);
 
         this.webglCompositor = settings.webglCompositor;
@@ -169,12 +169,10 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
             this._computeCompositeInfo(data);
         }
 
-        var renderCanvas = this.$('.c-webglvis-render-canvas')[0],
-            compositeCanvas = this.$('.c-webglvis-composite-buffer')[0],
+        var compositeCanvas = this.$('.c-webglvis-composite-buffer')[0],
             spriteCanvas = this.$('.c-webglvis-spritesheet-buffer')[0],
-            //webglCanvas = this.$('.c-webglvis-webgl-canvas')[0],
+            webglCanvas = this.$('.c-webglvis-webgl-canvas')[0],
             dim = this.compositeModel.getImageSize(),
-            // spritesheetDim = this.compositeModel.getSpriteImageSize(),
             spritesheetDim = [ data.image.width, data.image.height ],
             spriteCtx = spriteCanvas.getContext('2d'),
             compositeCtx = compositeCanvas.getContext('2d'),
@@ -188,12 +186,10 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
             width: dim[0],
             height: dim[1]
         });
-/*
         $(webglCanvas).attr({
             width: dim[0],
             height: dim[1]
         })
-*/
 
         // Fill full spritesheet buffer with raw image data
         spriteCtx.clearRect(0, 0, spritesheetDim[0], spritesheetDim[1]);
@@ -201,10 +197,10 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
 
         this.webglCompositor.clearFbo();
 
-        // var idxList = [ 21, 20, 19, 17, 15, 13, 11, 9, 7, 5, 3, 1 ];
+        var idxList = [ 21, 20, 19, 17, 15, 13, 11, 9, 7, 5, 3, 1 ];
         var imgw = dim[0], imgh = dim[1];
         // var idxList = [ 21, 20, 18, 16, 14, 12, 10, 8, 6, 4, 2, 0 ];
-        var idxList = [ 21, 20, 19 ];
+        // var idxList = [ 21, 20, 19 ];
         for (var i in idxList) {
           console.log(i);
           // this.webglCompositor.copySegmentOfSprite(idxList[i]);
@@ -228,7 +224,7 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
 
         // Draw buffer to composite canvas
         //compositeCtx.putImageData(frontBuffer, 0, 0);
-        // this.trigger('c:composited');
+        //this.trigger('c:composited');
     },
 
     /**
@@ -236,14 +232,19 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
      * canvas, and it will draw it with the correct scale, zoom, and center
      * onto the render canvas.
      */
+    /*
     drawImage: function () {
         var renderCanvas = this.$('.c-webglvis-render-canvas')[0],
-            // compositeCanvas = this.$('.c-webglvis-composite-buffer')[0],
-            compositeCanvas = this.$('.c-webglvis-webgl-canvas')[0],
+            compositeCanvas = this.$('.c-webglvis-composite-buffer')[0],
+            webglCanvas = this.$('.c-webglvis-webgl-canvas')[0],
             w = this.$el.width(),
             h = this.$el.height(),
             iw = compositeCanvas.width,
             ih = compositeCanvas.height;
+
+        var compositeCtx = compositeCanvas.getContext('2d');
+        compositeCtx.clearRect(0, 0, iw, ih);
+        compositeCtx.drawImage(webglCanvas.toDataURL("image/png"), 0, 0);
 
         $(renderCanvas).attr({
             width: w,
@@ -267,6 +268,7 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
 
         this.trigger('c:drawn');
     },
+    */
 
     /**
      * Reset the zoom level and drawing center such that the image is
@@ -309,7 +311,7 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
         if (changed || forced) {
             this.compositeManager.downloadData(this._fields);
         } else {
-            this.drawImage();
+            //this.drawImage();
         }
         return this;
     },

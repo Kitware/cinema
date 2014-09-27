@@ -23,7 +23,7 @@ function CreateWebGlCompositor() {
   // --------------------------------------------------------------------------
   function init(imgSize, webglCanvas, spriteSheetCanvas, copyBufferCanvas) {
     if (initialized == true) {
-      return;
+      cleanUpGlState();
     }
 
     initialized = true;
@@ -35,28 +35,7 @@ function CreateWebGlCompositor() {
     copyCanvas = copyBufferCanvas;
 
     //Inialize GL context
-    // initGL();
-
-
-    // Get A WebGL context
-    // gl = webglCanvas.getContext("experimental-webgl", {premultipliedAlpha: false}) || glcanvas.getContext("webgl",  {premultipliedAlpha: false});
-    gl = webglCanvas.getContext("experimental-webgl") || glcanvas.getContext("webgl");
-    if (!gl) {
-      return null;
-    }
-    // Set clear color to white, fully opaque
-    gl.clearColor(0.0, 0.0, 0.0, 0.0);
-    gl.viewport(0, 0, imgw, imgh);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-
-    var vertexUnits = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
-    var fragmentUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
-    var combinedUnits = gl.getParameter(gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS);
-
-    console.log("vertex texture image units: " + vertexUnits);
-    console.log("fragment texture image units: " + fragmentUnits);
-    console.log("combined texture image units: " + combinedUnits);
-
+    initGL();
 
     // Create a texture object
     createTexture();
@@ -103,12 +82,36 @@ function CreateWebGlCompositor() {
 
   // --------------------------------------------------------------------------
   //
+  // --------------------------------------------------------------------------
+  function cleanUpGlState() {
+      // Clean up the display program and its shaders
+      for (var i = 0; i < displayProgram.shaders.length; i+=1) {
+        gl.deleteShader(displayProgram.shaders[i]);
+      }
+      gl.deleteProgram(displayProgram);
+
+      // Clean up the composite program and its shaders
+      for (var j = 0; j < compositeProgram.shaders.length; j+=1) {
+        gl.deleteShader(compositeProgram.shaders[j]);
+      }
+      gl.deleteProgram(compositeProgram);
+
+      // Now clean up fbo, textures, and buffers
+      gl.deleteFramebuffer(fbo);
+      gl.deleteTexture(renderTexture);
+      gl.deleteTexture(texture);
+      gl.deleteBuffer(texCoordBuffer);
+      gl.deleteBuffer(posCoordBuffer);
+  }
+
+
+  // --------------------------------------------------------------------------
   //
   // --------------------------------------------------------------------------
   function initGL() {
     // Get A WebGL context
-    gl = glCanvas.getContext("experimental-webgl", {premultipliedAlpha: false}) || glcanvas.getContext("webgl",  {premultipliedAlpha: false});
-    // gl = glcanvas.getContext("experimental-webgl") || glcanvas.getContext("webgl");
+    // gl = glCanvas.getContext("experimental-webgl", {premultipliedAlpha: false, preserveDrawingBuffer: true}) || glcanvas.getContext("webgl",  {premultipliedAlpha: false, preserveDrawingBuffer: true});
+    gl = glCanvas.getContext("experimental-webgl") || glcanvas.getContext("webgl");
     if (!gl) {
       return null;
     }
@@ -175,6 +178,7 @@ function CreateWebGlCompositor() {
       return null;
     }
 
+    program.shaders = shaders;
     gl.useProgram(program);
 
     return program;
