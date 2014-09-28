@@ -14,7 +14,7 @@ cinema.views.ToolsWidget = Backbone.View.extend({
 
         this.listenTo(cinema.events, 'c:editcontrols', this.hideControlEditor);
 
-        this.controls = new cinema.views.FieldsControlWidget({
+        this.controls = new cinema.views.ControlWidget({
             el: this.$('.c-control-content'),
             model: this.model,
             viewport: this.viewport,

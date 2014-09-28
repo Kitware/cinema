@@ -22,7 +22,7 @@ cinema.views.CompositeToolsWidget = Backbone.View.extend({
             layers: this.layers
         });
 
-        this.controls = new cinema.views.FieldsControlWidget({
+        this.controls = new cinema.views.ControlWidget({
             el: this.$('.c-control-content'),
             model: this.model,
             viewport: this.viewpoint,

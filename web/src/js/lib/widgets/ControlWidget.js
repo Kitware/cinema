@@ -1,29 +1,29 @@
-cinema.views.FieldsControlWidget = Backbone.View.extend({
+cinema.views.ControlWidget = Backbone.View.extend({
     events: {
         'change input': function (e) {
             var el = $(e.target),
-                field = el.closest('.c-field-control').attr('field_id'),
+                field = el.closest('.c-controls-control').attr('field_id'),
                 value = el.val();
             this.updateIndex(field, value);
         },
 
         'mousemove input': function (e) {
             var el = $(e.target),
-                field = el.closest('.c-field-control').attr('field_id'),
+                field = el.closest('.c-controls-control').attr('field_id'),
                 value = el.val();
             this.updateIndex(field, value);
         },
 
         'change select': function (e) {
             var el = $(e.target),
-                field = el.closest('.c-field-control').attr('field_id'),
+                field = el.closest('.c-controls-control').attr('field_id'),
                 value = el.val();
             this.updateValue(field, value);
         },
 
-        'click .c-field-control-button': function (e) {
+        'click .c-controls-control-button': function (e) {
             var el = $(e.target),
-                field = el.closest('.c-field-control').attr('field_id'),
+                field = el.closest('.c-controls-control').attr('field_id'),
                 action = el.attr('action');
             this[action](field);
         }
@@ -95,7 +95,7 @@ cinema.views.FieldsControlWidget = Backbone.View.extend({
     },
 
     render: function () {
-        this.$el.html(cinema.templates.fieldsControl({
+        this.$el.html(cinema.templates.control({
             fields: this._annotateFields(this.fields.getFieldsMap()),
             order: this.order
         }));
@@ -104,7 +104,7 @@ cinema.views.FieldsControlWidget = Backbone.View.extend({
 
     _refresh: function () {
         this.order.forEach(function (fieldName) {
-            var group = this.$('.c-field-control[field_id="' + fieldName + '"]'),
+            var group = this.$('.c-controls-control[field_id="' + fieldName + '"]'),
                 value = this.fields.getField(fieldName),
                 idx = this.fields.getFieldIndex(fieldName),
                 type = this.fields.getFieldType(fieldName);
