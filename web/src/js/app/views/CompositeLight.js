@@ -35,7 +35,7 @@
                 layers: layers,
                 toolbarSelector: '.c-panel-toolbar'
             }),
-            renderingView = new cinema.views.RenderingControlWidget({
+            renderingView = new cinema.views.RenderingWidget({
                 el: $('.c-rendering-panel', container),
                 model: compositeModel,
                 toolbarSelector: '.c-panel-toolbar',

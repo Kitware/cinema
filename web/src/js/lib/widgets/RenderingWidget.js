@@ -1,4 +1,4 @@
-cinema.views.RenderingControlWidget = Backbone.View.extend({
+cinema.views.RenderingWidget = Backbone.View.extend({
     events: {
         'change .c-lookuptable-x': 'updateControlPoint',
         'click .c-swatch-color': 'updateColor',
@@ -98,7 +98,7 @@ cinema.views.RenderingControlWidget = Backbone.View.extend({
         this.viewpoint = settings.viewport.viewpoint;
         this.viewport = settings.viewport;
         this.toolbarSelector = settings.toolbarSelector;
-        this.toolbarRendering = new cinema.views.RenderingControlToolbar({el: settings.toolbarSelector});
+        this.toolbarRendering = new cinema.views.RenderingToolbar({el: settings.toolbarSelector});
         this.editLookupTable = true;
         this.xMinimum = 0.0;
         this.xMaximum = 1.0;
@@ -136,7 +136,7 @@ cinema.views.RenderingControlWidget = Backbone.View.extend({
 
     render:  function () {
         if (this.renderingModel.loaded()) {
-            this.$('.c-control-panel-body').html(cinema.templates.renderingControl({
+            this.$('.c-control-panel-body').html(cinema.templates.rendering({
                 luts: this.lutKeys,
                 colors: this.swatchColors
             }));

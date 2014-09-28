@@ -1,4 +1,4 @@
-cinema.views.RenderingControlToolbar = Backbone.View.extend({
+cinema.views.RenderingToolbar = Backbone.View.extend({
     events: {
         'click .c-edit-lookuptable': function () {
             cinema.events.trigger('c:editlookuptable');
@@ -10,8 +10,8 @@ cinema.views.RenderingControlToolbar = Backbone.View.extend({
     },
 
     initialize: function () {
-        this._template = cinema.templates.renderingControlToolbar;
-        this.luts = ["rainbow", "greyscale", "red2blue", "citrus"];
+        this._template = cinema.templates.renderingToolbar;
+        this.luts = ["rainbow"];
     },
 
     render: function () {
