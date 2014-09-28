@@ -12,6 +12,8 @@ function CreateWebGlCompositor() {
   numSprites = 22,
   imgw = 500,
   imgh = 500,
+  viewportWidth = 0,
+  viewportHeight = 0,
   glCanvas = null,
   spriteCanvas = null,
   copyCanvas = null,
@@ -30,6 +32,8 @@ function CreateWebGlCompositor() {
 
     imgw = imgSize[0];
     imgh = imgSize[1];
+    viewportWidth = webglCanvas.width;
+    viewportHeight = webglCanvas.height;
     glCanvas = webglCanvas;
     spriteCanvas = spriteSheetCanvas;
     copyCanvas = copyBufferCanvas;
@@ -117,8 +121,8 @@ function CreateWebGlCompositor() {
     }
     // Set clear color to white, fully opaque
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
-    gl.viewport(0, 0, imgw, imgh);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    //gl.viewport(0, 0, imgw, imgh);
+    //gl.clear(gl.COLOR_BUFFER_BIT);
 
     var vertexUnits = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
     var fragmentUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
@@ -310,7 +314,7 @@ function CreateWebGlCompositor() {
     gl.useProgram(displayProgram);
 
     gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.viewport(0, 0, imgw, imgh);
+    gl.viewport(0, 0, viewportWidth, viewportHeight);
 
     // Set up the sampler uniform and bind the rendered texture
     var u_image = gl.getUniformLocation(displayProgram, "u_image");

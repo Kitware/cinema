@@ -5,31 +5,31 @@
 cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
     // Expose primitive events from the canvas for building interactors
     events: {
-        'click .c-vis-render-canvas': function (e) {
+        'click .c-webglvis-webgl-canvas': function (e) {
             this.trigger('c:click', e);
         },
-        'dblclick .c-vis-render-canvas': function (e) {
+        'dblclick .c-webglvis-webgl-canvas': function (e) {
             this.trigger('c:dblclick', e);
         },
-        'mousedown .c-vis-render-canvas': function (e) {
+        'mousedown .c-webglvis-webgl-canvas': function (e) {
             this.trigger('c:mousedown', e);
         },
-        'mousemove .c-vis-render-canvas': function (e) {
+        'mousemove .c-webglvis-webgl-canvas': function (e) {
             this.trigger('c:mousemove', e);
         },
-        'mouseup .c-vis-render-canvas': function (e) {
+        'mouseup .c-webglvis-webgl-canvas': function (e) {
             this.trigger('c:mouseup', e);
         },
-        'mousewheel .c-vis-render-canvas': function (e) {
+        'mousewheel .c-webglvis-webgl-canvas': function (e) {
             this.trigger('c:mousewheel', e);
         },
-        'DOMMouseScroll .c-vis-render-canvas': function (e) {
+        'DOMMouseScroll .c-webglvis-webgl-canvas': function (e) {
             this.trigger('c:mousewheel', e);
         },
-        'keypress .c-vis-render-canvas': function (e) {
+        'keypress .c-webglvis-webgl-canvas': function (e) {
             this.trigger('c:keypress', e);
         },
-        'contextmenu .c-vis-render-canvas': function (e) {
+        'contextmenu .c-webglvis-webgl-canvas': function (e) {
             e.preventDefault();
         }
     },
@@ -87,7 +87,7 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
                     this._first = false;
                     this.resetCamera();
                 }
-                //this.drawImage();
+                this.drawImage();
             }
         });
         // this.listenTo(this.fields, 'change', this.drawImage);
@@ -100,13 +100,17 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
     render: function () {
         this.$el.html(cinema.templates.webglVisCanvas());
 
+
         var dim = this.compositeModel.getImageSize();
+
+
         $(this.$('.c-webglvis-webgl-canvas')[0]).attr({
-            width: dim[0],
-            height: dim[1]
+            width: this.$('.c-webglvis-webgl-canvas').parent().width(),
+            height: this.$('.c-webglvis-webgl-canvas').parent().height()
         });
 
-        this.webglCompositor.init(this.compositeModel.getImageSize(),
+
+        this.webglCompositor.init(dim,
                                   this.$('.c-webglvis-webgl-canvas')[0],
                                   this.$('.c-webglvis-spritesheet-buffer')[0],
                                   this.$('.c-webglvis-composite-buffer')[0]);
@@ -186,10 +190,12 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
             width: dim[0],
             height: dim[1]
         });
+        /*
         $(webglCanvas).attr({
             width: dim[0],
             height: dim[1]
-        })
+        });
+        */
 
         // Fill full spritesheet buffer with raw image data
         spriteCtx.clearRect(0, 0, spritesheetDim[0], spritesheetDim[1]);
@@ -197,15 +203,21 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
 
         this.webglCompositor.clearFbo();
 
-        var idxList = [ 21, 20, 19, 17, 15, 13, 11, 9, 7, 5, 3, 1 ];
+        var idxList = [ 21 ];
+        for (var layerName in this.layerOffset) {
+            idxList.push(this.layerOffset[layerName]);
+        }
+
+        // var idxList = [ 21, 20, 19, 17, 15, 13, 11, 9, 7, 5, 3, 1 ];
         var imgw = dim[0], imgh = dim[1];
         // var idxList = [ 21, 20, 18, 16, 14, 12, 10, 8, 6, 4, 2, 0 ];
         // var idxList = [ 21, 20, 19 ];
         for (var i in idxList) {
-          console.log(i);
+          //console.log(i);
           // this.webglCompositor.copySegmentOfSprite(idxList[i]);
+          var layerIdx = idxList[i];
           var srcX = 0;
-          var srcY = idxList[i] * imgh;
+          var srcY = layerIdx * imgh;
 
           // Because the png has transparency, we need to clear the canvas, or else
           // we end up with some blending when we draw the next image
@@ -218,13 +230,13 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
           this.webglCompositor.drawCompositePass(compositeCanvas);
         }
 
-        this.webglCompositor.drawDisplayPass();
+        //this.webglCompositor.drawDisplayPass();
 
         //compositeCanvas = this.$('.c-webglvis-composite-buffer')[0],
 
         // Draw buffer to composite canvas
         //compositeCtx.putImageData(frontBuffer, 0, 0);
-        //this.trigger('c:composited');
+        this.trigger('c:composited');
     },
 
     /**
@@ -232,8 +244,15 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
      * canvas, and it will draw it with the correct scale, zoom, and center
      * onto the render canvas.
      */
-    /*
     drawImage: function () {
+        var zoomLevel = this.viewpoint.get('zoom'),
+            drawingCenter = this.viewpoint.get('center');
+
+        console.log("zoom: " + zoomLevel + ", center: " + drawingCenter);
+
+        this.webglCompositor.drawDisplayPass();
+
+        /*
         var renderCanvas = this.$('.c-webglvis-render-canvas')[0],
             compositeCanvas = this.$('.c-webglvis-composite-buffer')[0],
             webglCanvas = this.$('.c-webglvis-webgl-canvas')[0],
@@ -266,9 +285,9 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
             0,   0, iw, ih,  // Source image   [Location,Size]
             tx, ty, tw, th); // Target drawing [Location,Size]
 
+        */
         this.trigger('c:drawn');
     },
-    */
 
     /**
      * Reset the zoom level and drawing center such that the image is
@@ -311,12 +330,14 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
         if (changed || forced) {
             this.compositeManager.downloadData(this._fields);
         } else {
-            //this.drawImage();
+            this.drawImage();
         }
         return this;
     },
 
     updateQuery: function (query) {
+        // console.log('new query:');
+        // console.log(query.attributes.state);
         this.orderMapping = {};
         this.compositeCache = {};
         this._computeLayerOffset();
