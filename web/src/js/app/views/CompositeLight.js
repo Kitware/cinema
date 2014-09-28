@@ -8,7 +8,7 @@
             controlModel = new cinema.models.ControlModel({ info: model }),
             viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
             layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup()),
-            renderer = new cinema.views.VisualizationCanvasWidgetLit({
+            renderer = new cinema.views.VisualizationCanvasWidgetLight({
                 el: $('.body-content', container),
                 model: compositeModel,
                 layers: layers,

@@ -2,7 +2,7 @@
  * This widget renders the visualization defined by a VisualizationModel onto
  * a canvas element that will fill the parent element.
  */
-cinema.views.VisualizationCanvasWidgetLit = cinema.views.VisualizationCanvasWidget.extend({
+cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWidget.extend({
 
     _RainbowColor: function (value)
     {
