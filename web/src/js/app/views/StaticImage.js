@@ -30,8 +30,8 @@
             }).enableDragRotation({
                 keyModifiers: null
             }),
-            controlPanel = new cinema.views.FieldsControlWidget({
-                el: $('.c-control-panel-body', container),
+            controlTools = new cinema.views.ToolsWidget({
+                el: $('.c-tools-panel', container),
                 model: model,
                 fields: fieldsModel,
                 viewport: renderer,
@@ -39,14 +39,14 @@
                 toolbarRootView: fakeToolbarRootView
             }),
             controlList = [
-                { position: 'right', key: 'view', icon: 'icon-camera', title: 'View' }
+                { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
             ];
 
             function render () {
                 var root = $(rootSelector);
                 fakeToolbarRootView.update(root);
                 renderer.setElement($('.c-body-container', root)).render();
-                controlPanel.setElement($('.c-control-panel-body', root)).render();
+                controlTools.setElement($('.c-tools-panel', root)).render();
                 refreshCamera(true);
             }
 
