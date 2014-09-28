@@ -54,7 +54,7 @@ cinema.views.FieldsControlWidget = Backbone.View.extend({
         this.fields = settings.fields;
         this.toolbarSelector = settings.toolbarSelector;
         this.toolbarRootView = settings.toolbarRootView || this;
-        this.toolbarView = new cinema.views.ViewControlToolbar({el: $(this.toolbarSelector, this.toolbarRootView) });
+        this.toolbarView = new cinema.views.ToolsToolbar({el: $(this.toolbarSelector, this.toolbarRootView) });
 
         this.listenTo(this.model, 'change', function () {
             this.render();

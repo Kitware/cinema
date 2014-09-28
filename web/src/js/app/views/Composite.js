@@ -30,7 +30,7 @@
             }).enableDragRotation({
                 keyModifiers: null
             }),
-            compositePipeline = new cinema.views.CompositePipelineWidget({
+            compositeTools = new cinema.views.CompositeToolsWidget({
                 el: $('.c-tools-panel', container),
                 model: compositeModel,
                 fields: fieldsModel,
@@ -45,7 +45,7 @@
         function render () {
             var root = $(rootSelector);
             renderer.setElement($('.c-body-container', root)).render();
-            compositePipeline.setElement($('.c-tools-panel', root)).render();
+            compositeTools.setElement($('.c-tools-panel', root)).render();
             renderer.showViewpoint(true);
         }
 
@@ -79,7 +79,7 @@
             fieldsModel = new cinema.models.FieldModel({ info: model }),
             viewpointModel = new cinema.models.ViewPointModel({ fields: fieldsModel }),
             layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup()),
-            // compositePipeline = new cinema.views.PipelineControlWidget({
+            // compositeTools = new cinema.views.PipelineControlWidget({
             //     el: $('.c-tools-panel', container),
             //     model: compositeModel,
             //     viewpoint: viewpointModel,
@@ -94,7 +94,7 @@
         function render () {
             var root = $(rootSelector);
             page.setElement($('.c-body-container', root)).render();
-            // compositePipeline.setElement($('.c-tools-panel', root)).render();
+            // compositeTools.setElement($('.c-tools-panel', root)).render();
         }
 
         render();

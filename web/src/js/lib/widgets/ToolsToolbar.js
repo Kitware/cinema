@@ -1,4 +1,4 @@
-cinema.views.ViewControlToolbar = Backbone.View.extend({
+cinema.views.ToolsToolbar = Backbone.View.extend({
     events: {
         'click .c-pipeline-editor': function () {
             cinema.events.trigger('c:editpipelines');
@@ -8,16 +8,16 @@ cinema.views.ViewControlToolbar = Backbone.View.extend({
             cinema.events.trigger('c:editcontrols');
         },
 
-        'click .c-play-viewcontrol': function () {
+        'click .c-play-tools': function () {
         },
 
-        'click .c-resize-viewcontrol': function () {
+        'click .c-resize-tools': function () {
             cinema.events.trigger('c:resetCamera');
         }
     },
 
     initialize: function () {
-        this._template = cinema.templates.viewControlToolbar;
+        this._template = cinema.templates.toolsToolbar;
         this._templateOptions = {};
     },
 

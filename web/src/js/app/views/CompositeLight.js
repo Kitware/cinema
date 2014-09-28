@@ -27,7 +27,7 @@
             }).enableDragRotation({
                 keyModifiers: null
             }),
-            compositePipeline = new cinema.views.CompositePipelineWidget({
+            compositeTools = new cinema.views.CompositeToolsWidget({
                 el: $('.c-tools-panel', container),
                 model: compositeModel,
                 fields: fieldsModel,
@@ -49,7 +49,7 @@
             function render () {
                 var root = $(rootSelector);
                 renderer.setElement($('.c-body-container', root)).render();
-                compositePipeline.setElement($('.c-tools-panel', root)).render();
+                compositeTools.setElement($('.c-tools-panel', root)).render();
                 renderingView.setElement($('.c-rendering-panel', root)).render();
                 renderer.forceRedraw();
             }

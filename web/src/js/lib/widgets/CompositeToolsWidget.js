@@ -1,9 +1,9 @@
 /**
  * This widget provides visibility and color data controls for a VisualizationModel.
- * It emits an event anytime the value has chaged, attaching data in the form
+ * It emits an event anytime the value has changed, attaching data in the form
  * of a serialized query string.
  */
-cinema.views.CompositePipelineWidget = Backbone.View.extend({
+cinema.views.CompositeToolsWidget = Backbone.View.extend({
     initialize: function (settings) {
         this.model = settings.model;
         this.fields = settings.fields || new cinema.models.FieldModel({ info: this.model });
@@ -11,7 +11,7 @@ cinema.views.CompositePipelineWidget = Backbone.View.extend({
         this.layers = settings.layers || new cinema.models.LayerModel(this.model.defaultLayers());
         this.toolbarSelector = settings.toolbarContainer || '.c-panel-toolbar';
 
-        this.$('.c-control-panel-body').html(cinema.templates.compositePipelineWidget());
+        this.$('.c-control-panel-body').html(cinema.templates.compositeToolsWidget());
 
         this.listenTo(cinema.events, 'c:editpipelines', this.hidePipelineEditor);
         this.listenTo(cinema.events, 'c:editcontrols', this.hideControlEditor);
@@ -35,7 +35,7 @@ cinema.views.CompositePipelineWidget = Backbone.View.extend({
     },
 
     render: function () {
-        this.$('.c-control-panel-body').html(cinema.templates.compositePipelineWidget());
+        this.$('.c-control-panel-body').html(cinema.templates.compositeToolsWidget());
         this.pipeline.setElement(this.$('.c-pipeline-content')).render();
         this.controls.setElement(this.$('.c-control-content')).render();
     },
