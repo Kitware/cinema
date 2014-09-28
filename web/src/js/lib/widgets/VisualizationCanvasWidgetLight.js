@@ -2,7 +2,7 @@
  * This widget renders the visualization defined by a VisualizationModel onto
  * a canvas element that will fill the parent element.
  */
-cinema.views.VisualizationCanvasWidgetLit = cinema.views.VisualizationCanvasWidget.extend({
+cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWidget.extend({
 
     _RainbowColor: function (value)
     {
@@ -51,7 +51,7 @@ cinema.views.VisualizationCanvasWidgetLit = cinema.views.VisualizationCanvasWidg
 
         //find eye point
         //console.log("PT", this._viewpoint.phi, this._viewpoint.theta);
-        this.eye = Vector.fromArray(this._spherical2Cartesian(this.fields.getField('phi'), this.fields.getField('theta'))).unit();
+        this.eye = Vector.fromArray(this._spherical2Cartesian(this.controlModel.getControl('phi'), this.controlModel.getControl('theta'))).unit();
         //console.log("EYE", this.eye.x.toFixed(3), this.eye.y.toFixed(3), this.eye.z.toFixed(3));
 
         //this.worldlight = this.eye;
@@ -376,26 +376,26 @@ cinema.views.VisualizationCanvasWidgetLit = cinema.views.VisualizationCanvasWidg
 
     showViewpoint: function () {
         var changed = false,
-            fields = this.fields.getFields();
+            controls = this.controlModel.getControls();
 
         // Search for change
-        for (var key in fields) {
-            if (_.has(this._fields, key)) {
-                if (this._fields[key] !== fields[key]) {
+        for (var key in controls) {
+            if (_.has(this._controls, key)) {
+                if (this._controls[key] !== controls[key]) {
                     changed = true;
                 }
             } else {
                 changed = true;
             }
         }
-        this._fields = _.extend(this._fields, fields);
+        this._controls = _.extend(this._controls, controls);
         if (this._forceRedraw || changed) {
             changed = true;
             this._forceRedraw = false;
             this._recomputeLight();
         }
         if (changed) {
-            this.compositeManager.downloadData(this._fields);
+            this.compositeManager.downloadData(this._controls);
         } else {
             this.drawImage();
         }

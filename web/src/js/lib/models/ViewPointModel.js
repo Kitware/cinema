@@ -9,7 +9,7 @@ cinema.models.ViewPointModel = Backbone.Model.extend({
     },
 
     constructor: function (options) {
-        this.fields = options.fields;
+        this.controlModel = options.controlModel;
         Backbone.Model.call(this, {}, options);
     },
 
@@ -30,13 +30,13 @@ cinema.models.ViewPointModel = Backbone.Model.extend({
             }
             value = this.get('center');
             this.set('center', [value[0] + byValue[0], value[1] + byValue[1]]);
-        } else if (this.fields && this.fields.hasField(name)) {
+        } else if (this.controlModel && this.controlModel.hasControl(name)) {
             wrap = !!wrap;
             byValue = byValue || 1;
             if (byValue > 0) {
-                this.fields.getNextField(name, wrap);
+                this.controlModel.getNextControl(name, wrap);
             } else {
-                this.fields.getPreviousField(name, wrap);
+                this.controlModel.getPreviousControl(name, wrap);
             }
         }
         return this;

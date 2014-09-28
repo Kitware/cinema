@@ -41,7 +41,7 @@ cinema.views.StaticImageVisualizationCanvasWidget = Backbone.View.extend({
 
     initialize: function (settings) {
         this.model = settings.model;
-        this.fields = settings.fields;
+        this.controlModel = settings.controlModel;
         this.viewpoint = settings.viewpoint;
 
         if (!this.model.loaded()) {
@@ -57,9 +57,9 @@ cinema.views.StaticImageVisualizationCanvasWidget = Backbone.View.extend({
             });
 
         this._privateInit();
-        this._fields = {};
+        this._controls = {};
         this._first = true;
-        this.listenTo(this.fields, 'change', this.drawImage);
+        this.listenTo(this.controlModel, 'change', this.drawImage);
         this.listenTo(this.viewpoint, 'change', this.drawImage);
         this.listenTo(this.imageManager, 'c:data.ready', function () {
             if (this._first) {
@@ -146,22 +146,22 @@ cinema.views.StaticImageVisualizationCanvasWidget = Backbone.View.extend({
      */
     showViewpoint: function () {
         var changed = false,
-            fields = this.fields.getFields();
+            controls = this.controlModel.getControls();
 
         // Search for change
-        for (var key in fields) {
-            if (_.has(this._fields, key)) {
-                if (this._fields[key] !== fields[key]) {
+        for (var key in controls) {
+            if (_.has(this._controls, key)) {
+                if (this._controls[key] !== controls[key]) {
                     changed = true;
                 }
             } else {
                 changed = true;
             }
         }
-        this._fields = _.extend(this._fields, fields);
+        this._controls = _.extend(this._controls, controls);
 
         if (changed) {
-            this.imageManager.updateFields(this._fields);
+            this.imageManager.updateControls(this._controls);
         } else {
             this.drawImage();
         }

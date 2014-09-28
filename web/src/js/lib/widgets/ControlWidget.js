@@ -1,31 +1,31 @@
-cinema.views.FieldsControlWidget = Backbone.View.extend({
+cinema.views.ControlWidget = Backbone.View.extend({
     events: {
         'change input': function (e) {
             var el = $(e.target),
-                field = el.closest('.c-field-control').attr('field_id'),
+                control = el.closest('.c-controls-control').attr('control_id'),
                 value = el.val();
-            this.updateIndex(field, value);
+            this.updateIndex(control, value);
         },
 
         'mousemove input': function (e) {
             var el = $(e.target),
-                field = el.closest('.c-field-control').attr('field_id'),
+                control = el.closest('.c-controls-control').attr('control_id'),
                 value = el.val();
-            this.updateIndex(field, value);
+            this.updateIndex(control, value);
         },
 
         'change select': function (e) {
             var el = $(e.target),
-                field = el.closest('.c-field-control').attr('field_id'),
+                control = el.closest('.c-controls-control').attr('control_id'),
                 value = el.val();
-            this.updateValue(field, value);
+            this.updateValue(control, value);
         },
 
-        'click .c-field-control-button': function (e) {
+        'click .c-controls-control-button': function (e) {
             var el = $(e.target),
-                field = el.closest('.c-field-control').attr('field_id'),
+                control = el.closest('.c-controls-control').attr('control_id'),
                 action = el.attr('action');
-            this[action](field);
+            this[action](control);
         }
     },
 
@@ -42,7 +42,7 @@ cinema.views.FieldsControlWidget = Backbone.View.extend({
             this.order = [];
             var that = this;
 
-            // Create an ordered list of fields
+            // Create an ordered list of controls
             _.each(this.model.get("arguments"), function (value, key, list) {
                 that.order.push(key);
             });
@@ -51,23 +51,23 @@ cinema.views.FieldsControlWidget = Backbone.View.extend({
         }
         this.order = _.difference(this.order, this.exclude);
 
-        this.fields = settings.fields;
+        this.controlModel = settings.controlModel;
         this.toolbarSelector = settings.toolbarSelector;
         this.toolbarRootView = settings.toolbarRootView || this;
-        this.toolbarView = new cinema.views.ViewControlToolbar({el: $(this.toolbarSelector, this.toolbarRootView) });
+        this.toolbarView = new cinema.views.ToolsToolbar({el: $(this.toolbarSelector, this.toolbarRootView) });
 
         this.listenTo(this.model, 'change', function () {
             this.render();
         });
-        this.listenTo(this.fields, 'change', this._refresh);
+        this.listenTo(this.controlModel, 'change', this._refresh);
     },
 
     _formatLabel: function (val) {
         return Number(val).toFixed();
     },
 
-    _annotateFields: function (fieldsMap) {
-        var newFieldMapWithIcons = _.extend({}, fieldsMap),
+    _annotateControl: function (controlMap) {
+        var newControlMapWithIcons = _.extend({}, controlMap),
             iconMap = {
                 phi: 'icon-resize-horizontal',
                 theta: 'icon-resize-vertical',
@@ -80,34 +80,34 @@ cinema.views.FieldsControlWidget = Backbone.View.extend({
                 time: 'Tau'
             };
 
-        _.each(newFieldMapWithIcons, function (value, key, list) {
+        _.each(newControlMapWithIcons, function (value, key, list) {
             if (_.has(iconMap, key)) {
-                newFieldMapWithIcons[key].icon = iconMap[key];
+                newControlMapWithIcons[key].icon = iconMap[key];
                 if (_.has(iconLabelMap, key)) {
-                    newFieldMapWithIcons[key].iconlabel = iconLabelMap[key];
+                    newControlMapWithIcons[key].iconlabel = iconLabelMap[key];
                 } else {
-                    newFieldMapWithIcons[key].iconlabel = 'nbsp';
+                    newControlMapWithIcons[key].iconlabel = 'nbsp';
                 }
             }
         });
 
-        return newFieldMapWithIcons;
+        return newControlMapWithIcons;
     },
 
     render: function () {
-        this.$el.html(cinema.templates.fieldsControl({
-            fields: this._annotateFields(this.fields.getFieldsMap()),
+        this.$el.html(cinema.templates.control({
+            controlMap: this._annotateControl(this.controlModel.getControlMap()),
             order: this.order
         }));
         this.toolbarView.setElement($(this.toolbarSelector, this.toolbarRootView.$el)).render();
     },
 
     _refresh: function () {
-        this.order.forEach(function (fieldName) {
-            var group = this.$('.c-field-control[field_id="' + fieldName + '"]'),
-                value = this.fields.getField(fieldName),
-                idx = this.fields.getFieldIndex(fieldName),
-                type = this.fields.getFieldType(fieldName);
+        this.order.forEach(function (controlName) {
+            var group = this.$('.c-controls-control[control_id="' + controlName + '"]'),
+                value = this.controlModel.getControl(controlName),
+                idx = this.controlModel.getControlIndex(controlName),
+                type = this.controlModel.getControlType(controlName);
 
             group.find('label.value').text(
                 this._formatLabel(value)
@@ -121,35 +121,35 @@ cinema.views.FieldsControlWidget = Backbone.View.extend({
         }.bind(this));
     },
 
-    updateIndex: function (fieldName, index) {
-        if (this.fields.setFieldIndex(fieldName, index)) {
+    updateIndex: function (controlName, index) {
+        if (this.controlModel.setControlIndex(controlName, index)) {
             this._refresh();
         }
     },
 
-    updateValue: function (fieldName, value) {
-        if (this.fields.setField(fieldName, value)) {
+    updateValue: function (controlName, value) {
+        if (this.controlModel.setControl(controlName, value)) {
             this._refresh();
         }
     },
 
-    next: function (fieldName) {
-        this.fields.getNextField(fieldName);
+    next: function (controlName) {
+        this.controlModel.getNextControl(controlName);
         this._refresh();
     },
 
-    previous: function (fieldName) {
-        this.fields.getPreviousField(fieldName);
+    previous: function (controlName) {
+        this.controlModel.getPreviousControl(controlName);
         this._refresh();
     },
 
-    last: function (fieldName) {
-        this.fields.getLastField(fieldName);
+    last: function (controlName) {
+        this.controlModel.getLastControl(controlName);
         this._refresh();
     },
 
-    first: function (fieldName) {
-        this.fields.getFirstField(fieldName);
+    first: function (controlName) {
+        this.controlModel.getFirstControl(controlName);
         this._refresh();
     }
 });

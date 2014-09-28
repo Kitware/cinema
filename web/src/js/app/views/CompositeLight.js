@@ -5,14 +5,14 @@
         var container = $(rootSelector),
             dataType = model.getDataType(),
             compositeModel = new cinema.decorators.Composite(model),
-            fieldsModel = new cinema.models.FieldModel({ info: model }),
-            viewpointModel = new cinema.models.ViewPointModel({ fields: fieldsModel }),
+            controlModel = new cinema.models.ControlModel({ info: model }),
+            viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
             layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup()),
-            renderer = new cinema.views.VisualizationCanvasWidgetLit({
+            renderer = new cinema.views.VisualizationCanvasWidgetLight({
                 el: $('.body-content', container),
                 model: compositeModel,
                 layers: layers,
-                fields: fieldsModel,
+                controlModel: controlModel,
                 viewpoint: viewpointModel
             }),
             mouseInteractor = new cinema.utilities.RenderViewMouseInteractor({
@@ -27,15 +27,15 @@
             }).enableDragRotation({
                 keyModifiers: null
             }),
-            compositePipeline = new cinema.views.CompositePipelineWidget({
+            compositeTools = new cinema.views.CompositeToolsWidget({
                 el: $('.c-tools-panel', container),
                 model: compositeModel,
-                fields: fieldsModel,
+                controlModel: controlModel,
                 viewpoint: viewpointModel,
                 layers: layers,
                 toolbarSelector: '.c-panel-toolbar'
             }),
-            renderingView = new cinema.views.RenderingControlWidget({
+            renderingView = new cinema.views.RenderingWidget({
                 el: $('.c-rendering-panel', container),
                 model: compositeModel,
                 toolbarSelector: '.c-panel-toolbar',
@@ -49,7 +49,7 @@
             function render () {
                 var root = $(rootSelector);
                 renderer.setElement($('.c-body-container', root)).render();
-                compositePipeline.setElement($('.c-tools-panel', root)).render();
+                compositeTools.setElement($('.c-tools-panel', root)).render();
                 renderingView.setElement($('.c-rendering-panel', root)).render();
                 renderer.forceRedraw();
             }
@@ -63,7 +63,7 @@
                 renderer.resetCamera();
             }
 
-            fieldsModel.on('change', refreshCamera);
+            controlModel.on('change', refreshCamera);
             viewpointModel.on('change', refreshCamera);
             renderingView.on('change', refreshCamera);
             cinema.events.on('c:resetCamera', resetCamera);
@@ -71,7 +71,7 @@
         render();
 
         return {
-            controls: controlList,
+            controlList: controlList,
             render: render
         };
     });

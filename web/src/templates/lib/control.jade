@@ -1,0 +1,19 @@
+.c-controls-control-content
+  each controlName in order
+    .c-controls-control(control_id="#{controlName}")
+      if controlMap[controlName].icon
+        i(class="#{controlMap[controlName].icon}",title="#{controlMap[controlName].label}") &#{controlMap[controlName].iconlabel};
+      else
+        label. #{controlMap[controlName].label}
+      if controlMap[controlName].type === 'range'
+        .group
+          i.icon-to-start-1.c-controls-control-button(action="first")
+          i.icon-fast-backward.c-controls-control-button(action="previous")
+          label.value #{controlMap[controlName].values[controlMap[controlName].activeIdx]}
+          input(type="range", value="#{controlMap[controlName].activeIdx}", min="0", max="#{controlMap[controlName].values.length - 1}", step="1")
+          i.icon-fast-forward.c-controls-control-button(action="next")
+          i.icon-to-end-1.c-controls-control-button(action="last")
+      else
+        select
+          each option in controlMap[controlName].values
+            option. #{option}

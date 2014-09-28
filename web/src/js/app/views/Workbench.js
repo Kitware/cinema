@@ -66,7 +66,7 @@
         }
 
         return {
-            controls: [],
+            controlList: [],
             render: render
         };
     });

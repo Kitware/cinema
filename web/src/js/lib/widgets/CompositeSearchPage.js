@@ -26,19 +26,19 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
             delay: {show: 100}
         });
 
-        var pipelineControlView = new cinema.views.PipelineControlWidget({
+        var pipelineView = new cinema.views.PipelineWidget({
             el: this.$('.c-search-layer-control-container'),
             model: this.visModel
         });
 
         this.searchModel = new cinema.models.SearchModel({
-            layerModel: pipelineControlView.layers
+            layerModel: pipelineView.layers
         });
 
         this.searchModel.on('c:done', this._showResults, this);
 
         var renderChildren = function () {
-            pipelineControlView.render();
+            pipelineView.render();
         };
 
         if (this.visModel.loaded()) {
@@ -50,7 +50,7 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
             renderChildren();
         });
 
-        this.listenTo(pipelineControlView.layers, 'change', function () {
+        this.listenTo(pipelineView.layers, 'change', function () {
             this.searchModel.compute();
         }, this);
     },
@@ -86,8 +86,8 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
 
         el.appendTo(this.$('.c-search-results-list-area'));
 
-        var fieldsModel = new cinema.models.FieldModel({ info: this.visModel }),
-            viewpointModel = new cinema.models.ViewPointModel({ fields: fieldsModel });
+        var controlModel = new cinema.models.ControlModel({ info: this.visModel }),
+            viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel });
 
         // FIXME viewpointModel.setViewpoint(viewpoint);
 
