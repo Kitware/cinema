@@ -3,7 +3,7 @@
  * It emits an event anytime the value has chaged, attaching data in the form
  * of a serialized query string.
  */
-cinema.views.PipelineControlWidget = Backbone.View.extend({
+cinema.views.PipelineWidget = Backbone.View.extend({
     events: {
         'click .c-remove-layer-toggle': 'removeLayerToggle',
         'click .c-pipeline-visibility-toggle': 'togglePipelineVisibility'
@@ -20,7 +20,7 @@ cinema.views.PipelineControlWidget = Backbone.View.extend({
         if (!metadata) {
             return;
         }
-        this.$el.html(cinema.templates.pipelineControl({
+        this.$el.html(cinema.templates.pipeline({
             metadata: metadata
         }));
 

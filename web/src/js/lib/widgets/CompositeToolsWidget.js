@@ -16,7 +16,7 @@ cinema.views.CompositeToolsWidget = Backbone.View.extend({
         this.listenTo(cinema.events, 'c:editpipelines', this.hidePipelineEditor);
         this.listenTo(cinema.events, 'c:editcontrols', this.hideControlEditor);
 
-        this.pipeline = new cinema.views.PipelineControlWidget({
+        this.pipeline = new cinema.views.PipelineWidget({
             el: this.$('.c-pipeline-content'),
             model: this.model,
             layers: this.layers
