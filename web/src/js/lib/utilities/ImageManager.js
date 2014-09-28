@@ -62,8 +62,8 @@
         return null;
     };
 
-    prototype.updateFields = function (fields) {
-        var key = this.visModel.getFilePattern(fields);
+    prototype.updateControls = function (controls) {
+        var key = this.visModel.getFilePattern(controls);
         this._activeKey = key;
 
         if (_.has(this._cache, key)) {

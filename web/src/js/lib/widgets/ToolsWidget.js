@@ -7,18 +7,18 @@ cinema.views.ToolsWidget = Backbone.View.extend({
     initialize: function (settings) {
         this.model = settings.model;
         this.viewport = settings.viewport;
-        this.fields = settings.fields || new cinema.models.FieldModel({ info: this.model });
+        this.controlModel = settings.controlModel || new cinema.models.ControlModel({ info: this.model });
         this.toolbarSelector = settings.toolbarContainer || '.c-panel-toolbar';
 
         this.$('.c-control-panel-body').html(cinema.templates.toolsWidget());
 
         this.listenTo(cinema.events, 'c:editcontrols', this.hideControlEditor);
 
-        this.controls = new cinema.views.ControlWidget({
+        this.controlWidget = new cinema.views.ControlWidget({
             el: this.$('.c-control-content'),
             model: this.model,
             viewport: this.viewport,
-            fields: this.fields,
+            controlModel: this.controlModel,
             toolbarSelector: this.toolbarSelector,
             toolbarRootView: this,
             exclude: ['layer', 'field', 'filename']
@@ -28,7 +28,7 @@ cinema.views.ToolsWidget = Backbone.View.extend({
 
     render: function () {
         this.$('.c-control-panel-body').html(cinema.templates.toolsWidget());
-        this.controls.setElement(this.$('.c-control-content')).render();
+        this.controlWidget.setElement(this.$('.c-control-content')).render();
     },
 
     hideControlEditor: function () {

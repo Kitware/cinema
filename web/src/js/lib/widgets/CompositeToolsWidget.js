@@ -6,8 +6,8 @@
 cinema.views.CompositeToolsWidget = Backbone.View.extend({
     initialize: function (settings) {
         this.model = settings.model;
-        this.fields = settings.fields || new cinema.models.FieldModel({ info: this.model });
-        this.viewpoint = settings.viewpoint || new cinema.models.ViewPointModel({ fields: this.fields });
+        this.controlModel = settings.controlModel || new cinema.models.ControlModel({ info: this.model });
+        this.viewpoint = settings.viewpoint || new cinema.models.ViewPointModel({ controlModel: this.controlModel });
         this.layers = settings.layers || new cinema.models.LayerModel(this.model.defaultLayers());
         this.toolbarSelector = settings.toolbarContainer || '.c-panel-toolbar';
 
@@ -16,17 +16,17 @@ cinema.views.CompositeToolsWidget = Backbone.View.extend({
         this.listenTo(cinema.events, 'c:editpipelines', this.hidePipelineEditor);
         this.listenTo(cinema.events, 'c:editcontrols', this.hideControlEditor);
 
-        this.pipeline = new cinema.views.PipelineWidget({
+        this.pipelineWidget = new cinema.views.PipelineWidget({
             el: this.$('.c-pipeline-content'),
             model: this.model,
             layers: this.layers
         });
 
-        this.controls = new cinema.views.ControlWidget({
+        this.controlWidget = new cinema.views.ControlWidget({
             el: this.$('.c-control-content'),
             model: this.model,
             viewport: this.viewpoint,
-            fields: this.fields,
+            controlModel: this.controlModel,
             toolbarSelector: this.toolbarSelector,
             toolbarRootView: this,
             exclude: ['layer', 'field', 'filename']
@@ -36,8 +36,8 @@ cinema.views.CompositeToolsWidget = Backbone.View.extend({
 
     render: function () {
         this.$('.c-control-panel-body').html(cinema.templates.compositeToolsWidget());
-        this.pipeline.setElement(this.$('.c-pipeline-content')).render();
-        this.controls.setElement(this.$('.c-control-content')).render();
+        this.pipelineWidget.setElement(this.$('.c-pipeline-content')).render();
+        this.controlWidget.setElement(this.$('.c-control-content')).render();
     },
 
     hidePipelineEditor: function () {

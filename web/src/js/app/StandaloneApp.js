@@ -28,8 +28,8 @@ cinema.StandaloneApp = Backbone.View.extend({
         this.allowedViewType = ['view', 'search', 'cost'];
         this.views = [
             { label: 'Exploration', name: 'view', icon: 'icon-compass-1'},
-            { label: 'Search', name: 'search', icon: 'icon-search'},
-            { label: 'Cost', name: 'cost', icon: 'icon-dollar'},
+            { label: 'Search', name: 'search', icon: 'icon-search'}
+            //{ label: 'Cost', name: 'cost', icon: 'icon-dollar'},
         ];
 
         this.model = new cinema.models.VisualizationModel({
@@ -56,11 +56,11 @@ cinema.StandaloneApp = Backbone.View.extend({
             cinema.viewType = 'view';
         }
 
-        // Find out what the view needs as control panel container
-        var controls = cinema.viewFactory.getViewControls('body', cinema.viewType, cinema.model);
+        // Find out what the view control list is for control panel container
+        var controlList = cinema.viewFactory.getViewControlList('body', cinema.viewType, cinema.model);
 
         // Create container for control panels
-        this.$el.html(cinema.app.templates.layout({controls:controls}));
+        this.$el.html(cinema.app.templates.layout({controlList:controlList}));
 
         // Handle header bar base on application type (workbench/cinema)
         if (cinema.model.getDataType() === 'workbench') {
@@ -70,7 +70,7 @@ cinema.StandaloneApp = Backbone.View.extend({
         } else {
             // Single Cinema App
             this.$('.header-left').html(cinema.app.templates.headerLeft({icon: 'icon-cinema', title: 'Cinema', active: cinema.viewType, views: this.views}));
-            this.$('.header-right').html(cinema.app.templates.cinemaControl({controls:controls}));
+            this.$('.header-right').html(cinema.app.templates.cinemaControl({controlList:controlList}));
         }
 
         // Fill the layout base on the type of the view and model.

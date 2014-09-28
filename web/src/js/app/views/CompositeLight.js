@@ -5,14 +5,14 @@
         var container = $(rootSelector),
             dataType = model.getDataType(),
             compositeModel = new cinema.decorators.Composite(model),
-            fieldsModel = new cinema.models.FieldModel({ info: model }),
-            viewpointModel = new cinema.models.ViewPointModel({ fields: fieldsModel }),
+            controlModel = new cinema.models.ControlModel({ info: model }),
+            viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
             layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup()),
             renderer = new cinema.views.VisualizationCanvasWidgetLit({
                 el: $('.body-content', container),
                 model: compositeModel,
                 layers: layers,
-                fields: fieldsModel,
+                controlModel: controlModel,
                 viewpoint: viewpointModel
             }),
             mouseInteractor = new cinema.utilities.RenderViewMouseInteractor({
@@ -30,7 +30,7 @@
             compositeTools = new cinema.views.CompositeToolsWidget({
                 el: $('.c-tools-panel', container),
                 model: compositeModel,
-                fields: fieldsModel,
+                controlModel: controlModel,
                 viewpoint: viewpointModel,
                 layers: layers,
                 toolbarSelector: '.c-panel-toolbar'
@@ -63,7 +63,7 @@
                 renderer.resetCamera();
             }
 
-            fieldsModel.on('change', refreshCamera);
+            controlModel.on('change', refreshCamera);
             viewpointModel.on('change', refreshCamera);
             renderingView.on('change', refreshCamera);
             cinema.events.on('c:resetCamera', resetCamera);
@@ -71,7 +71,7 @@
         render();
 
         return {
-            controls: controlList,
+            controlList: controlList,
             render: render
         };
     });

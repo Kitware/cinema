@@ -94,7 +94,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         if (!settings.viewport) {
             throw "Lookup table widget requires a viewport.";
         }
-        this.fields = settings.viewport.fields;
+        this.controlModel = settings.viewport.controlModel;
         this.viewpoint = settings.viewport.viewpoint;
         this.viewport = settings.viewport;
         this.toolbarSelector = settings.toolbarSelector;
@@ -112,7 +112,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         this.listenTo(this.model, 'change', function () {
             this.render();
         });
-        this.listenTo(this.fields, 'change', this._refresh);
+        this.listenTo(this.controlModel, 'change', this._refresh);
         this.listenTo(cinema.events, 'c:editlookuptable', this.hideLookupTableEditor);
         this.listenTo(cinema.events, 'c:editlighting', this.hideLightingEditor);
 

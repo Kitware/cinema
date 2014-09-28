@@ -5,7 +5,7 @@
 .c-body-container
 
 .c-control-container.left
-    each controlPanel in controls
+    each controlPanel in controlList
         if controlPanel.position == 'left'
             .c-control-panel(class="c-#{controlPanel.key}-panel")
               .c-control-panel-header
@@ -16,7 +16,7 @@
               .c-control-panel-body(class="c-#{controlPanel.key}-control-container")
 
 .c-control-container.right
-    each controlPanel in controls
+    each controlPanel in controlList
         if controlPanel.position == 'right'
             .c-control-panel(class="c-#{controlPanel.key}-panel")
               .c-control-panel-header

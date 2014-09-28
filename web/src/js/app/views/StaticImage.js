@@ -10,12 +10,12 @@
                 '$el': $('.c-view-panel', container)
             },
             dataType = model.getDataType(),
-            fieldsModel = new cinema.models.FieldModel({ info: model }),
-            viewpointModel = new cinema.models.ViewPointModel({ fields: fieldsModel }),
+            controlModel = new cinema.models.ControlModel({ info: model }),
+            viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
             renderer = new cinema.views.StaticImageVisualizationCanvasWidget({
                 el: $('.c-body-container', container),
                 model: model,
-                fields: fieldsModel,
+                controlModel: controlModel,
                 viewpoint: viewpointModel
             }),
             mouseInteractor = new cinema.utilities.RenderViewMouseInteractor({
@@ -33,7 +33,7 @@
             controlTools = new cinema.views.ToolsWidget({
                 el: $('.c-tools-panel', container),
                 model: model,
-                fields: fieldsModel,
+                controlModel: controlModel,
                 viewport: renderer,
                 toolbarSelector: '.c-panel-toolbar',
                 toolbarRootView: fakeToolbarRootView
@@ -58,14 +58,14 @@
                 renderer.resetCamera();
             }
 
-            fieldsModel.on('change', refreshCamera);
+            controlModel.on('change', refreshCamera);
             viewpointModel.on('change', refreshCamera);
             cinema.events.on('c:resetCamera', resetCamera);
 
             render();
 
         return {
-            controls: controlList,
+            controlList: controlList,
             render: render
         };
     });

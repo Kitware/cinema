@@ -31,7 +31,7 @@
 
     function createEmptyView (rootSelector, viewType, model) {
         return {
-            controls: [],
+            controlList: [],
             render: function() {
                 $('.c-body-container', $(rootSelector)).html(cinema.app.templates.invalidatePage({view: viewType, data: model.getDataType() }));
             }
@@ -68,7 +68,7 @@
             var view = this.viewInstances[key];
             if(view) {
                 view.render();
-                return view.controls;
+                return view.controlList;
             } else {
                 console.log("no instance for " + key);
             }
@@ -76,7 +76,7 @@
         return [];
     };
 
-    prototype.getViewControls = function (rootSelector, viewType, model) {
+    prototype.getViewControlList = function (rootSelector, viewType, model) {
         var key = [rootSelector, viewType, model.getDataType()].join(':');
 
         if(!this.viewInstances.hasOwnProperty(key)) {
@@ -85,7 +85,7 @@
 
         var view = this.viewInstances[key];
         if(view) {
-            return view.controls;
+            return view.controlList;
         }
 
         return [];
