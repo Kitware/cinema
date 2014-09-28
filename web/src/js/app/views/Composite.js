@@ -79,7 +79,7 @@
             fieldsModel = new cinema.models.FieldModel({ info: model }),
             viewpointModel = new cinema.models.ViewPointModel({ fields: fieldsModel }),
             layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup()),
-            // compositeTools = new cinema.views.PipelineWidget({
+            // compositePipeline = new cinema.views.PipelineWidget({
             //     el: $('.c-tools-panel', container),
             //     model: compositeModel,
             //     viewpoint: viewpointModel,
@@ -94,7 +94,7 @@
         function render () {
             var root = $(rootSelector);
             page.setElement($('.c-body-container', root)).render();
-            // compositeTools.setElement($('.c-tools-panel', root)).render();
+            // compositePipeline.setElement($('.c-tools-panel', root)).render();
         }
 
         render();
