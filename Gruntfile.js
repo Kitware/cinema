@@ -18,9 +18,21 @@ module.exports = function (grunt) {
         pkg: grunt.file.readJSON('package.json'),
 
         copy: {
+            d3: {
+                src: 'node_modules/d3/d3.min.js',
+                dest: 'web/dist/built/d3.min.js'
+            },
             ext: {
                 src: 'node_modules/bootstrap/dist/css/bootstrap.min.css',
                 dest: 'web/dist/built/bootstrap.min.css'
+            },
+            rickshawcss: {
+                src: 'vendor/rickshaw/rickshaw.min.css',
+                dest: 'web/dist/built/rickshaw.min.css'
+            },
+            rickshawjs: {
+                src: 'vendor/rickshaw/rickshaw.min.js',
+                dest: 'web/dist/built/rickshaw.min.js'
             }
         },
 
@@ -207,6 +219,6 @@ module.exports = function (grunt) {
         ['express', 'watch']
     );
     grunt.registerTask('build-js', ['jade', 'uglify:app', 'uglify:lib']);
-    grunt.registerTask('init', ['copy:ext', 'extend', 'uglify:ext', 'index-html']);
+    grunt.registerTask('init', ['copy:d3', 'copy:ext', 'copy:rickshawcss', 'copy:rickshawjs', 'extend', 'uglify:ext', 'index-html']);
     grunt.registerTask('default', ['stylus', 'build-js']);
 };
