@@ -14,6 +14,8 @@ function CreateWebGlCompositor() {
   imgh = 500,
   viewportWidth = 0,
   viewportHeight = 0,
+  projection = null,
+  mvp = null,
   glCanvas = null,
   spriteCanvas = null,
   copyCanvas = null,
@@ -37,6 +39,12 @@ function CreateWebGlCompositor() {
     glCanvas = webglCanvas;
     spriteCanvas = spriteSheetCanvas;
     copyCanvas = copyBufferCanvas;
+
+    mvp = mat4.create();
+    mat4.identity(mvp);
+
+    projection = mat4.create();
+    mat4.identity(projection);
 
     //Inialize GL context
     initGL();
@@ -306,7 +314,7 @@ function CreateWebGlCompositor() {
   // --------------------------------------------------------------------------
   //
   // --------------------------------------------------------------------------
-  function drawDisplayPass() {
+  function drawDisplayPass(xscale, yscale) {
     // Draw to the screen framebuffer
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
@@ -321,6 +329,12 @@ function CreateWebGlCompositor() {
     gl.uniform1i(u_image, 0);
     gl.activeTexture(gl.TEXTURE0 + 0);
     gl.bindTexture(gl.TEXTURE_2D, renderTexture);
+
+    // Send over the model-view-projection matrix for display pass
+    // left, right, bottom, top, near, far
+    projection = mat4.ortho(projection, -xscale, xscale, -yscale, yscale, 1.0, -1.0);
+    var mvpLoc = gl.getUniformLocation(displayProgram, "mvp");
+    gl.uniformMatrix4fv(mvpLoc, false, projection);
 
     // Draw the rectangle.
     gl.drawArrays(gl.TRIANGLES, 0, 6);
