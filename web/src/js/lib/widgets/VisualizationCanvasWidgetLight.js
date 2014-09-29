@@ -22,6 +22,7 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         this._forceRedraw = false;
         this.eye = new Vector(0, 0, 1);
         this.count = 0;
+        this.lf = {};
         /*
         for (var phi=0; phi <= 360; phi+=30) {
             var res = this._spherical2CartesianN(phi, 45.0);
@@ -134,7 +135,12 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
 
             //through LUT
             var toColor = value;
-            var color = this.LUT(toColor);
+            var color;
+            if (renderTerms.fieldName === 'vBrownianVectorsX') {
+                color = this._RainbowColor(toColor);
+            } else {
+                color = this.LUT(toColor);
+            }
             //return [color[0], color[1], color[2], 255]
 
             var Color = Vector.fromArray(color);
@@ -176,13 +182,39 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
                 255.0];
     },
 
-    _findLayer: function (order) {
-        //todo: precompue like computeCompositeOffset does
-        for (var i = 0; i < order.length; i += 1) {
-            var offset = this.layerOffset[order[i]];
-            if (offset > -1) {
-                return order[i];
+    _findLayerAndField: function (pixellayers) {
+        //recover layer and field from the current pixel and the query
+        if (pixellayers in this.lf) {
+            return this.lf[pixellayers];
+        }
+
+        var query;
+        var layers = [];
+        var fields = [];
+        var layer = -1;
+        var field = -1;
+        var loc;
+        var i;
+
+        query = this.layers.serialize();
+        for (i = 0; i < query.length; i += 2) {
+            if (query[i + 1] !== -1) {
+                layers[i / 2] = query[i];
+                fields[i / 2] = query[i + 1];
             }
+        }
+        for (i = 0; i < pixellayers.length; i += 1) {
+            loc = layers.indexOf(pixellayers[i]);
+            if (loc > -1) {
+                layer = layers[loc];
+                field = fields[loc];
+                break;
+            }
+        }
+        if (loc > -1) {
+            var lf = [layer, field];
+            this.lf[pixellayers] = lf;
+            return lf;
         }
         return -1;
     },
@@ -199,6 +231,7 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         }
 
         var layer,
+            field,
             renderCanvas = this.$('.c-vis-render-canvas')[0],
             compositeCanvas = this.$('.c-vis-composite-buffer')[0],
             spriteCanvas = this.$('.c-vis-spritesheet-buffer')[0],
@@ -268,7 +301,7 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
             for (var k in p) {
                 if (p.hasOwnProperty(k)) {
                     layer = k.substr(0, 1);
-                    var field = k.substr(1, 1);
+                    field = k.substr(1, 1);
                     if (field === pnX || field === pnY || field === pnZ) {
                         var offset = (this.model.getSpriteSize() - p[k]) * isize;
                         if (!lightTermsOffsets[layer]) {
@@ -308,8 +341,12 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
                     renderTerms.canLight = false;
                     if (canLight) {
                         //does this layer have lighting parameters?
-                        layer = this._findLayer(order);
-                        if (layer in lightTermsOffsets) {
+                        var lf = this._findLayerAndField(order);
+                        layer = lf[0];
+                        field = lf[1];
+                        var fname = this.model.attributes.metadata.fields[field];
+                        renderTerms.fieldName = fname;
+                        if (layer in lightTermsOffsets && fname in this.model.attributes.metadata.ranges) {
                             //yes
                             var Offsets = {
                                 'vnX': lightTermsOffsets[layer].vnX,
@@ -369,6 +406,7 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
             changed = true;
             this._forceRedraw = false;
             this._recomputeLight();
+            this.lf = {};
             this.count = 0;
         }
         if (changed) {
