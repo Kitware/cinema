@@ -2,7 +2,7 @@
  * This widget renders the visualization defined by a VisualizationModel onto
  * a canvas element that will fill the parent element.
  */
-cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
+cinema.views.VisualizationWebGlJpgCanvasWidget = Backbone.View.extend({
     // Expose primitive events from the canvas for building interactors
     events: {
         'click .c-webglvis-webgl-canvas': function (e) {
@@ -101,7 +101,7 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
     },
 
     render: function () {
-        this.$el.html(cinema.templates.webglVisCanvas());
+        this.$el.html(cinema.templates.webglJpgVisCanvas());
 
 
         var imgDim = this.compositeModel.getImageSize();
@@ -129,7 +129,8 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
 
         this.webglCompositor.init(imgDim,
                                   this.$('.c-webglvis-webgl-canvas')[0],
-                                  this.$('.c-webglvis-composite-buffer')[0]);
+                                  this.$('.c-webglvis-composite-buffer')[0],
+                                  this.$('.c-webglvis-depth-buffer')[0]);
 
         return this;
     },
@@ -192,15 +193,23 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
         */
 
         var compositeCanvas = this.$('.c-webglvis-composite-buffer')[0],
+            depthCanvas = this.$('.c-webglvis-depth-buffer')[0],
             spriteCanvas = this.$('.c-webglvis-spritesheet-buffer')[0],
+            spriteDepthCanvas = this.$('.c-webglvis-spritesheet-depthbuffer')[0],
             webglCanvas = this.$('.c-webglvis-webgl-canvas')[0],
             dim = this.compositeModel.getImageSize(),
             spritesheetDim = [ data.image.width, data.image.height ],
             spriteCtx = spriteCanvas.getContext('2d'),
+            spriteDepthCtx = spriteDepthCanvas.getContext('2d'),
             compositeCtx = compositeCanvas.getContext('2d'),
+            depthCtx = depthCanvas.getContext('2d'),
             composite = this.compositeCache[data.key];
 
         $(spriteCanvas).attr({
+            width: spritesheetDim[0],
+            height: spritesheetDim[1]
+        });
+        $(spriteDepthCanvas).attr({
             width: spritesheetDim[0],
             height: spritesheetDim[1]
         });
@@ -208,17 +217,29 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
             width: dim[0],
             height: dim[1]
         });
+        $(depthCanvas).attr({
+            width: dim[0],
+            height: dim[1]
+        });
 
         // Fill full spritesheet buffer with raw image data
-        spriteCtx.clearRect(0, 0, spritesheetDim[0], spritesheetDim[1]);
+        // spriteCtx.clearRect(0, 0, spritesheetDim[0], spritesheetDim[1]);
         spriteCtx.drawImage(data.image, 0, 0);
 
+        // Fill spritesheet depth buffer with raw depth image data
+        spriteDepthCtx.clearRect(0, 0, spritesheetDim[0], spritesheetDim[1]);
+        spriteDepthCtx.drawImage(data.depthimage, 0, 0);
+
         this.webglCompositor.clearFbo();
+
 
         var idxList = [ 21 ];
         for (var layerName in this.layerOffset) {
             idxList.push(this.layerOffset[layerName]);
         }
+
+        // var idxList = [ 1, 3, 5, 7, 20, 21 ];
+        // var idxList = [ 21, 20, 7, 5, 3, 1 ];
 
         var imgw = dim[0], imgh = dim[1];
 
@@ -230,13 +251,18 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
 
           // Because the png has transparency, we need to clear the canvas, or else
           // we end up with some blending when we draw the next image
-          compositeCtx.clearRect(0, 0, imgw, imgh);
+          // compositeCtx.clearRect(0, 0, imgw, imgh);
 
           compositeCtx.drawImage(spriteCanvas,
                           srcX, srcY, imgw, imgh,
                           0, 0, imgw, imgh);
 
-          this.webglCompositor.drawCompositePass(compositeCanvas);
+          depthCtx.clearRect(0, 0, imgw, imgh);
+          depthCtx.drawImage(spriteDepthCanvas,
+                          srcX, srcY, imgw, imgh,
+                          0, 0, imgw, imgh);
+
+          this.webglCompositor.drawCompositePass();
         }
 
         this.trigger('c:composited');

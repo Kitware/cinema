@@ -26,8 +26,18 @@
 
         if (this.visModel.get('metadata').type !== 'composite-image-stack' &&
             this.visModel.get('metadata').type !== 'composite-image-stack-depth' &&
+            this.visModel.get('metadata').type !== 'composite-image-stack-jpgdepth' &&
             this.visModel.get('metadata').type !== 'composite-image-stack-light') {
             throw new Error('Unsupported file format');
+        }
+
+        console.log('blah');
+
+        if (! _.has(params, 'files')) {
+            console.log("No special file requests");
+            this.files = [];
+        } else {
+            this.files = params.files;
         }
 
         return this;
@@ -120,6 +130,64 @@
     };
 
     /**
+     * Downloads the image data asynchronously and stores it in the cache for
+     * the given key, storing it in the "image" key in the cache entry.
+     */
+    prototype._downloadRgbImage = function (key, viewpoint) {
+        var url = this.visModel.url.substring(0, this.visModel.url.lastIndexOf('/')) +
+            '/' + key.replace('{filename}', 'rgb.jpg'),
+            img = new Image();
+
+        img.onload = _.bind(function () {
+            this._cache[key].image = img;
+            if (_.has(this._cache[key], 'depthimage')) {
+                this._cache[key].ready = true;
+                this.trigger('c:data.ready', this._cache[key], viewpoint);
+            }
+        }, this);
+
+        img.onerror = _.bind(function () {
+            this.trigger('c:error', {
+                'message': 'Error loading image ' + url + ' for key ' + key
+            });
+        }, this);
+
+        img.src = url;
+        if (img.complete) {
+            img.onload();
+        }
+    };
+
+    /**
+     * Downloads the image data asynchronously and stores it in the cache for
+     * the given key, storing it in the "image" key in the cache entry.
+     */
+    prototype._downloadRgbDepthImage = function (key, viewpoint) {
+        var url = this.visModel.url.substring(0, this.visModel.url.lastIndexOf('/')) +
+            '/' + key.replace('{filename}', 'depth.jpg'),
+            img = new Image();
+
+        img.onload = _.bind(function () {
+            this._cache[key].depthimage = img;
+            if (_.has(this._cache[key], 'image')) {
+                this._cache[key].ready = true;
+                this.trigger('c:data.ready', this._cache[key], viewpoint);
+            }
+        }, this);
+
+        img.onerror = _.bind(function () {
+            this.trigger('c:error', {
+                'message': 'Error loading image ' + url + ' for key ' + key
+            });
+        }, this);
+
+        img.src = url;
+        if (img.complete) {
+            img.onload();
+        }
+    };
+
+    /**
      * This is the primary public API method of this class. It is responsible
      * for downloading (and internally caching) the requisite image data for
      * the given viewpoint (time/phi/theta combination).
@@ -136,9 +204,15 @@
             }
         }
         else {
-            this._cache[key] = {key: key, ready: false};
-            this._downloadImage(key, viewpoint);
-            this._downloadCompositeInfo(key, viewpoint);
+            if (this.files.length === 0) {
+                this._cache[key] = {key: key, ready: false};
+                this._downloadImage(key, viewpoint);
+                this._downloadCompositeInfo(key, viewpoint);
+            } else {
+                this._cache[key] = {key: key, ready: false};
+                this._downloadRgbImage(key, viewpoint);
+                this._downloadRgbDepthImage(key, viewpoint);
+            }
         }
     };
 }) ();

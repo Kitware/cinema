@@ -25,10 +25,11 @@ cinema.StandaloneApp = Backbone.View.extend({
         this.staticRoot = settings.staticRoot;
 
         // When additional view type are added just expand the given list
-        this.allowedViewType = ['view', 'search', 'cost', 'view-webgl'];
+        this.allowedViewType = ['view', 'search', 'cost', 'view-webgl', 'view-webgl-jpg'];
         this.views = [
             { label: 'Exploration', name: 'view', icon: 'icon-compass-1'},
             { label: 'Exploration (WebGL)', name: 'view-webgl', icon: 'icon-compass'},
+            { label: 'Exploration (WebGL JPG)', name: 'view-webgl-jpg', icon: 'icon-picture'},
             { label: 'Search', name: 'search', icon: 'icon-search'},
             { label: 'Cost', name: 'cost', icon: 'icon-dollar'},
         ];
