@@ -103,18 +103,10 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
 
         el.appendTo(this.$('.c-search-results-list-area'));
 
-        var fieldModel = new cinema.models.FieldModel({
-            info: this.visModel
-        });
-        fieldModel.setField('time', viewpoint.time);
-        fieldModel.setField('phi', viewpoint.phi);
-        fieldModel.setField('theta', viewpoint.theta);
-
-
         var controlModel = new cinema.models.ControlModel({ info: this.visModel }),
             viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel });
 
-        // FIXME viewpointModel.setViewpoint(viewpoint);
+        controlModel.setControls(viewpoint);
 
         new cinema.views.VisualizationCanvasWidget({
             el: el,

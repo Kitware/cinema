@@ -82,19 +82,33 @@ cinema.models.ControlModel = Backbone.Model.extend({
     /**
      * Set a new value to a control.
      */
-    setControl: function (name, newValue) {
+    setControl: function (name, newValue, trigger) {
         var newIndex = this.controlMap[name].values.indexOf(newValue),
             changed = false;
         if (newIndex !== -1) {
             changed = this.controlMap[name].activeIdx !== newIndex;
             this.controlMap[name].activeIdx = newIndex;
         } else {
-            console.log("Can not set " + newValue + " to " + name);
+            console.error("Can not set " + newValue + " to " + name);
         }
-        if (changed) {
+        if (changed && trigger !== false) {
             this.trigger('change');
         }
         return changed;
+    },
+
+    /**
+     * Set multiple control values at once using an object, e.g.
+     * {
+     *    phi: "...",
+     *    theta: "..."
+     * }
+     */
+    setControls: function (obj) {
+        _.each(obj, function (v, k) {
+            this.setControl(k, v, false);
+        }, this);
+        this.trigger('change');
     },
 
     /**
