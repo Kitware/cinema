@@ -6,11 +6,6 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
         'click .c-search-filter-apply': function (e) {
             e.preventDefault();
             // TODO apply search filters
-        },
-
-        'click .c-search-toggle-layers': function (e) {
-            e.preventDefault();
-            this.$('.c-search-layers-panel').fadeToggle();
         }
     },
 
@@ -24,11 +19,6 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
         this.$('[title]').tooltip({
             placement: 'bottom',
             delay: {show: 100}
-        });
-
-        var pipelineView = new cinema.views.PipelineWidget({
-            el: this.$('.c-search-layer-control-container'),
-            model: this.visModel
         });
 
         this.searchModel = new cinema.models.SearchModel({
@@ -51,9 +41,9 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
             renderChildren();
         });
 
-        this.listenTo(pipelineView.layers, 'change', function () {
+        /*TODO listen to main toolsthis.listenTo(pipelineView.layers, 'change', function () {
             this.searchModel.compute();
-        }, this);
+        }, this);*/
 
         var view = this;
 
@@ -82,13 +72,10 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
         // The issue is that the this.$el is detached and needs
         // to be re-assign with the setElement method.
 
-        console.log("Search parent element: " + this.$el.lenght);
-        console.log("Search result msg element: " + this.$('.c-search-result-message').lenght);
+        this.$('.c-search-result-message').text(
+             this.searchModel.results.length + ' results');
 
-        // this.$('.c-search-result-message').text(
-        //     this.searchModel.results.length + ' results');
-
-        // this._showNextResult();
+        //this._showNextResult();
     },
 
     _showNextResult: function () {

@@ -30,22 +30,22 @@
             }).enableDragRotation({
                 keyModifiers: null
             }),
-            compositeTools = new cinema.views.CompositeToolsWidget({
-                el: $('.c-tools-panel', container),
-                model: compositeModel,
-                controlModel: controlModel,
-                viewpoint: viewpointModel,
-                layers: layers,
-                toolbarSelector: '.c-panel-toolbar'
-            }),
             controlList = [
                 { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
             ];
 
+        cinema.events.trigger('c:initCompositeTools', {
+            container: container,
+            compositeModel: compositeModel,
+            controlModel: controlModel,
+            viewpointModel: viewpointModel,
+            layers: layers
+        });
+
         function render () {
             var root = $(rootSelector);
             renderer.setElement($('.c-body-container', root)).render();
-            compositeTools.setElement($('.c-tools-panel', root)).render();
+            cinema.events.trigger('c:renderCompositeTools', {root: root});
             renderer.showViewpoint(true);
         }
 
