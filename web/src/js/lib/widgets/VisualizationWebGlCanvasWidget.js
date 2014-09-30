@@ -76,18 +76,33 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
         this._computeLayerOffset();
         this._first = true;
 
+        this.avgElapsedMillis = 0.0;
+        this.totalElapsedMillis = 0.0;
+        this.compositeCount = 0;
+
         this.listenTo(this.compositeManager, 'c:error', function (e) {
             this.trigger('c:error', e);
         });
         this.listenTo(this.compositeManager, 'c:data.ready', function (data, fields) {
             if (_.isEqual(fields, this._fields)) {
-                this._writeCompositeBuffer(data);
+                var startMillis = Date.now();
 
+                this._writeCompositeBuffer(data);
                 if (this._first) {
                     this._first = false;
                     this.resetCamera();
                 }
                 this.drawImage();
+
+                var elapsedMillis = Date.now() - startMillis;
+                this.compositeCount += 1;
+                this.totalElapsedMillis += elapsedMillis;
+                this.averageElapsedMillis = this.totalElapsedMillis / this.compositeCount;
+
+                var curFps = Math.floor((1.0 / elapsedMillis) * 1000);
+                var avgFps = Math.floor((1.0 / this.averageElapsedMillis) * 1000);
+                this.$('.s-timing-info-current').text(curFps);
+                this.$('.s-timing-info-average').text(avgFps);
             }
         });
         this.listenTo(this.fields, 'change', this.drawImage);
