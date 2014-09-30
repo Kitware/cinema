@@ -1,2 +1,27 @@
-.c-app-header-container
-.c-app-body-container
+.c-header-container
+    .header-left
+    .header-right
+
+.c-body-container
+
+.c-control-container.left
+    each controlPanel in controlList
+        if controlPanel.position == 'left'
+            .c-control-panel(class="c-#{controlPanel.key}-panel")
+              .c-control-panel-header
+                .c-panel-title
+                  i.c-icon.panel-close(title="Close", class="#{controlPanel.icon} c-#{controlPanel   .key}-panel-close")
+                  |  #{controlPanel.title}
+                .c-panel-toolbar
+              .c-control-panel-body(class="c-#{controlPanel.key}-control-container")
+
+.c-control-container.right
+    each controlPanel in controlList
+        if controlPanel.position == 'right'
+            .c-control-panel(class="c-#{controlPanel.key}-panel")
+              .c-control-panel-header
+                .c-panel-title
+                  i.c-icon.panel-close(title="Close", class="#{controlPanel.icon} c-#{controlPanel   .key}-panel-close")
+                  |  #{controlPanel.title}
+                .c-panel-toolbar
+              .c-control-panel-body(class="c-#{controlPanel.key}-control-container")

@@ -50,8 +50,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
      *        the visModel. If that is not set, creates one internally.
      */
     initialize: function (settings) {
-        var args = this.model.get('arguments');
-        this.fields = settings.fields;
+        this.controlModel = settings.controlModel;
         this.viewpoint = settings.viewpoint;
 
         if (!this.model.loaded()) {
@@ -62,13 +61,14 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         }
 
         this._privateInit();
-        this.layers = settings.layers || new cinema.models.LayerModel(this.model.defaultLayers());
+        this.compositeModel = new cinema.decorators.Composite(this.model);
+        this.layers = settings.layers || new cinema.models.LayerModel(this.compositeModel.getDefaultPipelineSetup());
         this.backgroundColor = settings.backgroundColor || '#ffffff';
         this.orderMapping = {};
         this.compositeCache = {};
-        this._fields = {};
+        this._controls = {};
 
-        this.compositeManager = settings.compositeManager || this.model.imageManager ||
+        this.compositeManager = settings.compositeManager ||
             new cinema.utilities.CompositeImageManager({
                 visModel: this.model
             });
@@ -79,8 +79,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         this.listenTo(this.compositeManager, 'c:error', function (e) {
             this.trigger('c:error', e);
         });
-        this.listenTo(this.compositeManager, 'c:data.ready', function (data, fields) {
-            if (fields === this._fields) {
+        this.listenTo(this.compositeManager, 'c:data.ready', function (data, controls) {
+            if (_.isEqual(controls, this._controls)) {
                 this._writeCompositeBuffer(data);
 
                 if (this._first) {
@@ -90,7 +90,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
                 this.drawImage();
             }
         });
-        this.listenTo(this.fields, 'change', this.drawImage);
+        this.listenTo(this.controlModel, 'change', this.drawImage);
         this.listenTo(this.viewpoint, 'change', this.drawImage);
         this.listenTo(this.layers, 'change', this.updateQuery);
     },
@@ -123,8 +123,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             if (query[i + 1] === '_') {
                 this.layerOffset[layer] = -1;
             } else {
-                this.layerOffset[layer] = this.model.numberOfLayers() - 1 -
-                    this.model.get('metadata').offset[query.substr(i, 2)];
+                this.layerOffset[layer] = this.compositeModel.getSpriteSize() -
+                    this.compositeModel.getOffset()[query.substr(i, 2)];
             }
         }
     },
@@ -159,8 +159,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         var renderCanvas = this.$('.c-vis-render-canvas')[0],
             compositeCanvas = this.$('.c-vis-composite-buffer')[0],
             spriteCanvas = this.$('.c-vis-spritesheet-buffer')[0],
-            dim = this.model.imageDimensions(),
-            spritesheetDim = this.model.spritesheetDimensions(),
+            dim = this.compositeModel.getImageSize(),
+            spritesheetDim = this.compositeModel.getSpriteImageSize(),
             spriteCtx = spriteCanvas.getContext('2d'),
             compositeCtx = compositeCanvas.getContext('2d'),
             composite = this.compositeCache[data.key];
@@ -189,7 +189,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             frontBuffer = compositeCtx.getImageData(0, 0, dim[0], dim[1]);
         } else { // Otherwise use the bottom spritesheet image as a background
             frontBuffer = spriteCtx.getImageData(
-                0, (this.model.numberOfLayers() - 1) * dim[1], dim[0], dim[1]);
+                0, this.compositeModel.getSpriteSize() * dim[1], dim[0], dim[1]);
         }
 
         var frontPixels = frontBuffer.data;
@@ -278,23 +278,23 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
      * do not pass this, simply renders the current this.viewpoint value.
      * @return this, for chainability
      */
-    showViewpoint: function () {
+    showViewpoint: function (forced) {
         var changed = false,
-            fields = this.fields.getFields();
+            controls = this.controlModel.getControls();
 
         // Search for change
-        for (var key in fields) {
-            if (_.has(this._fields, key)) {
-                if (this._fields[key] !== fields[key]) {
+        for (var key in controls) {
+            if (_.has(this._controls, key)) {
+                if (this._controls[key] !== controls[key]) {
                     changed = true;
                 }
             } else {
                 changed = true;
             }
         }
-        this._fields = _.extend(this._fields, fields);
-        if (changed) {
-            this.compositeManager.downloadData(this._fields);
+        this._controls = _.extend(this._controls, controls);
+        if (changed || forced) {
+            this.compositeManager.downloadData(this._controls);
         } else {
             this.drawImage();
         }
@@ -305,7 +305,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         this.orderMapping = {};
         this.compositeCache = {};
         this._computeLayerOffset();
-        this._fields = {}; // force redraw
+        this._controls = {}; // force redraw
         this.showViewpoint();
     },
 

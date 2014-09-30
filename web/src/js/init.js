@@ -13,8 +13,10 @@ if (!window.console) {
 
 var cinema = {
     models: {},
+    viewType: null,
     collections: {},
     utilities: {},
+    decorators: {},
     views: {},
     events: _.clone(Backbone.Events),
     router: new Backbone.Router()

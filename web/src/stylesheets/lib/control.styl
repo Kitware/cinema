@@ -1,0 +1,43 @@
+$textColor = #666
+$highlightTextColor = #333
+
+.c-controls-control-content
+    color $textColor
+
+    i.c-controls-control-button
+        width 1em
+        color $textColor
+        cursor pointer
+
+        &:hover
+            color $highlightTextColor
+
+    label
+        font-weight bold
+        color $textColor
+        cursor pointer
+        a
+            color #666
+            cursor pointer
+
+    select
+        float right
+
+    input
+        width 125px
+        position relative
+        top 2px
+        -webkit-border-radius 20px
+        -moz-border-radius 20px
+        border-radius 20px
+        display inline
+
+    label.value
+        text-align center
+        margin-bottom 0px
+        width 3em
+
+    .group
+        display inline
+        position absolute
+        right 0.5em

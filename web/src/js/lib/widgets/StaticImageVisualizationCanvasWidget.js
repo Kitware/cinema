@@ -41,7 +41,7 @@ cinema.views.StaticImageVisualizationCanvasWidget = Backbone.View.extend({
 
     initialize: function (settings) {
         this.model = settings.model;
-        this.fields = settings.fields;
+        this.controlModel = settings.controlModel;
         this.viewpoint = settings.viewpoint;
 
         if (!this.model.loaded()) {
@@ -57,9 +57,9 @@ cinema.views.StaticImageVisualizationCanvasWidget = Backbone.View.extend({
             });
 
         this._privateInit();
-        this._fields = {};
+        this._controls = {};
         this._first = true;
-        this.listenTo(this.fields, 'change', this.drawImage);
+        this.listenTo(this.controlModel, 'change', this.drawImage);
         this.listenTo(this.viewpoint, 'change', this.drawImage);
         this.listenTo(this.imageManager, 'c:data.ready', function () {
             if (this._first) {
@@ -83,9 +83,6 @@ cinema.views.StaticImageVisualizationCanvasWidget = Backbone.View.extend({
      * onto the render canvas.
      */
     drawImage: function () {
-        // Make sure the canvas is there
-        this.render();
-
         var canvas = this.$('.c-vis-render-canvas'),
             renderCanvas = canvas[0],
             imageToDraw = this.imageManager.getImage(),
@@ -93,9 +90,9 @@ cinema.views.StaticImageVisualizationCanvasWidget = Backbone.View.extend({
             h = this.$el.parent().height(),
             iw = imageToDraw ? imageToDraw.width : 500,
             ih = imageToDraw ? imageToDraw.height : 500,
-            ctx = renderCanvas.getContext('2d');
+            ctx = renderCanvas ? renderCanvas.getContext('2d') : null;
 
-        if (imageToDraw === null) {
+        if (imageToDraw === null || ctx === null) {
             return;
         }
 
@@ -149,22 +146,22 @@ cinema.views.StaticImageVisualizationCanvasWidget = Backbone.View.extend({
      */
     showViewpoint: function () {
         var changed = false,
-            fields = this.fields.getFields();
+            controls = this.controlModel.getControls();
 
         // Search for change
-        for (var key in fields) {
-            if (_.has(this._fields, key)) {
-                if (this._fields[key] !== fields[key]) {
+        for (var key in controls) {
+            if (_.has(this._controls, key)) {
+                if (this._controls[key] !== controls[key]) {
                     changed = true;
                 }
             } else {
                 changed = true;
             }
         }
-        this._fields = _.extend(this._fields, fields);
+        this._controls = _.extend(this._controls, controls);
 
         if (changed) {
-            this.imageManager.updateFields(this._fields);
+            this.imageManager.updateControls(this._controls);
         } else {
             this.drawImage();
         }
