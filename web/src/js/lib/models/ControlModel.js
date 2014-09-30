@@ -129,9 +129,11 @@ cinema.models.ControlModel = Backbone.Model.extend({
     },
 
     /**
-     * Get next control value base on its name.
+     * Update the value of a given control to its next discrete value.
+     * @param name [string] The name of the control
+     * @param wrap [bool] Whether the list is circular
      */
-    getNextControl: function (name, wrap) {
+    incrementControlValue: function (name, wrap) {
         this.controlMap[name].activeIdx = (this.controlMap[name].activeIdx + 1);
         if (wrap) {
             this.controlMap[name].activeIdx %= this.controlMap[name].values.length;
@@ -145,7 +147,7 @@ cinema.models.ControlModel = Backbone.Model.extend({
     /**
      * Get previous control value base on its name.
      */
-    getPreviousControl: function (name, wrap) {
+    decrementControlValue: function (name, wrap) {
         var size = this.controlMap[name].values.length;
         this.controlMap[name].activeIdx -= 1;
         if (this.controlMap[name].activeIdx < 0) {
@@ -156,18 +158,20 @@ cinema.models.ControlModel = Backbone.Model.extend({
     },
 
     /**
-     * Get first control value base on its name.
+     * Update to the first value for the given control parameter.
+     * @param name The field name.
      */
-    getFirstControl: function (name) {
+    setFirstControlValue: function (name) {
         this.controlMap[name].activeIdx = 0;
         this.trigger('change');
         return this.getControl(name);
     },
 
     /**
-     * Get last control value base on its name.
+     * Update to the last value for the given control parameter.
+     * @param name The field name.
      */
-    getLastControl: function (name) {
+    setLastControlValue: function (name) {
         this.controlMap[name].activeIdx = this.controlMap[name].values.length - 1;
         this.trigger('change');
         return this.getControl(name);
