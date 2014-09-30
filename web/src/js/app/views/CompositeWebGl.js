@@ -10,7 +10,7 @@
             fieldsModel = new cinema.models.FieldModel({ info: model }),
             viewpointModel = new cinema.models.ViewPointModel({ fields: fieldsModel }),
             layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup()),
-            compositor = CreateWebGlCompositor(),
+            compositor = new cinema.utilities.CreateWebGlCompositor(),
             renderer = new cinema.views.VisualizationWebGlCanvasWidget({
                 el: $('.c-body-container', container),
                 model: compositeModel,

@@ -180,20 +180,24 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
         // First iterate over the offset map to find the number of layers and
         // keep track of the maximum offset
         for (var key in offsets) {
-            spriteImageCount += 1;
-            layerMap[key[0]] = [];
-            if (offsets[key] > maxOffset) {
-                maxOffset = offsets[key];
+            if (_.has(offsets, key)) {
+                spriteImageCount += 1;
+                layerMap[key[0]] = [];
+                if (offsets[key] > maxOffset) {
+                    maxOffset = offsets[key];
+                }
             }
         }
 
         // Now go through the offset map again, updating the offsets (they are
         // reversed in the info.json from their true position in the sprite).
         // We also want a quick way to know the sprite offsets for every layer.
-        for (var key in offsets) {
-            var newOffset = maxOffset - offsets[key];
-            correctOffsets[key] = newOffset;
-            layerMap[key[0]].push(newOffset);
+        for (key in offsets) {
+            if (_.has(offsets, key)) {
+                var newOffset = maxOffset - offsets[key];
+                correctOffsets[key] = newOffset;
+                layerMap[key[0]].push(newOffset);
+            }
         }
 
         layerMap['+'] = [ maxOffset ];
@@ -280,14 +284,12 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
             var count = 1;
             var layers = '+';
 
-            if (pixelStack === '') {
-                // nothing extra to do
-            } else if (!isNaN(pixelStack)) {
+            if (pixelStack !== '' && !isNaN(pixelStack)) {
                 // layers is already good, all of these are background
                 count = parseInt(pixelStack);
             } else {
                 // count is already good, it's just a single pixel
-                layers = pixelStack + '+'
+                layers = pixelStack + '+';
             }
 
             for (var i = 0; i < count; i += 1) {
@@ -297,7 +299,7 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
                 var depthValue = 0;
                 for (var j = 0; j < layers.length; j += 1) {
                     var layerCode = layers[j];
-                    var layerIndices = layerMap[layerCode]
+                    var layerIndices = layerMap[layerCode];
                     for (var k = 0; k < layerIndices.length; k += 1) {
                         var layerIdx = layerIndices[k];
                         var yOffset = layerIdx * dim[1];
@@ -323,16 +325,17 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
         var idxList = [ maxOffset ];
         // var idxList = [];
         for (var layerName in this.layerOffset) {
-            idxList.push(this.layerOffset[layerName]);
+            if (_.has(this.layerOffset, layerName)) {
+                idxList.push(this.layerOffset[layerName]);
+            }
         }
 
         var imgw = dim[0], imgh = dim[1];
 
-        for (var i in idxList) {
-          //console.log(i);
-          var layerIdx = idxList[i];
+        for (var lidx = 0; lidx < idxList.length; lidx+=1) {
+          var layerIndex = idxList[lidx];
           var srcX = 0;
-          var srcY = layerIdx * imgh;
+          var srcY = layerIndex * imgh;
 
           // Because the png has transparency, we need to clear the canvas, or else
           // we end up with some blending when we draw the next image

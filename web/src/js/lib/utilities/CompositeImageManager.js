@@ -32,10 +32,7 @@
             throw new Error('Unsupported file format');
         }
 
-        console.log('blah');
-
         if (! _.has(params, 'files')) {
-            console.log("No special file requests");
             this.files = [];
         } else {
             this.files = params.files;

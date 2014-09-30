@@ -250,23 +250,17 @@ cinema.views.VisualizationWebGlJpgCanvasWidget = Backbone.View.extend({
 
         var idxList = [ 21 ];
         for (var layerName in this.layerOffset) {
-            idxList.push(this.layerOffset[layerName]);
+            if (_.has(this.layerOffset, layerName)) {
+                idxList.push(this.layerOffset[layerName]);
+            }
         }
-
-        // var idxList = [ 1, 3, 5, 7, 20, 21 ];
-        // var idxList = [ 21, 20, 7, 5, 3, 1 ];
 
         var imgw = dim[0], imgh = dim[1];
 
-        for (var i in idxList) {
-          //console.log(i);
+        for (var i = 0; i < idxList.length; i+=1) {
           var layerIdx = idxList[i];
           var srcX = 0;
           var srcY = layerIdx * imgh;
-
-          // Because the png has transparency, we need to clear the canvas, or else
-          // we end up with some blending when we draw the next image
-          // compositeCtx.clearRect(0, 0, imgw, imgh);
 
           compositeCtx.drawImage(spriteCanvas,
                           srcX, srcY, imgw, imgh,
@@ -291,8 +285,6 @@ cinema.views.VisualizationWebGlJpgCanvasWidget = Backbone.View.extend({
     drawImage: function () {
         var zoomLevel = this.viewpoint.get('zoom'),
             drawingCenter = this.viewpoint.get('center');
-
-        console.log("zoom: " + zoomLevel + ", center: " + drawingCenter);
 
         this.webglCompositor.drawDisplayPass(this.xscale * zoomLevel, this.yscale * zoomLevel);
 

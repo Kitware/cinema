@@ -140,23 +140,11 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
             this.yscale = 1.0 / vpAspect;
         }
 
-        console.log('img aspect: ' + imgAspect + ', viewport aspect: ' + vpAspect);
-
         this.webglCompositor.init(imgDim,
                                   this.$('.c-webglvis-webgl-canvas')[0],
                                   this.$('.c-webglvis-composite-buffer')[0]);
 
         return this;
-    },
-
-    _computeOffset: function (order) {
-        for (var i = 0; i < order.length; i += 1) {
-            var offset = this.layerOffset[order[i]];
-            if (offset > -1) {
-                return offset;
-            }
-        }
-        return -1;
     },
 
     _computeLayerOffset: function () {
@@ -177,22 +165,6 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
         }
     },
 
-    _computeCompositeInfo: function (data) {
-        var composite = data.json['pixel-order'].split('+'),
-            count = composite.length;
-        /*jshint -W016 */
-        while (count--) {
-            var str = composite[count];
-            if (str[0] === '@') {
-                composite[count] = Number(str.substr(1));
-            } else if (!_.has(this.orderMapping, str)) {
-                this.orderMapping[str] = this._computeOffset(str);
-            }
-        }
-
-        this.compositeCache[data.key] = composite;
-    },
-
     /**
      * Computes the composite image and writes it into the composite buffer.
      * @param data The payload from the composite image manager c:data.ready
@@ -200,11 +172,6 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
      * cache entry so it won't have to recompute it.
      */
     _writeCompositeBuffer: function (data) {
-        /*
-        if (!_.has(this.compositeCache, data.key)) {
-            this._computeCompositeInfo(data);
-        }
-        */
 
         var compositeCanvas = this.$('.c-webglvis-composite-buffer')[0],
             spriteCanvas = this.$('.c-webglvis-spritesheet-buffer')[0],
@@ -232,12 +199,14 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
 
         var idxList = [ 21 ];
         for (var layerName in this.layerOffset) {
-            idxList.push(this.layerOffset[layerName]);
+            if (_.has(this.layerOffset, layerName)) {
+                idxList.push(this.layerOffset[layerName]);
+            }
         }
 
         var imgw = dim[0], imgh = dim[1];
 
-        for (var i in idxList) {
+        for (var i = 0; i < idxList.length; i+=1) {
           //console.log(i);
           var layerIdx = idxList[i];
           var srcX = 0;
@@ -266,7 +235,7 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
         var zoomLevel = this.viewpoint.get('zoom'),
             drawingCenter = this.viewpoint.get('center');
 
-        console.log("zoom: " + zoomLevel + ", center: " + drawingCenter);
+        // console.log("zoom: " + zoomLevel + ", center: " + drawingCenter);
 
         this.webglCompositor.drawDisplayPass(this.xscale * zoomLevel, this.yscale * zoomLevel);
 
