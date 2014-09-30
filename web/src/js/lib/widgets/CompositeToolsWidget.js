@@ -48,4 +48,5 @@ cinema.views.CompositeToolsWidget = Backbone.View.extend({
     toggleControlEditor: function () {
         this.$('.c-control-edit').fadeToggle();
     }
+
 });
