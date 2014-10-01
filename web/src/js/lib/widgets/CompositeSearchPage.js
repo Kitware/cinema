@@ -43,10 +43,6 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
             this.searchModel.compute();
         }
 
-        this.listenTo(this.visModel, 'change', function () {
-            renderChildren();
-        });
-
         /*TODO listen to main toolsthis.listenTo(pipelineView.layers, 'change', function () {
             this.searchModel.compute();
         }, this);*/
