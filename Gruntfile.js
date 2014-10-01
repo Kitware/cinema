@@ -19,8 +19,13 @@ module.exports = function (grunt) {
 
         copy: {
             ext: {
-                src: 'node_modules/bootstrap/dist/css/bootstrap.min.css',
-                dest: 'web/dist/built/bootstrap.min.css'
+                expand: true,
+                flatten: true,
+                src: ['node_modules/d3/d3.min.js',
+                      'node_modules/bootstrap/dist/css/bootstrap.min.css',
+                      'vendor/rickshaw/rickshaw.min.css',
+                      'vendor/rickshaw/rickshaw.min.js' ],
+                dest: 'web/dist/built/'
             },
             shaders: {
                 cwd: 'web/src/shaders',
