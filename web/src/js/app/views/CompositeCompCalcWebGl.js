@@ -7,15 +7,15 @@
             dataType = model.getDataType(),
             compositeModel = new cinema.decorators.Composite(model),
             compositeManager = new cinema.utilities.CompositeImageManager({ visModel: model }),
-            fieldsModel = new cinema.models.FieldModel({ info: model }),
-            viewpointModel = new cinema.models.ViewPointModel({ fields: fieldsModel }),
+            controlsModel = new cinema.models.ControlModel({ info: model }),
+            viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlsModel }),
             layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup()),
             compositor = new cinema.utilities.CreateWebGlCompositor(),
             renderer = new cinema.views.VisualizationCompCalcWebGlCanvasWidget({
                 el: $('.c-body-container', container),
                 model: compositeModel,
                 layers: layers,
-                fields: fieldsModel,
+                controls: controlsModel,
                 viewpoint: viewpointModel,
                 compositeManager: compositeManager,
                 webglCompositor: compositor
@@ -32,10 +32,10 @@
             }).enableDragRotation({
                 keyModifiers: null
             }),
-            compositePipeline = new cinema.views.CompositePipelineWidget({
+            compositePipeline = new cinema.views.PipelineWidget({
                 el: $('.c-tools-panel', container),
                 model: compositeModel,
-                fields: fieldsModel,
+                controls: controlsModel,
                 viewpoint: viewpointModel,
                 layers: layers,
                 toolbarSelector: '.c-panel-toolbar'
@@ -60,14 +60,14 @@
             renderer.resetCamera();
         }
 
-        fieldsModel.on('change', refreshCamera);
+        controlsModel.on('change', refreshCamera);
         viewpointModel.on('change', refreshCamera);
         cinema.events.on('c:resetCamera', resetCamera);
 
         render();
 
         return {
-            controls: controlList,
+            controlList: controlList,
             render: render
         };
     });

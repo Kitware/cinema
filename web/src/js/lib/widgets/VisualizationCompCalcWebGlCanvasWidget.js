@@ -50,7 +50,7 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
      *        the visModel. If that is not set, creates one internally.
      */
     initialize: function (settings) {
-        this.fields = settings.fields;
+        this.controls = settings.controls;
         this.viewpoint = settings.viewpoint;
 
         if (!this.model.loaded()) {
@@ -105,7 +105,7 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
                 this.$('.s-timing-info-average').text(avgFps);
             }
         });
-        this.listenTo(this.fields, 'change', this.drawImage);
+        this.listenTo(this.controls, 'change', this.drawImage);
         this.listenTo(this.viewpoint, 'change', this.drawImage);
         this.listenTo(this.layers, 'change', this.updateQuery);
 
@@ -392,7 +392,7 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
      */
     showViewpoint: function (forced) {
         var changed = false,
-            fields = this.fields.getFields();
+            fields = this.controls.getControls();
 
         // Search for change
         for (var key in fields) {
