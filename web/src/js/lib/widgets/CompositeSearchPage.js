@@ -6,6 +6,15 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
         'click .c-search-filter-apply': function (e) {
             e.preventDefault();
             // TODO apply search filters
+        },
+        'input #c-search-filter': function (e) {
+            var q = this.searchModel.parseQuery($(e.currentTarget).val());
+
+            if (q) {
+                this.$('.c-search-filter-apply').removeAttr('disabled');
+            } else {
+                this.$('.c-search-filter-apply').attr('disabled', 'disabled');
+            }
         }
     },
 
@@ -41,16 +50,7 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
             this.searchModel.compute();
         }, this);*/
 
-        var view = this;
-
-        Scrollpoints.add(this.$('.c-search-page-bottom')[0], function () {
-            if (view.searchModel.results) {
-                view._showNextResult();
-            }
-        }, {
-            when: 'entered',
-            once: false
-        });
+        this._setScrollWaypoint();
     },
 
     clearResults: function () {
@@ -59,7 +59,16 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
 
     /** Returns whether we are at the bottom of the page */
     _canScroll: function () {
-        return !this.$('.c-search-page-bottom').visible(true);
+        return this.$('.c-search-page-bottom').visible(true);
+    },
+
+    _setScrollWaypoint: function () {
+        var view = this;
+        Scrollpoints.add(this.$('.c-search-page-bottom')[0], function () {
+            if (view.searchModel.results) {
+                view._showNextResult();
+            }
+        });
     },
 
     _showResults: function () {
@@ -99,8 +108,10 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
         }).on('c:drawn', function () {
             this.resultIndex += 1;
 
-            if (!this._canScroll()) {
+            if (this._canScroll()) {
                 this._showNextResult();
+            } else {
+                this._setScrollWaypoint();
             }
         }, this).render().showViewpoint();
     }

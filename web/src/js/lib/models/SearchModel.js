@@ -12,6 +12,20 @@ cinema.models.SearchModel = Backbone.Model.extend({
     },
 
     /**
+     * Convert a query string into a query object that can be used to filter
+     * results in this model.
+     */
+    parseQuery: function (str) {
+
+        try {
+            str = '{' + str.trim() + '}';
+            return $.parseJSON(str.replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2":'));
+        } catch (e) {
+            return null;
+        }
+    },
+
+    /**
      * This method computes all matching search results, and triggers
      * a 'c:done' event when it has finished.
      */
