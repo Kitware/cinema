@@ -2,34 +2,34 @@
  * This widget renders the visualization defined by a VisualizationModel onto
  * a canvas element that will fill the parent element.
  */
-cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
+cinema.views.VisualizationWebGlJpgCanvasWidget = Backbone.View.extend({
     // Expose primitive events from the canvas for building interactors
     events: {
-        'click .c-vis-render-canvas': function (e) {
+        'click .c-webglvis-webgl-canvas': function (e) {
             this.trigger('c:click', e);
         },
-        'dblclick .c-vis-render-canvas': function (e) {
+        'dblclick .c-webglvis-webgl-canvas': function (e) {
             this.trigger('c:dblclick', e);
         },
-        'mousedown .c-vis-render-canvas': function (e) {
+        'mousedown .c-webglvis-webgl-canvas': function (e) {
             this.trigger('c:mousedown', e);
         },
-        'mousemove .c-vis-render-canvas': function (e) {
+        'mousemove .c-webglvis-webgl-canvas': function (e) {
             this.trigger('c:mousemove', e);
         },
-        'mouseup .c-vis-render-canvas': function (e) {
+        'mouseup .c-webglvis-webgl-canvas': function (e) {
             this.trigger('c:mouseup', e);
         },
-        'mousewheel .c-vis-render-canvas': function (e) {
+        'mousewheel .c-webglvis-webgl-canvas': function (e) {
             this.trigger('c:mousewheel', e);
         },
-        'DOMMouseScroll .c-vis-render-canvas': function (e) {
+        'DOMMouseScroll .c-webglvis-webgl-canvas': function (e) {
             this.trigger('c:mousewheel', e);
         },
-        'keypress .c-vis-render-canvas': function (e) {
+        'keypress .c-webglvis-webgl-canvas': function (e) {
             this.trigger('c:keypress', e);
         },
-        'contextmenu .c-vis-render-canvas': function (e) {
+        'contextmenu .c-webglvis-webgl-canvas': function (e) {
             e.preventDefault();
         }
     },
@@ -50,7 +50,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
      *        the visModel. If that is not set, creates one internally.
      */
     initialize: function (settings) {
-        this.controlModel = settings.controlModel;
+        this.fields = settings.fields;
         this.viewpoint = settings.viewpoint;
 
         if (!this.model.loaded()) {
@@ -66,7 +66,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         this.backgroundColor = settings.backgroundColor || '#ffffff';
         this.orderMapping = {};
         this.compositeCache = {};
-        this._controls = {};
+        this._fields = {};
 
         this.compositeManager = settings.compositeManager ||
             new cinema.utilities.CompositeImageManager({
@@ -83,15 +83,9 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         this.listenTo(this.compositeManager, 'c:error', function (e) {
             this.trigger('c:error', e);
         });
-<<<<<<< HEAD
-        this.listenTo(this.compositeManager, 'c:data.ready', function (data, controls) {
-            if (_.isEqual(controls, this._controls)) {
-                this._writeCompositeBuffer(data);
-=======
         this.listenTo(this.compositeManager, 'c:data.ready', function (data, fields) {
             if (_.isEqual(fields, this._fields)) {
                 var startMillis = Date.now();
->>>>>>> support-webgl-compositing
 
                 this._writeCompositeBuffer(data);
                 if (this._first) {
@@ -111,13 +105,47 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
                 this.$('.s-timing-info-average').text(avgFps);
             }
         });
-        this.listenTo(this.controlModel, 'change', this.drawImage);
+        this.listenTo(this.fields, 'change', this.drawImage);
         this.listenTo(this.viewpoint, 'change', this.drawImage);
         this.listenTo(this.layers, 'change', this.updateQuery);
+
+        this.xscale = 1.0;
+        this.yscale = 1.0;
+
+        this.webglCompositor = settings.webglCompositor;
     },
 
     render: function () {
-        this.$el.html(cinema.templates.visCanvas());
+        this.$el.html(cinema.templates.webglJpgVisCanvas());
+
+
+        var imgDim = this.compositeModel.getImageSize();
+        var imgAspect = imgDim[0] / imgDim[1];
+        var vpDim = [
+            this.$('.c-webglvis-webgl-canvas').parent().width(),
+            this.$('.c-webglvis-webgl-canvas').parent().height()
+        ];
+        var vpAspect = vpDim[0] / vpDim[1];
+
+        $(this.$('.c-webglvis-webgl-canvas')[0]).attr({
+            width: vpDim[0],
+            height: vpDim[1]
+        });
+
+        if (vpAspect > imgAspect) {
+            this.xscale = vpAspect;
+            this.yscale = 1.0;
+        } else {
+            this.xscale = 1.0;
+            this.yscale = 1.0 / vpAspect;
+        }
+
+        console.log('img aspect: ' + imgAspect + ', viewport aspect: ' + vpAspect);
+
+        this.webglCompositor.init(imgDim,
+                                  this.$('.c-webglvis-webgl-canvas')[0],
+                                  this.$('.c-webglvis-composite-buffer')[0],
+                                  this.$('.c-webglvis-depth-buffer')[0]);
 
         return this;
     },
@@ -173,20 +201,30 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
      * cache entry so it won't have to recompute it.
      */
     _writeCompositeBuffer: function (data) {
+        /*
         if (!_.has(this.compositeCache, data.key)) {
             this._computeCompositeInfo(data);
         }
+        */
 
-        var renderCanvas = this.$('.c-vis-render-canvas')[0],
-            compositeCanvas = this.$('.c-vis-composite-buffer')[0],
-            spriteCanvas = this.$('.c-vis-spritesheet-buffer')[0],
+        var compositeCanvas = this.$('.c-webglvis-composite-buffer')[0],
+            depthCanvas = this.$('.c-webglvis-depth-buffer')[0],
+            spriteCanvas = this.$('.c-webglvis-spritesheet-buffer')[0],
+            spriteDepthCanvas = this.$('.c-webglvis-spritesheet-depthbuffer')[0],
+            webglCanvas = this.$('.c-webglvis-webgl-canvas')[0],
             dim = this.compositeModel.getImageSize(),
-            spritesheetDim = this.compositeModel.getSpriteImageSize(),
+            spritesheetDim = [ data.image.width, data.image.height ],
             spriteCtx = spriteCanvas.getContext('2d'),
+            spriteDepthCtx = spriteDepthCanvas.getContext('2d'),
             compositeCtx = compositeCanvas.getContext('2d'),
+            depthCtx = depthCanvas.getContext('2d'),
             composite = this.compositeCache[data.key];
 
         $(spriteCanvas).attr({
+            width: spritesheetDim[0],
+            height: spritesheetDim[1]
+        });
+        $(spriteDepthCanvas).attr({
             width: spritesheetDim[0],
             height: spritesheetDim[1]
         });
@@ -194,49 +232,48 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             width: dim[0],
             height: dim[1]
         });
+        $(depthCanvas).attr({
+            width: dim[0],
+            height: dim[1]
+        });
 
         // Fill full spritesheet buffer with raw image data
+        // spriteCtx.clearRect(0, 0, spritesheetDim[0], spritesheetDim[1]);
         spriteCtx.drawImage(data.image, 0, 0);
 
-        var pixelBuffer = spriteCtx.getImageData(0, 0,
-                  spritesheetDim[0], spritesheetDim[1]).data,
-            frontBuffer,
-            pixelIdx = 0;
+        // Fill spritesheet depth buffer with raw depth image data
+        spriteDepthCtx.clearRect(0, 0, spritesheetDim[0], spritesheetDim[1]);
+        spriteDepthCtx.drawImage(data.depthimage, 0, 0);
 
-        // Fill the background if backgroundColor is specified
-        if (this.backgroundColor) {
-            compositeCtx.fillStyle = this.backgroundColor;
-            compositeCtx.fillRect(0, 0, dim[0], dim[1]);
-            frontBuffer = compositeCtx.getImageData(0, 0, dim[0], dim[1]);
-        } else { // Otherwise use the bottom spritesheet image as a background
-            frontBuffer = spriteCtx.getImageData(
-                0, this.compositeModel.getSpriteSize() * dim[1], dim[0], dim[1]);
-        }
+        this.webglCompositor.clearFbo();
 
-        var frontPixels = frontBuffer.data;
 
-        for (var i = 0; i < composite.length; i += 1) {
-            var order = composite[i];
-            if (order > 0) {
-                pixelIdx += order;
-            } else {
-                var offset = this.orderMapping[order];
-
-                if (offset > -1) {
-                    var localIdx = 4 * pixelIdx;
-                    offset *= dim[0] * dim[1] * 4;
-                    offset += localIdx;
-                    frontPixels[localIdx] = pixelBuffer[offset];
-                    frontPixels[localIdx + 1] = pixelBuffer[offset + 1];
-                    frontPixels[localIdx + 2] = pixelBuffer[offset + 2];
-                    frontPixels[localIdx + 3] = 255;
-                }
-                pixelIdx += 1;
+        var idxList = [ 21 ];
+        for (var layerName in this.layerOffset) {
+            if (_.has(this.layerOffset, layerName)) {
+                idxList.push(this.layerOffset[layerName]);
             }
         }
 
-        // Draw buffer to composite canvas
-        compositeCtx.putImageData(frontBuffer, 0, 0);
+        var imgw = dim[0], imgh = dim[1];
+
+        for (var i = 0; i < idxList.length; i+=1) {
+          var layerIdx = idxList[i];
+          var srcX = 0;
+          var srcY = layerIdx * imgh;
+
+          compositeCtx.drawImage(spriteCanvas,
+                          srcX, srcY, imgw, imgh,
+                          0, 0, imgw, imgh);
+
+          depthCtx.clearRect(0, 0, imgw, imgh);
+          depthCtx.drawImage(spriteDepthCanvas,
+                          srcX, srcY, imgw, imgh,
+                          0, 0, imgw, imgh);
+
+          this.webglCompositor.drawCompositePass();
+        }
+
         this.trigger('c:composited');
     },
 
@@ -246,32 +283,10 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
      * onto the render canvas.
      */
     drawImage: function () {
-        var renderCanvas = this.$('.c-vis-render-canvas')[0],
-            compositeCanvas = this.$('.c-vis-composite-buffer')[0],
-            w = this.$el.width(),
-            h = this.$el.height(),
-            iw = compositeCanvas.width,
-            ih = compositeCanvas.height;
-
-        $(renderCanvas).attr({
-            width: w,
-            height: h
-        });
-        renderCanvas.getContext('2d').clearRect(0, 0, w, h);
-
         var zoomLevel = this.viewpoint.get('zoom'),
             drawingCenter = this.viewpoint.get('center');
 
-        var tw = Math.floor(iw * zoomLevel),
-            th = Math.floor(ih * zoomLevel);
-
-        var tx = drawingCenter[0] - (tw / 2),
-            ty = drawingCenter[1] - (th / 2);
-
-        renderCanvas.getContext('2d').drawImage(
-            compositeCanvas,
-            0,   0, iw, ih,  // Source image   [Location,Size]
-            tx, ty, tw, th); // Target drawing [Location,Size]
+        this.webglCompositor.drawDisplayPass(this.xscale * zoomLevel, this.yscale * zoomLevel);
 
         this.trigger('c:drawn');
     },
@@ -283,8 +298,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
     resetCamera: function () {
         var w = this.$el.width(),
             h = this.$el.height(),
-            iw = this.$('.c-vis-composite-buffer').width(),
-            ih = this.$('.c-vis-composite-buffer').height();
+            iw = this.$('.c-webglvis-composite-buffer').width(),
+            ih = this.$('.c-webglvis-composite-buffer').height();
 
         this.viewpoint.set({
             zoom: Math.min(w / iw, h / ih),
@@ -301,21 +316,21 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
      */
     showViewpoint: function (forced) {
         var changed = false,
-            controls = this.controlModel.getControls();
+            fields = this.fields.getFields();
 
         // Search for change
-        for (var key in controls) {
-            if (_.has(this._controls, key)) {
-                if (this._controls[key] !== controls[key]) {
+        for (var key in fields) {
+            if (_.has(this._fields, key)) {
+                if (this._fields[key] !== fields[key]) {
                     changed = true;
                 }
             } else {
                 changed = true;
             }
         }
-        this._controls = _.extend(this._controls, controls);
+        this._fields = _.extend(this._fields, fields);
         if (changed || forced) {
-            this.compositeManager.downloadData(this._controls);
+            this.compositeManager.downloadData(this._fields);
         } else {
             this.drawImage();
         }
@@ -326,7 +341,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         this.orderMapping = {};
         this.compositeCache = {};
         this._computeLayerOffset();
-        this._controls = {}; // force redraw
+        this._fields = {}; // force redraw
         this.showViewpoint();
     },
 

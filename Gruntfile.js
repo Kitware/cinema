@@ -21,6 +21,12 @@ module.exports = function (grunt) {
             ext: {
                 src: 'node_modules/bootstrap/dist/css/bootstrap.min.css',
                 dest: 'web/dist/built/bootstrap.min.css'
+            },
+            shaders: {
+                cwd: 'web/src/shaders',
+                src: '**/*',           // copy all files and subfolders
+                dest: 'web/dist/shaders',    // destination folder
+                expand: true
             }
         },
 
@@ -113,6 +119,7 @@ module.exports = function (grunt) {
                         'node_modules/underscore/underscore.js',
                         'node_modules/backbone/backbone.js',
                         'node_modules/bootstrap/dist/js/bootstrap.js',
+                        'node_modules/gl-matrix/dist/gl-matrix-min.js',
                         'web/ext/vector.js'
                     ]
                 }
@@ -207,6 +214,6 @@ module.exports = function (grunt) {
         ['express', 'watch']
     );
     grunt.registerTask('build-js', ['jade', 'uglify:app', 'uglify:lib']);
-    grunt.registerTask('init', ['copy:ext', 'extend', 'uglify:ext', 'index-html']);
+    grunt.registerTask('init', ['copy:ext', 'copy:shaders', 'extend', 'uglify:ext', 'index-html']);
     grunt.registerTask('default', ['stylus', 'build-js']);
 };
