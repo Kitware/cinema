@@ -28,8 +28,8 @@ cinema.StandaloneApp = Backbone.View.extend({
         this.allowedViewType = ['view', 'search', 'cost'];
         this.views = [
             { label: 'Exploration', name: 'view', icon: 'icon-compass-1'},
-            { label: 'Search', name: 'search', icon: 'icon-search'}
-            //{ label: 'Cost', name: 'cost', icon: 'icon-dollar'},
+            { label: 'Search', name: 'search', icon: 'icon-search'},
+            { label: 'Cost', name: 'cost', icon: 'icon-dollar'},
         ];
 
         this.model = new cinema.models.VisualizationModel({
