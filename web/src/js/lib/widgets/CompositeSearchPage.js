@@ -37,7 +37,7 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
             layerModel: this.layerModel
         });
 
-        this.searchModel.on('c:done', this._showResults, this);
+        this.searchModel.off('c:done').on('c:done', this._showResults, this);
 
         if (this.visModel.loaded()) {
             this.searchModel.compute();
@@ -105,8 +105,9 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
             model: this.visModel,
             viewpoint: viewpointModel,
             layers: this.layerModel
-        }).on('c:drawn', function () {
+        }).once('c:drawn', function () {
             this.resultIndex += 1;
+
             if (this._canScroll()) {
                 this._showNextResult();
             } else {

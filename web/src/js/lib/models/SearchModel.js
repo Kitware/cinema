@@ -36,7 +36,6 @@ cinema.models.SearchModel = Backbone.Model.extend({
             var viewpoint = this.visModel.ordinalToObject(i);
 
             if (this._filter(viewpoint)) {
-                console.log(viewpoint);
                 this.results.push(viewpoint);
             }
         }

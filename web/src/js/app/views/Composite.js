@@ -62,8 +62,6 @@
         viewpointModel.on('change', refreshCamera);
         cinema.events.on('c:resetCamera', resetCamera);
 
-        render();
-
         return {
             controlList: controlList,
             render: render
@@ -100,8 +98,6 @@
             page.setElement($('.c-body-container', root)).render();
             cinema.events.trigger('c:renderCompositeTools', {root: root});
         }
-
-        render();
 
         return {
             controlList: controlList,
