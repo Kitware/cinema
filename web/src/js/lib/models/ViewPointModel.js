@@ -34,9 +34,9 @@ cinema.models.ViewPointModel = Backbone.Model.extend({
             wrap = !!wrap;
             byValue = byValue || 1;
             if (byValue > 0) {
-                this.controlModel.getNextControl(name, wrap);
+                this.controlModel.incrementControlValue(name, wrap);
             } else {
-                this.controlModel.getPreviousControl(name, wrap);
+                this.controlModel.decrementControlValue(name, wrap);
             }
         }
         return this;

@@ -30,22 +30,22 @@
             }).enableDragRotation({
                 keyModifiers: null
             }),
-            compositeTools = new cinema.views.CompositeToolsWidget({
-                el: $('.c-tools-panel', container),
-                model: compositeModel,
-                controlModel: controlModel,
-                viewpoint: viewpointModel,
-                layers: layers,
-                toolbarSelector: '.c-panel-toolbar'
-            }),
             controlList = [
                 { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
             ];
 
+        cinema.events.trigger('c:initCompositeTools', {
+            container: container,
+            compositeModel: compositeModel,
+            controlModel: controlModel,
+            viewpointModel: viewpointModel,
+            layers: layers
+        });
+
         function render () {
             var root = $(rootSelector);
             renderer.setElement($('.c-body-container', root)).render();
-            compositeTools.setElement($('.c-tools-panel', root)).render();
+            cinema.events.trigger('c:renderCompositeTools', {root: root});
             renderer.showViewpoint(true);
         }
 
@@ -62,8 +62,6 @@
         viewpointModel.on('change', refreshCamera);
         cinema.events.on('c:resetCamera', resetCamera);
 
-        render();
-
         return {
             controlList: controlList,
             render: render
@@ -79,25 +77,27 @@
             controlModel = new cinema.models.ControlModel({ info: model }),
             viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
             layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup()),
-            // compositePipeline = new cinema.views.PipelineWidget({
-            //     el: $('.c-tools-panel', container),
-            //     model: compositeModel,
-            //     viewpoint: viewpointModel,
-            //     layers: layers,
-            //     toolbarSelector: '.c-panel-toolbar'
-            // }),
-            page = new cinema.views.CompositeSearchPage({ visModel: compositeModel }),
+            page = new cinema.views.CompositeSearchPage({
+                visModel: compositeModel,
+                layerModel: layers
+            }),
             controlList = [
-                // { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
+                { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
             ];
+
+            cinema.events.trigger('c:initCompositeTools', {
+                container: container,
+                compositeModel: compositeModel,
+                controlModel: controlModel,
+                viewpointModel: viewpointModel,
+                layers: layers
+            });
 
         function render () {
             var root = $(rootSelector);
             page.setElement($('.c-body-container', root)).render();
-            // compositePipeline.setElement($('.c-tools-panel', root)).render();
+            cinema.events.trigger('c:renderCompositeTools', {root: root});
         }
-
-        render();
 
         return {
             controlList: controlList,

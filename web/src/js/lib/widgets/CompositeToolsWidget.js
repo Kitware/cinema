@@ -40,34 +40,13 @@ cinema.views.CompositeToolsWidget = Backbone.View.extend({
         this.controlWidget.setElement(this.$('.c-control-content')).render();
     },
 
-    hidePipelineEditor: function () {
-        var link = this.$('.c-pipeline-edit'),
-            state;
-        if (link.attr('state') === 'on') {
-            state = 'off';
-            link.attr('state', state);
-            link.fadeOut();
-        }
-        else {
-            state = 'on';
-            link.attr('state', state);
-            link.fadeIn();
-        }
+    togglePipelineEditor: function () {
+        this.$('.c-pipeline-edit').fadeToggle();
+
     },
 
-    hideControlEditor: function () {
-        var link = this.$('.c-control-edit'),
-            state;
-        if (link.attr('state') === 'on') {
-            state = 'off';
-            link.attr('state', state);
-            link.fadeOut();
-        }
-        else {
-            state = 'on';
-            link.attr('state', state);
-            link.fadeIn();
-        }
-    },
+    toggleControlEditor: function () {
+        this.$('.c-control-edit').fadeToggle();
+    }
 
 });
