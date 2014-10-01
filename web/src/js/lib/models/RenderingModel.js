@@ -20,18 +20,11 @@ cinema.models.RenderingModel = Backbone.Model.extend({
         return this.url;
     },
 
-    getData: function (name) {
-        if(this.loaded()) {
-            return this.get(name);
-        }
-        return 'no-match';
-    },
-
     getControlPoints: function (name) {
-        if(this.loaded()) {
+        if(this.has('lookuptables')) {
             return this.get('lookuptables')[name].controlpoints;
         }
-        return 'no-match';
+        return null;
     },
 
     applyRatio: function (a, b, ratio) {

@@ -124,8 +124,8 @@ cinema.views.RenderingWidget = Backbone.View.extend({
     },
 
     readyRenderingModel: function () {
-        var lookuptables = this.renderingModel.getData('lookuptables'),
-            swatches = this.renderingModel.getData('swatches');
+        var lookuptables = this.renderingModel.get('lookuptables') || 'no-match',
+            swatches = this.renderingModel.get('swatches') || 'no-match';
 
         this.lutMap = {};
         this.lutKeys = _.keys(lookuptables);
