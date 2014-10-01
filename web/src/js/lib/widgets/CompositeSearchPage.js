@@ -5,12 +5,13 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
     events: {
         'click .c-search-filter-apply': function (e) {
             e.preventDefault();
-            // TODO apply search filters
+            this.searchModel.compute();
         },
         'input #c-search-filter': function (e) {
             var q = this.searchModel.parseQuery($(e.currentTarget).val());
 
             if (q) {
+                this.searchModel.query = q;
                 this.$('.c-search-filter-apply').removeAttr('disabled');
             } else {
                 this.$('.c-search-filter-apply').attr('disabled', 'disabled');
@@ -49,11 +50,10 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
         /*TODO listen to main toolsthis.listenTo(pipelineView.layers, 'change', function () {
             this.searchModel.compute();
         }, this);*/
-
-        this._setScrollWaypoint();
     },
 
     clearResults: function () {
+        // TODO do we need to remove all the widgets manually?
         this.$('.c-search-results-list-area').empty();
     },
 
@@ -80,7 +80,7 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
         this.$('.c-search-result-message').text(
              this.searchModel.results.length + ' results');
 
-        //this._showNextResult();
+        this._showNextResult();
     },
 
     _showNextResult: function () {
@@ -107,7 +107,6 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
             layers: this.layerModel
         }).on('c:drawn', function () {
             this.resultIndex += 1;
-
             if (this._canScroll()) {
                 this._showNextResult();
             } else {
