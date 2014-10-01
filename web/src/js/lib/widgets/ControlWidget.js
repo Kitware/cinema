@@ -134,22 +134,22 @@ cinema.views.ControlWidget = Backbone.View.extend({
     },
 
     next: function (controlName) {
-        this.controlModel.getNextControl(controlName);
+        this.controlModel.incrementControlValue(controlName);
         this._refresh();
     },
 
     previous: function (controlName) {
-        this.controlModel.getPreviousControl(controlName);
+        this.controlModel.decrementControlValue(controlName);
         this._refresh();
     },
 
     last: function (controlName) {
-        this.controlModel.getLastControl(controlName);
+        this.controlModel.setLastControlValue(controlName);
         this._refresh();
     },
 
     first: function (controlName) {
-        this.controlModel.getFirstControl(controlName);
+        this.controlModel.setFirstControlValue(controlName);
         this._refresh();
     }
 });

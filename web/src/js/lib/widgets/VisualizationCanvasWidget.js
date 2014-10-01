@@ -50,7 +50,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
      *        the visModel. If that is not set, creates one internally.
      */
     initialize: function (settings) {
-        this.controlModel = settings.controlModel;
+        this.controlModel = settings.viewpoint.controlModel;
         this.viewpoint = settings.viewpoint;
 
         if (!this.model.loaded()) {

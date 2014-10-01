@@ -108,12 +108,15 @@ module.exports = function (grunt) {
             ext: {
                 files: {
                     'web/dist/built/cinema.ext.min.js': [
+                        'web/ext/shim.js',
                         'node_modules/jquery-browser/lib/jquery.js',
                         'node_modules/jade/runtime.js',
                         'node_modules/underscore/underscore.js',
                         'node_modules/backbone/backbone.js',
                         'node_modules/bootstrap/dist/js/bootstrap.js',
-                        'web/ext/vector.js'
+                        'node_modules/scrollpoints/scrollpoints.js',
+                        'web/ext/vector.js',
+                        'web/ext/jquery-visible.js'
                     ]
                 }
             },

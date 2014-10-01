@@ -7,7 +7,21 @@ cinema.models.SearchModel = Backbone.Model.extend({
         Backbone.Model.apply(this, arguments);
 
         this.layerModel = settings.layerModel;
-        this.query = settings.query || null;
+        this.visModel = settings.visModel;
+        this.query = settings.query || {};
+    },
+
+    /**
+     * Convert a query string into a query object that can be used to filter
+     * results in this model.
+     */
+    parseQuery: function (str) {
+        try {
+            str = '{' + str.trim() + '}';
+            return $.parseJSON(str.replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2":'));
+        } catch (e) {
+            return null;
+        }
     },
 
     /**
@@ -17,12 +31,29 @@ cinema.models.SearchModel = Backbone.Model.extend({
     compute: function () {
         this.results = [];
 
-        // TODO implement search filtering. This generates some
-        // fake results for the moment.
-        this.results = [
-            {time: '3', phi: '20.0', theta: '90'},
-            {time: '4', phi: '0.0', theta: '115.0'}
-        ];
+        var i;
+        for (i = 0; i < this.visModel.imageCount(); i += 1) {
+            var viewpoint = this.visModel.ordinalToObject(i);
+
+            if (this._filter(viewpoint)) {
+                this.results.push(viewpoint);
+            }
+        }
+        // TODO sort results
+
         this.trigger('c:done');
+    },
+
+    /**
+     * Filter a single result based on the current query. Return true if it is a
+     * match, false if not.
+     */
+    _filter: function (viewpoint) {
+        return _.every(['phi', 'theta', 'time'], function (field) {
+            if (!_.has(this.query, field)) {
+                return true;
+            }
+            return this.query[field].toString() === viewpoint[field];
+        }, this);
     }
 });
