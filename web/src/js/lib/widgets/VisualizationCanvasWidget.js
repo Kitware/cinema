@@ -83,8 +83,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         this.listenTo(this.compositeManager, 'c:error', function (e) {
             this.trigger('c:error', e);
         });
-        this.listenTo(this.compositeManager, 'c:data.ready', function (data, fields) {
-            if (_.isEqual(fields, this._fields)) {
+        this.listenTo(this.compositeManager, 'c:data.ready', function (data, controls) {
+            if (_.isEqual(controls, this._controls)) {
                 var startMillis = Date.now();
 
                 this._writeCompositeBuffer(data);

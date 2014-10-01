@@ -24,11 +24,15 @@
         this.visModel = params.visModel;
         this._cache = {};
 
-        if (this.visModel.get('metadata').type !== 'composite-image-stack' &&
-            this.visModel.get('metadata').type !== 'composite-image-stack-depth' &&
-            this.visModel.get('metadata').type !== 'composite-image-stack-jpgdepth' &&
-            this.visModel.get('metadata').type !== 'composite-image-stack-compcalc' &&
-            this.visModel.get('metadata').type !== 'composite-image-stack-light') {
+        this.supportedDataTypes = [
+            'composite-image-stack',
+            'composite-image-stack-depth',
+            'composite-image-stack-jpgdepth',
+            'composite-image-stack-compcalc',
+            'composite-image-stack-light'
+        ];
+
+        if (!_.contains(this.supportedDataTypes, this.visModel.get('metadata').type)) {
             throw new Error('Unsupported file format');
         }
 

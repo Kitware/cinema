@@ -118,33 +118,32 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
     render: function () {
         this.$el.html(cinema.templates.compCalcWebglVisCanvas());
 
+        if (this.$('.c-compcalc-webglvis-webgl-canvas').length > 0) {
+            var imgDim = this.compositeModel.getImageSize();
+            var imgAspect = imgDim[0] / imgDim[1];
+            var vpDim = [
+                this.$('.c-compcalc-webglvis-webgl-canvas').parent().width(),
+                this.$('.c-compcalc-webglvis-webgl-canvas').parent().height()
+            ];
+            var vpAspect = vpDim[0] / vpDim[1];
 
-        var imgDim = this.compositeModel.getImageSize();
-        var imgAspect = imgDim[0] / imgDim[1];
-        var vpDim = [
-            this.$('.c-compcalc-webglvis-webgl-canvas').parent().width(),
-            this.$('.c-compcalc-webglvis-webgl-canvas').parent().height()
-        ];
-        var vpAspect = vpDim[0] / vpDim[1];
+            $(this.$('.c-compcalc-webglvis-webgl-canvas')[0]).attr({
+                width: vpDim[0],
+                height: vpDim[1]
+            });
 
-        $(this.$('.c-compcalc-webglvis-webgl-canvas')[0]).attr({
-            width: vpDim[0],
-            height: vpDim[1]
-        });
+            if (vpAspect > imgAspect) {
+                this.xscale = vpAspect;
+                this.yscale = 1.0;
+            } else {
+                this.xscale = 1.0;
+                this.yscale = 1.0 / vpAspect;
+            }
 
-        if (vpAspect > imgAspect) {
-            this.xscale = vpAspect;
-            this.yscale = 1.0;
-        } else {
-            this.xscale = 1.0;
-            this.yscale = 1.0 / vpAspect;
+            this.webglCompositor.init(imgDim,
+                                      this.$('.c-compcalc-webglvis-webgl-canvas')[0],
+                                      this.$('.c-compcalc-webglvis-composite-buffer')[0]);
         }
-
-        console.log('img aspect: ' + imgAspect + ', viewport aspect: ' + vpAspect);
-
-        this.webglCompositor.init(imgDim,
-                                  this.$('.c-compcalc-webglvis-webgl-canvas')[0],
-                                  this.$('.c-compcalc-webglvis-composite-buffer')[0]);
 
         return this;
     },

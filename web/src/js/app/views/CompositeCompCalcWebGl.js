@@ -2,7 +2,7 @@
 
     // --------- Add 'view' page for composite-image-stack-depth dataset ----------
 
-    cinema.viewFactory.registerView('composite-image-stack-compcalc', 'view-webgl-compcalc', function (rootSelector, viewType, model) {
+    cinema.viewFactory.registerView('composite-image-stack-compcalc', 'view', function (rootSelector, viewType, model) {
         var container = $(rootSelector),
             dataType = model.getDataType(),
             compositeModel = new cinema.decorators.Composite(model),
@@ -32,10 +32,10 @@
             }).enableDragRotation({
                 keyModifiers: null
             }),
-            compositePipeline = new cinema.views.PipelineWidget({
+            compositeTools = new cinema.views.CompositeToolsWidget({
                 el: $('.c-tools-panel', container),
                 model: compositeModel,
-                controls: controlsModel,
+                controlModel: controlsModel,
                 viewpoint: viewpointModel,
                 layers: layers,
                 toolbarSelector: '.c-panel-toolbar'
@@ -47,7 +47,7 @@
         function render () {
             var root = $(rootSelector);
             renderer.setElement($('.c-body-container', root)).render();
-            compositePipeline.setElement($('.c-tools-panel', root)).render();
+            compositeTools.setElement($('.c-tools-panel', root)).render();
             renderer.showViewpoint(true);
         }
 
