@@ -12,7 +12,7 @@ cinema.views.ToolsWidget = Backbone.View.extend({
 
         this.$('.c-control-panel-body').html(cinema.templates.toolsWidget());
 
-        this.listenTo(cinema.events, 'c:editcontrols', this.hideControlEditor);
+        this.listenTo(cinema.events, 'c:editcontrols', this.toggleControlEditor);
 
         this.controlWidget = new cinema.views.ControlWidget({
             el: this.$('.c-control-content'),
@@ -31,7 +31,7 @@ cinema.views.ToolsWidget = Backbone.View.extend({
         this.controlWidget.setElement(this.$('.c-control-content')).render();
     },
 
-    hideControlEditor: function () {
+    toggleControlEditor: function () {
         var link = this.$('.c-control-edit'),
             state;
         if (link.attr('state') === 'on') {

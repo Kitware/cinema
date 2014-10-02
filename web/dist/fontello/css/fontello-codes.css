@@ -393,3 +393,15 @@
 .icon-cinema:before { content: '\e987'; } /* '' */
 .icon-workbench:before { content: '\e988'; } /* '' */
 .icon-colormap:before { content: '\e989'; } /* '' */
+.icon-clamp:before { content: '\e98a'; } /* '' */
+.icon-area:before { content: '\e98b'; } /* '' */
+.icon-bar:before { content: '\e98c'; } /* '' */
+.icon-cardinal:before { content: '\e98d'; } /* '' */
+.icon-linear:before { content: '\e98e'; } /* '' */
+.icon-lines:before { content: '\e98f'; } /* '' */
+.icon-percent:before { content: '\e990'; } /* '' */
+.icon-scatter:before { content: '\e991'; } /* '' */
+.icon-stacked:before { content: '\e992'; } /* '' */
+.icon-step:before { content: '\e993'; } /* '' */
+.icon-stream:before { content: '\e994'; } /* '' */
+.icon-value:before { content: '\e995'; } /* '' */

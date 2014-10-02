@@ -404,3 +404,15 @@
 .icon-cinema { *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xe987;&nbsp;'); }
 .icon-workbench { *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xe988;&nbsp;'); }
 .icon-colormap { *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xe989;&nbsp;'); }
+.icon-clamp { *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xe98a;&nbsp;'); }
+.icon-area { *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xe98b;&nbsp;'); }
+.icon-bar { *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xe98c;&nbsp;'); }
+.icon-cardinal { *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xe98d;&nbsp;'); }
+.icon-linear { *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xe98e;&nbsp;'); }
+.icon-lines { *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xe98f;&nbsp;'); }
+.icon-percent { *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xe990;&nbsp;'); }
+.icon-scatter { *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xe991;&nbsp;'); }
+.icon-stacked { *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xe992;&nbsp;'); }
+.icon-step { *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xe993;&nbsp;'); }
+.icon-stream { *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xe994;&nbsp;'); }
+.icon-value { *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xe995;&nbsp;'); }
