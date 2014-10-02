@@ -13,8 +13,8 @@ cinema.views.CompositeToolsWidget = Backbone.View.extend({
 
         this.$('.c-control-panel-body').html(cinema.templates.compositeToolsWidget());
 
-        this.listenTo(cinema.events, 'c:editpipelines', this.hidePipelineEditor);
-        this.listenTo(cinema.events, 'c:editcontrols', this.hideControlEditor);
+        this.listenTo(cinema.events, 'c:editpipelines', this.togglePipelineEditor);
+        this.listenTo(cinema.events, 'c:editcontrols', this.toggleControlEditor);
 
         this.pipelineWidget = new cinema.views.PipelineWidget({
             el: this.$('.c-pipeline-content'),

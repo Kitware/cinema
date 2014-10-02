@@ -113,8 +113,8 @@ cinema.views.RenderingWidget = Backbone.View.extend({
             this.render();
         });
         this.listenTo(this.controlModel, 'change', this._refresh);
-        this.listenTo(cinema.events, 'c:editlookuptable', this.hideLookupTableEditor);
-        this.listenTo(cinema.events, 'c:editlighting', this.hideLightingEditor);
+        this.listenTo(cinema.events, 'c:editlookuptable', this.toggleLookupTableEditor);
+        this.listenTo(cinema.events, 'c:editlighting', this.toggleLightingEditor);
 
         this.renderingModel = new cinema.models.RenderingModel({
             url: '/rendering/rendering.json'
@@ -259,7 +259,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         };
     },
 
-    hideLightingEditor: function () {
+    toggleLightingEditor: function () {
         var link = this.$('.c-lighting-edit'),
             state;
         if (link.attr('state') === 'on') {
@@ -274,7 +274,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         }
     },
 
-    hideLookupTableEditor: function () {
+    toggleLookupTableEditor: function () {
         var link = this.$('.c-lookuptable-edit'),
             state;
         if (link.attr('state') === 'on') {
