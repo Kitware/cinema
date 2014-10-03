@@ -29,7 +29,8 @@
             'composite-image-stack-depth',
             'composite-image-stack-jpgdepth',
             'composite-image-stack-compcalc',
-            'composite-image-stack-light'
+            'composite-image-stack-light',
+            'composite-image-stack-litdepth'
         ];
 
         if (!_.contains(this.supportedDataTypes, this.visModel.get('metadata').type)) {

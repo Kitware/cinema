@@ -1,7 +1,8 @@
 
 (function () {
 
-  cinema.utilities.CreateWebGlJpgCompositor = function() {
+
+  cinema.utilities.CreateWebGlLightCompositor = function() {
 
     var gl = 0,
     displayProgram = null,
@@ -9,7 +10,6 @@
     texCoordBuffer = 0,
     posCoordBuffer = 0,
     texture = 0,
-    depthTexture = 0,
     fbo = 0,
     renderTexture = 0,
     numSprites = 22,
@@ -20,15 +20,13 @@
     projection = null,
     mvp = null,
     glCanvas = null,
-    copyCanvas = null,
-    depthCanvas = null,
     initialized = false;
 
 
     // --------------------------------------------------------------------------
     //
     // --------------------------------------------------------------------------
-    function init(imgSize, webglCanvas, copyBufferCanvas, depthBufferCanvas) {
+    function init(imgSize, webglCanvas) {
       if (initialized === true) {
         cleanUpGlState();
       }
@@ -40,8 +38,6 @@
       viewportWidth = webglCanvas.width;
       viewportHeight = webglCanvas.height;
       glCanvas = webglCanvas;
-      copyCanvas = copyBufferCanvas;
-      depthCanvas = depthBufferCanvas;
 
       mvp = mat4.create();
       mat4.identity(mvp);
@@ -53,7 +49,7 @@
       initGL();
 
       // Create a texture object
-      createTextures();
+      createTexture();
 
       // Create vertex position and tex coord buffers
       initAttribBuffers();
@@ -74,7 +70,7 @@
       gl.vertexAttribPointer(displayProgram.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
       // Initialize the compositing program shaders
-      compositeProgram = createShaderProgram(loadShaderFiles('/shaders/vertex/compositeVertex.c', '/shaders/fragment/compositeJpgFragment.c'));
+      compositeProgram = createShaderProgram(loadShaderFiles('/shaders/vertex/compositeVertex.c', '/shaders/fragment/compositeFragment.c'));
 
       // look up where the vertex position coords need to go when using the compositing program
       gl.bindBuffer(gl.ARRAY_BUFFER, posCoordBuffer);
@@ -115,7 +111,6 @@
         gl.deleteFramebuffer(fbo);
         gl.deleteTexture(renderTexture);
         gl.deleteTexture(texture);
-        gl.deleteTexture(depthTexture);
         gl.deleteBuffer(texCoordBuffer);
         gl.deleteBuffer(posCoordBuffer);
     }
@@ -296,23 +291,11 @@
     // --------------------------------------------------------------------------
     //
     // --------------------------------------------------------------------------
-    function createTextures() {
+    function createTexture() {
       // Create a texture.
       texture = gl.createTexture();
 
       gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-
-      // Set the parameters so we can render any size image.
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-      // Create another texture.
-      depthTexture = gl.createTexture();
-
-      gl.bindTexture(gl.TEXTURE_2D, depthTexture);
       gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
       // Set the parameters so we can render any size image.
@@ -358,7 +341,7 @@
     // --------------------------------------------------------------------------
     //
     // --------------------------------------------------------------------------
-    function drawCompositePass() {
+    function drawCompositePass(textureCanvas) {
       // Draw to the fbo on this pass
       gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
 
@@ -373,19 +356,12 @@
       gl.uniform1i(layer, 0);
       gl.activeTexture(gl.TEXTURE0 + 0);
       gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,  gl.RGBA, gl.UNSIGNED_BYTE, copyCanvas);
-
-      // Set up the depth texture
-      var depth = gl.getUniformLocation(compositeProgram, "depthSampler");
-      gl.uniform1i(depth, 1);
-      gl.activeTexture(gl.TEXTURE0 + 1);
-      gl.bindTexture(gl.TEXTURE_2D, depthTexture);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,  gl.RGBA, gl.UNSIGNED_BYTE, depthCanvas);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,  gl.RGBA, gl.UNSIGNED_BYTE, textureCanvas);
 
       // Set up the sampler uniform and bind the rendered texture
       var composite = gl.getUniformLocation(compositeProgram, "compositeSampler");
-      gl.uniform1i(composite, 2);
-      gl.activeTexture(gl.TEXTURE0 + 2);
+      gl.uniform1i(composite, 1);
+      gl.activeTexture(gl.TEXTURE0 + 1);
       gl.bindTexture(gl.TEXTURE_2D, renderTexture);
 
       // Draw the rectangle.

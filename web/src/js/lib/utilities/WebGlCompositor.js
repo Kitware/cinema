@@ -127,8 +127,8 @@
       if (!gl) {
         return null;
       }
-      // Set clear color to black, fully transparent
-      gl.clearColor(0.0, 0.0, 0.0, 0.0);
+      // Set clear color to white, fully transparent
+      gl.clearColor(1.0, 1.0, 1.0, 0.0);
 
       var vertexUnits = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
       var fragmentUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
