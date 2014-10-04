@@ -181,6 +181,19 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
         }
     },
 
+    _spherical2CartesianN: function (phi, theta) {
+        var phiRad = (180.0 - phi) * Math.PI / 180.0;
+        var thetaRad = (180.0 - theta) * Math.PI / 180.0;
+        var x = Math.sin(thetaRad) * Math.cos(phiRad);
+        var y = Math.sin(thetaRad) * Math.sin(phiRad);
+        var z = Math.cos(thetaRad);
+        return [x, y, z];
+    },
+
+    _spherical2Cartesian: function (phi, theta) {
+        return this._spherical2CartesianN(parseFloat(phi), parseFloat(theta));
+    },
+
     /**
      * Computes the composite image and writes it into the composite buffer.
      * @param data The payload from the composite image manager c:data.ready
@@ -212,7 +225,6 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
 
         this.webglCompositor.clearFbo();
 
-        // var idxList = [ 21 ];
         var idxList = [];
         for (var layerName in this.layerOffset) {
             if (_.has(this.layerOffset, layerName)) {
@@ -236,12 +248,11 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
                 } else {
                     idxList.push(this.layerOffset[layerName]);
                 }
-
-                // console.log("Adding layer to be composited: " + layerName + ", (at offset: " + this.layerOffset[layerName] + ")");
             }
         }
 
         var imgw = dim[0], imgh = dim[1];
+        var viewDir = this._spherical2Cartesian(this.controls.getControl('phi'), this.controls.getControl('theta'));
 
         for (var i = 0; i < idxList.length; i+=1) {
             if (typeof(idxList[i]) === 'number') {
@@ -279,6 +290,8 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
                 srcY = lOffMap['vRTData'] * imgh;
                 scalarCtx.clearRect(0, 0, imgw, imgh);
                 scalarCtx.drawImage(data.image, srcX, srcY, imgw, imgh, 0, 0, imgw, imgh);
+
+                this.webglCompositor.drawLitCompositePass(viewDir, nxCanvas, nyCanvas, nzCanvas, scalarCanvas);
             }
         }
 

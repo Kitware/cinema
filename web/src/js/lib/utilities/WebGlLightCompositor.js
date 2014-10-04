@@ -7,6 +7,7 @@
     var gl = 0,
     displayProgram = null,
     compositeProgram = null,
+    compositeLightProgram = null,
     texCoordBuffer = 0,
     posCoordBuffer = 0,
     texture = 0,
@@ -20,7 +21,9 @@
     projection = null,
     mvp = null,
     glCanvas = null,
-    initialized = false;
+    initialized = false,
+    lightingTextureNames = [ 'nx', 'ny', 'nz', 'scalars' ],
+    lightingTextures = {};
 
 
     // --------------------------------------------------------------------------
@@ -49,7 +52,7 @@
       initGL();
 
       // Create a texture object
-      createTexture();
+      createTextures();
 
       // Create vertex position and tex coord buffers
       initAttribBuffers();
@@ -84,6 +87,21 @@
       gl.enableVertexAttribArray(compositeProgram.texCoordLocation);
       gl.vertexAttribPointer(compositeProgram.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
+      // Initialize the compositing program shaders
+      compositeLightProgram = createShaderProgram(loadShaderFiles('/shaders/vertex/compositeVertex.c', '/shaders/fragment/compositeLightFragment.c'));
+
+      // look up where the vertex position coords need to go when using the compositing program
+      gl.bindBuffer(gl.ARRAY_BUFFER, posCoordBuffer);
+      compositeLightProgram.positionLocation = gl.getAttribLocation(compositeLightProgram, "a_position");
+      gl.enableVertexAttribArray(compositeLightProgram.positionLocation);
+      gl.vertexAttribPointer(compositeLightProgram.positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+      // ditto for vertex texture coords
+      gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+      compositeLightProgram.texCoordLocation = gl.getAttribLocation(compositeLightProgram, "a_texCoord");
+      gl.enableVertexAttribArray(compositeLightProgram.texCoordLocation);
+      gl.vertexAttribPointer(compositeLightProgram.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+
       // Create a framebuffer for rendering to texture
       var fboResult = initFrameBuffer();
       fbo = fboResult[0];
@@ -107,12 +125,22 @@
         }
         gl.deleteProgram(compositeProgram);
 
+        // Clean up the composite light program and its shaders
+        for (var j = 0; j < compositeLightProgram.shaders.length; j+=1) {
+          gl.deleteShader(compositeLightProgram.shaders[j]);
+        }
+        gl.deleteProgram(compositeLightProgram);
+
         // Now clean up fbo, textures, and buffers
         gl.deleteFramebuffer(fbo);
         gl.deleteTexture(renderTexture);
         gl.deleteTexture(texture);
         gl.deleteBuffer(texCoordBuffer);
         gl.deleteBuffer(posCoordBuffer);
+
+        for (var i = 0; i < lightingTextureNames.length; i+=1) {
+          gl.deleteTexture(lightingTextures[lightingTextureNames[i]]);
+        }
     }
 
 
@@ -291,7 +319,7 @@
     // --------------------------------------------------------------------------
     //
     // --------------------------------------------------------------------------
-    function createTexture() {
+    function createTextures() {
       // Create a texture.
       texture = gl.createTexture();
 
@@ -303,6 +331,22 @@
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+      // Also create some texture for passing in lighting values
+      for (var i = 0; i < lightingTextureNames.length; i+=1) {
+        lightingTextures[lightingTextureNames[i]] = gl.createTexture();
+
+        gl.bindTexture(gl.TEXTURE_2D, lightingTextures[lightingTextureNames[i]]);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+
+        // Set the parameters so we can render any size image.
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+      }
+
+      gl.bindTexture(gl.TEXTURE_2D, null);
     }
 
 
@@ -374,6 +418,63 @@
     // --------------------------------------------------------------------------
     //
     // --------------------------------------------------------------------------
+    function drawLitCompositePass(viewDir, nxCanvas, nyCanvas, nzCanvas, scalarCanvas) {
+      // Draw to the fbo on this pass
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+
+      // Using the lighting compositing shader program
+      gl.useProgram(compositeLightProgram);
+
+      gl.viewport(0, 0, imgw, imgh);
+
+      var viewDirection = vec4.fromValues(viewDir[0], viewDir[1], viewDir[2], 0.0);
+      var vdir = gl.getUniformLocation(compositeLightProgram, "viewDir");
+      gl.uniform4fv(vdir, viewDirection);
+
+      // Set up the scalar texture
+      var scalar = gl.getUniformLocation(compositeLightProgram, "scalarSampler");
+      gl.uniform1i(scalar, 0);
+      gl.activeTexture(gl.TEXTURE0 + 0);
+      gl.bindTexture(gl.TEXTURE_2D, lightingTextures['scalars']);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,  gl.RGBA, gl.UNSIGNED_BYTE, scalarCanvas);
+
+      // Set up the normals (x component) texture
+      var nx = gl.getUniformLocation(compositeLightProgram, "nxSampler");
+      gl.uniform1i(nx, 1);
+      gl.activeTexture(gl.TEXTURE0 + 1);
+      gl.bindTexture(gl.TEXTURE_2D, lightingTextures['nx']);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,  gl.RGBA, gl.UNSIGNED_BYTE, nxCanvas);
+
+      // Set up the normals (y component) texture
+      var ny = gl.getUniformLocation(compositeLightProgram, "nySampler");
+      gl.uniform1i(ny, 2);
+      gl.activeTexture(gl.TEXTURE0 + 2);
+      gl.bindTexture(gl.TEXTURE_2D, lightingTextures['ny']);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,  gl.RGBA, gl.UNSIGNED_BYTE, nyCanvas);
+
+      // Set up the normals (z component) texture
+      var nz = gl.getUniformLocation(compositeLightProgram, "nzSampler");
+      gl.uniform1i(nz, 3);
+      gl.activeTexture(gl.TEXTURE0 + 3);
+      gl.bindTexture(gl.TEXTURE_2D, lightingTextures['nz']);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,  gl.RGBA, gl.UNSIGNED_BYTE, nzCanvas);
+
+      // Set up the sampler uniform and bind the rendered texture
+      var composite = gl.getUniformLocation(compositeLightProgram, "compositeSampler");
+      gl.uniform1i(composite, 4);
+      gl.activeTexture(gl.TEXTURE0 + 4);
+      gl.bindTexture(gl.TEXTURE_2D, renderTexture);
+
+      // Draw the rectangle.
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+      gl.finish();
+    }
+
+
+    // --------------------------------------------------------------------------
+    //
+    // --------------------------------------------------------------------------
     function clearFbo() {
       gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
       gl.clear(gl.COLOR_BUFFER_BIT);
@@ -384,6 +485,7 @@
       'init': init,
       'clearFbo': clearFbo,
       'drawCompositePass': drawCompositePass,
+      'drawLitCompositePass': drawLitCompositePass,
       'drawDisplayPass': drawDisplayPass
     };
 
