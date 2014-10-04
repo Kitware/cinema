@@ -5,31 +5,31 @@
 cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
     // Expose primitive events from the canvas for building interactors
     events: {
-        'click .c-webglvis-webgl-canvas': function (e) {
+        'click .c-webgllit-webgl-canvas': function (e) {
             this.trigger('c:click', e);
         },
-        'dblclick .c-webglvis-webgl-canvas': function (e) {
+        'dblclick .c-webgllit-webgl-canvas': function (e) {
             this.trigger('c:dblclick', e);
         },
-        'mousedown .c-webglvis-webgl-canvas': function (e) {
+        'mousedown .c-webgllit-webgl-canvas': function (e) {
             this.trigger('c:mousedown', e);
         },
-        'mousemove .c-webglvis-webgl-canvas': function (e) {
+        'mousemove .c-webgllit-webgl-canvas': function (e) {
             this.trigger('c:mousemove', e);
         },
-        'mouseup .c-webglvis-webgl-canvas': function (e) {
+        'mouseup .c-webgllit-webgl-canvas': function (e) {
             this.trigger('c:mouseup', e);
         },
-        'mousewheel .c-webglvis-webgl-canvas': function (e) {
+        'mousewheel .c-webgllit-webgl-canvas': function (e) {
             this.trigger('c:mousewheel', e);
         },
-        'DOMMouseScroll .c-webglvis-webgl-canvas': function (e) {
+        'DOMMouseScroll .c-webgllit-webgl-canvas': function (e) {
             this.trigger('c:mousewheel', e);
         },
-        'keypress .c-webglvis-webgl-canvas': function (e) {
+        'keypress .c-webgllit-webgl-canvas': function (e) {
             this.trigger('c:keypress', e);
         },
-        'contextmenu .c-webglvis-webgl-canvas': function (e) {
+        'contextmenu .c-webgllit-webgl-canvas': function (e) {
             e.preventDefault();
         }
     },
@@ -225,7 +225,8 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
 
         this.webglCompositor.clearFbo();
 
-        var idxList = [];
+        var idxList = [ 55 ];
+        //var idxList = [];
         for (var layerName in this.layerOffset) {
             if (_.has(this.layerOffset, layerName)) {
                 // Figure out if this is a "lightable" layer

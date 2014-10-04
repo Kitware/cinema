@@ -171,6 +171,10 @@ module.exports = function (grunt) {
             index_html: {
                 files: ['web/src/templates/index.html.jade'],
                 tasks: ['index-html']
+            },
+            shaders: {
+                files: ['web/src/shaders/**/*'],
+                tasks: ['copy:shaders']
             }
         },
 
