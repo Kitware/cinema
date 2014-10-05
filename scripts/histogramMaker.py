@@ -164,7 +164,8 @@ def processDataSet(workdir, outputDir):
     combosToProcess = len(allCombinations)
     currentCombo = 1
 
-    # Iterate over every possible combination of layers available in the dataset
+    # Iterate over every possible combination of layers available in the dataset,
+    # generating a single histogram.json file for each one.
     for layerlist in allCombinations:
         startTime = int(math.ceil(time.time()))
         print 'Processing ',currentCombo,' of ',combosToProcess,' layer combinations'
@@ -182,17 +183,18 @@ def processDataSet(workdir, outputDir):
                 histogram[binNumber]['values'][l] += 1
                 histogram[binNumber]['images'][l].append(queryJsonKey)
 
-        # We have already assumed fixed bin sizes of 1 percent, from 0.0 to 100.0,
-        # but to support future applications where different bin sizes are used, we
-        # add in the ranges for each bin.
-        binMin = 0.0;
-        for bin in histogram:
-            bin['xMin'] = binMin
-            bin['xMax'] = binMin + 1.0
-            binMin += 1.0
 
-            # While we're at it, let's remove the key/val pairs from "images"
-            # where the value (a list) is empty
+        # Build the final data structure
+        images = []
+        seriesMap = {}
+        for layerCode in layers:
+            seriesMap[layerCode] = []
+
+        binNumber = 1
+
+        # Remove the key/val pairs from "images" where the value (a list) is empty,
+        # then restructure the data to fit the newer format we need.
+        for bin in histogram:
             empties = []
             for key in bin['images']:
                 if len(bin['images'][key]) == 0:
@@ -201,17 +203,35 @@ def processDataSet(workdir, outputDir):
             for key in empties:
                 bin['images'].pop(key, None)
 
+            for value in bin['values']:
+                seriesMap[value].append({ 'y': bin['values'][value], 'x': binNumber })
+
+            binNumber += 1
+            imageBlock = {}
+
+            for layerCode in bin['images']:
+                imageBlock[layerCode] = bin['images'][layerCode]
+
+            images.append(imageBlock)
+
+        series = []
+        for layerCode in layers:
+            series.append({ 'name': layerCode, 'data': seriesMap[layerCode] })
+
+        dataStructure = { 'series': series, 'images': images }
+
         # Now write out the histogram
         outputFilePath = os.path.join(outputDir, *layerlist)
         if not os.path.exists(outputFilePath):
             os.makedirs(outputFilePath)
-        histogramFile = os.path.join(outputFilePath, 'histogram.json')
-        with open(histogramFile, 'w') as fd:
-            json.dump(histogram, fd)
+
+        seriesFile = os.path.join(outputFilePath, 'histogram.json')
+        with open(seriesFile, 'w') as fd:
+            json.dump(dataStructure, fd)
 
         # It's nice to see some progress while the job is running
         elapsedTime = int(math.ceil(time.time())) - startTime
-        print '    Finished in ',elapsedTime,' seconds, wrote file: ',histogramFile
+        print '    Finished in ',elapsedTime,' seconds, wrote file: ',seriesFile
 
         currentCombo += 1
 
@@ -226,17 +246,29 @@ def processDataSet(workdir, outputDir):
 # histogram.json file for a given combination of layers will look like the
 # following:
 #
-#     [
-#         ...,
-#         {
-#             "xMin": 32.0,
-#             "values": { "A": 22, "C": 0, "G": 0, "F": 0, "I": 0, "K": 0, "J": 0 },
-#             "images": {
-#                 "A": ["0/10/90", ...]
-#             },
-#             "xMax": 33.0
-#         },...
-#     ]
+#     {
+#         "series": [
+#             {
+#               "data": [ {"y": 38, "x": 1}, {"y": 55, "x": 2}, ... ],
+#               "name": "A"
+#             },{
+#               "data": [ {"y": 47, "x": 1}, {"y": 13, "x": 2}, ... ],
+#               "name": "B"
+#             }, ...
+#         ],
+#         "images:" [
+#             {
+#                 "A": ["0/10/90", ...],
+#                 "B": ["10/30/275", ...],
+#                 ...
+#             },{
+#                 "A": ["100/20/315", ...],
+#                 "B": ["70/50/180", ...],
+#                 ...
+#             }
+#         ]
+#     }
+#
 #
 # =============================================================================
 if __name__ == "__main__":
