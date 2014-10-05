@@ -15,6 +15,17 @@
                 .c-panel-toolbar
               .c-control-panel-body(class="c-#{controlPanel.key}-control-container")
 
+.c-control-container.center
+    each controlPanel in controlList
+        if controlPanel.position == 'center'
+            .c-control-panel(class="c-#{controlPanel.key}-panel")
+                .c-control-panel-header
+                    .c-panel-title
+                        i.c-icon.panel-close(title="Close", class="#{controlPanel.icon} c-#{controlPanel   .key}-panel-close")
+                        |  #{controlPanel.title}
+                    .c-panel-toolbar
+                .c-control-panel-body(class="c-#{controlPanel.key}-control-container")
+
 .c-control-container.right
     each controlPanel in controlList
         if controlPanel.position == 'right'

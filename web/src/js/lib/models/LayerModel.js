@@ -23,6 +23,12 @@ cinema.models.LayerModel = Backbone.Model.extend({
         return query;
     },
 
+    getLayerString: function () {
+        var layerStr = _.keys(this.get('state')).sort().join('/');
+
+        return layerStr;
+    },
+
     /**
      * Convert a query string to an object that maps layer identifiers to
      * their color-by value. The query string is a sequence of two-character

@@ -40,6 +40,8 @@ cinema.StandaloneApp = Backbone.View.extend({
 
         cinema.events.bind('c:initCompositeTools', this.initCompositeTools, this);
         cinema.events.bind('c:renderCompositeTools', this.renderCompositeTools, this);
+        cinema.events.bind('c:initCompositeHistogram', this.initCompositeHistogram, this);
+        cinema.events.bind('c:renderCompositeHistogram', this.renderCompositeHistogram, this);
 
         Backbone.history.start({
             pushState: false
@@ -86,6 +88,25 @@ cinema.StandaloneApp = Backbone.View.extend({
         });
 
         return this;
+    },
+
+    initCompositeHistogram: function (args) {
+        if (this.compositeHistogram) {
+            this.compositeHistogram.remove();
+        }
+
+        this.compositeHistogram = new cinema.views.HistogramWidget({
+            el: $('.c-histogram-panel', args.container),
+            basePath: args.basePath,
+            histogramModel: args.histogramModel,
+            viewpoint: args.viewpointModel,
+            layers: args.layers,
+            toolbarSelector: '.c-panel-toolbar'
+        });
+    },
+
+    renderCompositeHistogram: function (args) {
+        this.compositeHistogram.setElement($('.c-histogram-panel', args.root)).render();
     },
 
     initCompositeTools: function (args) {
