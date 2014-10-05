@@ -129,7 +129,7 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
                 value = this._valueOfPixel(renderTerms.scalarArray, renderTerms);
 
             //to debug normals, use this
-            return [(nX+1)*128,(nY+1)*128,(nZ+1)*128,255];
+            //return [(nX+1)*128,(nY+1)*128,(nZ+1)*128,255];
 
             //through LUT
             var toColor = value;

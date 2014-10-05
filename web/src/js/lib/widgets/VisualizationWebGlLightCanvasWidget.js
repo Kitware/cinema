@@ -128,6 +128,9 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
                 this._fieldNameMap[fieldJson[fieldCode]] = fieldCode;
             }
         }
+
+        this._maxOffset = this._calculateMaxOffset();
+        console.log(this._maxOffset);
     },
 
     render: function () {
@@ -194,6 +197,17 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
         return this._spherical2CartesianN(parseFloat(phi), parseFloat(theta));
     },
 
+    _calculateMaxOffset: function() {
+        var offsetMap = this.model.attributes.metadata.offset;
+        var maxOffset = 0;
+        for (var offKey in offsetMap) {
+            if (_.has(offsetMap, offKey)) {
+                maxOffset += 1;
+            }
+        }
+        return maxOffset;
+    },
+
     /**
      * Computes the composite image and writes it into the composite buffer.
      * @param data The payload from the composite image manager c:data.ready
@@ -225,7 +239,7 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
 
         this.webglCompositor.clearFbo();
 
-        var idxList = [ 55 ];
+        var idxList = [ this._maxOffset ];
         //var idxList = [];
         for (var layerName in this.layerOffset) {
             if (_.has(this.layerOffset, layerName)) {
@@ -239,7 +253,7 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
                         break;
                     } else {
                         var offsetCode = layerName + this._fieldNameMap[this._lightingFields[j]];
-                        lightingOffsets[this._lightingFields[j]] = this.model.attributes.metadata.offset[offsetCode];
+                        lightingOffsets[this._lightingFields[j]] = this._maxOffset - this.model.attributes.metadata.offset[offsetCode];
                     }
                 }
 

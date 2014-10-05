@@ -55,7 +55,6 @@ void main() {
         vec4 lightDir = normalize(vec4(-0.577350, 0.577350, 0.577350, 0.0));
         vec4 normal = normalize(vec4(convert(nx), convert(ny), convert(nz), 0.0));
 
-        //var R = normal.multiply(2.0 * lightPosition.dot(normal)).subtract(lightPosition);
         vec4 R = (normal * 2.0 * dot(lightDir, normal)) - lightDir;
 
         float alpha = 20.0;
@@ -65,8 +64,10 @@ void main() {
         vec4 diffuseColor = 0.6 * scalarColor * dot(lightDir, normal);
 
         //gl_FragColor = scalarColor;
-        // gl_FragColor = vec4(((normal.rgb + 1.0) / 2.0), scalarColor.a);
+        //gl_FragColor = vec4(((normal.rgb + 1.0) / 2.0), scalarColor.a);
         vec4 fColor = (scalarColor * 0.1) + diffuseColor + specularColor;
         gl_FragColor = vec4(fColor.rgb, scalarColor.a);
+
+        // gl_FragColor = nz;
     }
 }
