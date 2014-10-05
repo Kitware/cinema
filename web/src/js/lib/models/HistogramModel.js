@@ -10,12 +10,23 @@ cinema.models.HistogramModel = Backbone.Model.extend({
     },
 
     fetch: function () {
-        var layerStr = _.keys(this.layerModel.get('state')).sort().join('/');
+        var layerStr = this.layerModel.getLayerString();
 
         if (!layerStr) {
             return;
         }
         this.url = this.basePath + '/layers/' + layerStr + '/histogram.json';
         return Backbone.Model.prototype.fetch.apply(this, arguments);
+    },
+
+    loaded: function () {
+        return this.has('images');
+    },
+
+    getData: function (name) {
+        if(this.loaded()) {
+            return this.get(name);
+        }
+        return 'no-match';
     }
 });

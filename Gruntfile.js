@@ -21,10 +21,8 @@ module.exports = function (grunt) {
             ext: {
                 expand: true,
                 flatten: true,
-                src: ['node_modules/d3/d3.min.js',
-                      'node_modules/bootstrap/dist/css/bootstrap.min.css',
-                      'vendor/rickshaw/rickshaw.min.css',
-                      'vendor/rickshaw/rickshaw.min.js' ],
+                src: ['node_modules/bootstrap/dist/css/bootstrap.min.css',
+                      'node_modules/rickshaw/rickshaw.min.css' ],
                 dest: 'web/dist/built/'
             },
             shaders: {
@@ -125,7 +123,9 @@ module.exports = function (grunt) {
                         'node_modules/underscore/underscore.js',
                         'node_modules/backbone/backbone.js',
                         'node_modules/bootstrap/dist/js/bootstrap.js',
-                        'node_modules/gl-matrix/dist/gl-matrix-min.js',
+                        'node_modules/d3/d3.js',
+                        'node_modules/rickshaw/rickshaw.js',
+                        'node_modules/gl-matrix/dist/gl-matrix.js',
                         'web/ext/vector.js',
                         'node_modules/scrollpoints/scrollpoints.js',
                         'web/ext/jquery-visible.js'
@@ -203,6 +203,7 @@ module.exports = function (grunt) {
         fs.writeFileSync('web/dist/index.html', fn({
             cssFiles: [
                 'built/bootstrap.min.css',
+                'built/rickshaw.min.css',
                 'built/cinema.min.css',
                 'built/cinema.app.min.css'
             ],

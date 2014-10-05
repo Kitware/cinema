@@ -10,6 +10,8 @@
             controlModel = new cinema.models.ControlModel({ info: model }),
             viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
             layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup()),
+            histogramModel = new cinema.models.HistogramModel({ layers: layers,
+                                                                basePath: model.get('basePath') }),
             renderer = new cinema.views.VisualizationCanvasWidget({
                 el: $('.c-body-container', container),
                 model: compositeModel,
@@ -30,9 +32,19 @@
             }).enableDragRotation({
                 keyModifiers: null
             }),
+
             controlList = [
+                { position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' },
                 { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
             ];
+
+        cinema.events.trigger('c:initCompositeHistogram', {
+            container: container,
+            basePath: model.get('basePath'),
+            histogramModel: histogramModel,
+            viewpointModel: viewpointModel,
+            layers: layers
+        });
 
         cinema.events.trigger('c:initCompositeTools', {
             container: container,
@@ -45,6 +57,7 @@
         function render () {
             var root = $(rootSelector);
             renderer.setElement($('.c-body-container', root)).render();
+            cinema.events.trigger('c:renderCompositeHistogram', {root: root});
             cinema.events.trigger('c:renderCompositeTools', {root: root});
             renderer.showViewpoint(true);
         }
