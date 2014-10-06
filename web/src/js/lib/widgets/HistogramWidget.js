@@ -31,6 +31,7 @@ cinema.views.HistogramWidget = Backbone.View.extend({
             basePath: this.basePath
         });
 
+        this.listenTo(cinema.events, 'toggle-control-panel', this.toggleControlPanel);
         this.listenTo(cinema.events, 'c:edithistogram', this.toggleHistogramTools);
         this.listenTo(cinema.events, 'c:showhistogramlegend', this.toggleHistogramLegend);
         this.listenTo(this.layers, 'change', this.updateHistogramModel);
@@ -75,56 +76,69 @@ cinema.views.HistogramWidget = Backbone.View.extend({
             histogramLegend = this.$('.c-histogram-legend'),
             histogramRange = this.$('.c-histogram-range');
 
-        this.graph = new Rickshaw.Graph({
-            element: histogramGraph[0],
-            width: histogramGraph.width() - 40,
-            height: histogramGraph.height()-0.01*histogramGraph.height(),
-            renderer: this.representation,
-            stroke: true,
-            preserve: true,
-            interpolation: this.interpolation,
-            offset: this.offset,
-            unstacked: this.unstacked,
-            series: this.series
-        });
-        this.graph.render();
+        if (histogramGraph.width() > 0 && histogramGraph.height() > 0) {
+            this.graph = new Rickshaw.Graph({
+                element: histogramGraph[0],
+                width: histogramGraph.width() - 40,
+                height: histogramGraph.height() - 0.01 * histogramGraph.height(),
+                renderer: this.representation,
+                stroke: true,
+                preserve: true,
+                interpolation: this.interpolation,
+                offset: this.offset,
+                unstacked: this.unstacked,
+                series: this.series
+            });
+            this.graph.render();
 
-        this.xAxis = new Rickshaw.Graph.Axis.X({
-            graph: this.graph
-        });
-        this.xAxis.render();
+            this.xAxis = new Rickshaw.Graph.Axis.X({
+                graph: this.graph
+            });
+            this.xAxis.render();
 
-        this.yAxis = new Rickshaw.Graph.Axis.Y({
-            graph: this.graph,
-            tickFormat: Rickshaw.Fixtures.Number.formatKMBT
-        });
-        this.yAxis.render();
+            this.yAxis = new Rickshaw.Graph.Axis.Y({
+                graph: this.graph,
+                tickFormat: Rickshaw.Fixtures.Number.formatKMBT
+            });
+            this.yAxis.render();
 
-        this.preview = new Rickshaw.Graph.RangeSlider.Preview({
-            graph: this.graph,
-            element: histogramRange[0]
-        });
+            this.preview = new Rickshaw.Graph.RangeSlider.Preview({
+                graph: this.graph,
+                element: histogramRange[0]
+            });
 
-        this.legend = new Rickshaw.Graph.Legend({
-            graph: this.graph,
-            element: histogramLegend[0]
-        });
+            this.legend = new Rickshaw.Graph.Legend({
+                graph: this.graph,
+                element: histogramLegend[0]
+            });
 
-        var shelving = new Rickshaw.Graph.Behavior.Series.Toggle({
-            graph: this.graph,
-            legend: this.legend
-        });
+            var shelving = new Rickshaw.Graph.Behavior.Series.Toggle({
+                graph: this.graph,
+                legend: this.legend
+            });
 
-        var highlight = new Rickshaw.Graph.Behavior.Series.Highlight({
-            graph: this.graph,
-            legend: this.legend
-        });
+            var highlight = new Rickshaw.Graph.Behavior.Series.Highlight({
+                graph: this.graph,
+                legend: this.legend
+            });
 
-        var hoverDetail = new Rickshaw.Graph.HoverDetail({
-            graph: this.graph,
-            xFormatter: function(x) { return x + " %"; },
-            yFormatter: function(y) { return Math.floor(y) + " images"; }
-        });
+            var hoverDetail = new Rickshaw.Graph.HoverDetail({
+                graph: this.graph,
+                xFormatter: function (x) {
+                    return x + " %";
+                },
+                yFormatter: function (y) {
+                    return Math.floor(y) + " images";
+                }
+            });
+        }
+
+    },
+
+    toggleControlPanel: function (event) {
+        if (event.key === 'histogram') {
+            this.updateHistogramModel();
+        }
     },
 
     updateChart: function () {

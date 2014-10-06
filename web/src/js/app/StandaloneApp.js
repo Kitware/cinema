@@ -10,6 +10,7 @@ cinema.StandaloneApp = Backbone.View.extend({
             var origin = $(e.target),
                 panel = $('.' + origin.attr('container-class'));
             panel.fadeToggle();
+            cinema.events.trigger('toggle-control-panel', { panel: panel, key: panel.attr('key') });
         },
 
         // Handle view navigation
