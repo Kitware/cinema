@@ -16,7 +16,6 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
     _privateInit: function (settings) {
         this.lightPosition = [-1, 1, 0];
         this.worldLight = new Vector(-1, 0, 1);
-        this.LUT = this._RainbowColor;
         this.lightColor = new Vector(1, 1, 1);
         this.lightTerms = { ka: 0.1, kd: 0.6, ks: 0.3, alpha: 20.0 };
         this._forceRedraw = false;
@@ -90,10 +89,6 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         }
     },
 
-    setLUT: function (_lut) {
-        this.LUT = _lut;
-    },
-
     setLightColor: function (lightColor) {
         this.lightColor = new Vector(lightColor[0], lightColor[1], lightColor[2]);
     },
@@ -136,11 +131,8 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
             //through LUT
             var toColor = value;
             var color;
-            if (renderTerms.fieldName === 'vBrownianVectorsX') {
-                color = this._RainbowColor(toColor);
-            } else {
-                color = this.LUT(toColor);
-            }
+            var LUT = renderTerms.luts[renderTerms.fieldName];
+            color = LUT(toColor);
             //return [color[0], color[1], color[2], 255]
 
             var Color = Vector.fromArray(color);
@@ -162,11 +154,16 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
             //return [diffuseColor.x, diffuseColor.y, diffuseColor.z, 255];
 
             //todo: foreach light
-            var viewPosition = this.eye;
-            var R = normal.multiply(2.0 * lightPosition.dot(normal)).subtract(lightPosition);
-            var ks = this.lightTerms.ks;
-            var alpha = this.lightTerms.alpha;
-            var specularTerm = ks * Math.pow(R.dot(viewPosition), alpha);
+            var specularTerm;
+            if (normal.dot(lightPosition) < 0) {
+                specularTerm = 0;
+            } else {
+                var viewPosition = this.eye;
+                var R = normal.multiply(2.0 * lightPosition.dot(normal)).subtract(lightPosition);
+                var ks = this.lightTerms.ks;
+                var alpha = this.lightTerms.alpha;
+                specularTerm = ks * Math.pow(R.dot(viewPosition), alpha);
+            }
             var specularColor = lightColor.multiply(specularTerm * 255);
             //return [specularColor.x, specularColor.y, specularColor.z, 255];
 
@@ -268,10 +265,10 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
                 0, this.model.getSpriteSize() * dim[1], dim[0], dim[1]);
         }
 
-
         var frontPixels = frontBuffer.data;
 
         var renderTerms = {};
+        renderTerms.luts = {};
         var isize = dim[0] * dim[1] * 4;
 
         //find terms and indexes into the sprite map for things we use for lighting
@@ -293,6 +290,7 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
                 if (p[key] === 'vnZ' || p[key] === 'nZ') {
                     pnZ = key;
                 }
+                renderTerms.luts[p[key]] = this.renderingModel.getLookupTableFunction(p[key]);
             }
         }
         if (pnX !== -1 && pnY !== -1 && pnZ !== -1) {

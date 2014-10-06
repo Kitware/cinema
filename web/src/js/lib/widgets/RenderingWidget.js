@@ -108,6 +108,8 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         this.mousePressed = false;
         this.selectedControlPoint = -1;
         this.lutName = "spectral";
+        this.fieldName = "N/A";
+        this.fieldsModel = settings.fieldsModel;
 
         this.listenTo(this.model, 'change', function () {
             this.render();
@@ -129,15 +131,17 @@ cinema.views.RenderingWidget = Backbone.View.extend({
 
         this.lutMap = {};
         this.lutKeys = _.keys(lookuptables);
+        this.fieldKeys = _.keys(this.fieldsModel.fields);
         this.swatchColors = swatches.colors;
-        this.controlPoints = this.renderingModel.getControlPoints(this.lutName);
-        this.render();
+        this.controlPoints = this.renderingModel.getControlPoints(this.fieldName);
+        this.render();y
     },
 
     render:  function () {
         if (this.renderingModel.loaded()) {
             this.$('.c-control-panel-body').html(cinema.templates.rendering({
                 luts: this.lutKeys,
+                fields: this.fieldKeys,
                 colors: this.swatchColors
             }));
             this.toolbarRendering.setElement(this.$(this.toolbarSelector)).render();
@@ -149,6 +153,12 @@ cinema.views.RenderingWidget = Backbone.View.extend({
                 this.context = this.lookuptableCanvas.getContext('2d');
                 this.drawLookupTable();
             }
+            var fieldSelect = this.$('select[data-type="fieldName"]');
+            fieldSelect.empty();
+            for (var j = 0; j < this.fieldKeys.length; j = j + 1){
+                fieldSelect.append("<option value='" +this.fieldKeys[j]+ "'>" +this.fieldKeys[j]+ "</option>");
+            }
+            fieldSelect.trigger('change');
             var lutSelect = this.$('select[data-type="lutName"]');
             lutSelect.empty();
             for (var j = 0; j < this.lutKeys.length; j = j + 1){
@@ -303,7 +313,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
             value = this.controlPoints[i].g + fraction * (this.controlPoints[i+1].g - this.controlPoints[i].g);
         }
         else if (component === 'b') {
-            value = this.controlPoints[i].b + fraction * (this.controlPoints[i+1].b - this.controlPoints[i].b);
+            value = this.controlPointsy[i].b + fraction * (this.controlPoints[i+1].b - this.controlPoints[i].b);
         }
         return Math.floor(value);
     },
@@ -451,8 +461,6 @@ cinema.views.RenderingWidget = Backbone.View.extend({
     },
 
     updateLookupTable: function () {
-        var lutFunction = this.renderingModel.getLookupTableFunction(this.lutName);
-        this.viewport.setLUT(lutFunction);
         this.viewport.forceRedraw();
     },
 
@@ -468,9 +476,24 @@ cinema.views.RenderingWidget = Backbone.View.extend({
             });
             this.updateLight(vectorLight);
         }
+        else if (type === 'fieldName') {
+            this.fieldName = origin.val();
+            var lutForField = this.renderingModel.getLUTForField(this.fieldName);
+            var lutSelect = this.$('select[data-type="lutName"]');
+            lutSelect.empty();
+            for (var j = 0; j < this.lutKeys.length; j = j + 1){
+                if (this.lutKeys[j] === lutForField) {
+                    lutSelect.append("<option selected value='" +this.lutKeys[j]+ "'>" +this.lutKeys[j]+ "</option>");
+                } else {
+                    lutSelect.append("<option value='" +this.lutKeys[j]+ "'>" +this.lutKeys[j]+ "</option>");
+                }
+            }
+            lutSelect.trigger('change');
+        }
         else if (type === 'lutName') {
             this.lutName = origin.val();
-            this.controlPoints = this.renderingModel.getControlPoints(this.lutName);
+            this.renderingModel.setLUTForField(this.fieldName, this.lutName);
+            this.controlPoints = this.renderingModel.getControlPoints(this.fieldName);
             this.updateLookupTable();
             this.drawLookupTable();
         }

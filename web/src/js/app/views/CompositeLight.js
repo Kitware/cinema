@@ -8,6 +8,7 @@
             controlModel = new cinema.models.ControlModel({ info: model }),
             viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
             layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup()),
+            fieldsModel = new cinema.models.FieldsModel({ compositeModel: compositeModel} ),
             renderer = new cinema.views.VisualizationCanvasWidgetLight({
                 el: $('.body-content', container),
                 model: compositeModel,
@@ -39,12 +40,15 @@
                 el: $('.c-rendering-panel', container),
                 model: compositeModel,
                 toolbarSelector: '.c-panel-toolbar',
+                fieldsModel: fieldsModel,
                 viewport: renderer
             }),
             controlList = [
                 { position: 'left',  key: 'rendering', icon: 'icon-picture',   title: 'Rendering'},
                 { position: 'right', key: 'tools',     icon: 'icon-tools', title: 'Tools' }
             ];
+
+            renderer.renderingModel = renderingView.renderingModel;
 
             function render () {
                 var root = $(rootSelector);
