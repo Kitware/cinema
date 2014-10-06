@@ -36,6 +36,13 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
 
     //subclass uses to extend
     _privateInit: function () {
+        this.lightPosition = [ -1, 1, 0 ];
+        this.worldLight = new Vector(-1, 0, 1);
+        this._forceRedraw = false;
+        this.lightTerms = { ka: 0.1, kd: 0.6, ks: 0.3, alpha: 20.0 };
+        this.lightColor = [ 1, 1, 1 ];
+        this.lutArrayBuffer = new ArrayBuffer(256*1*4);
+        this.lutView = new Uint8Array(this.lutArrayBuffer);
     },
 
     /**
@@ -50,7 +57,7 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
      *        the visModel. If that is not set, creates one internally.
      */
     initialize: function (settings) {
-        this.controls= settings.controls;
+        this.controlModel= settings.controlModel;
         this.viewpoint = settings.viewpoint;
 
         if (!this.model.loaded()) {
@@ -105,7 +112,7 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
                 this.$('.s-timing-info-average').text(avgFps);
             }
         });
-        this.listenTo(this.controls, 'change', this.drawImage);
+        this.listenTo(this.controlModel, 'change', this.drawImage);
         this.listenTo(this.viewpoint, 'change', this.drawImage);
         this.listenTo(this.layers, 'change', this.updateQuery);
 
@@ -208,6 +215,73 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
         return maxOffset;
     },
 
+    _recomputeLight: function (viewDirection) {
+        //construct a coordinate system relative to eye point
+        var viewDir = vec3.fromValues(viewDirection[0], viewDirection[1], viewDirection[2]);
+        var at = vec3.fromValues(0, 0, 0); //assumption always looking at 0
+        var north = vec3.fromValues(0, 0, 1);  //assumption, north is always up
+        var approxUp = vec3.create();
+        approxUp = vec3.add(approxUp, north, viewDir);
+        approxUp = vec3.normalize(approxUp, approxUp);
+
+        var t0 = vec3.create();
+        t0 = vec3.subtract(t0, at, viewDir);
+        var t1 = vec3.create();
+        t1 = vec3.subtract(t1, approxUp, viewDir);
+        var right = vec3.create();
+        right = vec3.cross(right, t0, t1);
+        right = vec3.normalize(right, right);
+
+        t0 = vec3.subtract(t0, right, viewDir);
+        t1 = vec3.subtract(t1, at, viewDir);
+        var up = vec3.create();
+        up = vec3.cross(up, t0, t1);
+        up = vec3.normalize(up, up);
+
+        //scale down so we can alway have room before normalization
+        var rm = vec3.create();
+        rm = vec3.scale(rm, right, this.lightPosition[0] * 0.3);
+        var um = vec3.create();
+        um = vec3.scale(um, up, this.lightPosition[1] * 0.3);
+
+        var scaledView = vec3.create();
+        scaledView = vec3.scale(scaledView, viewDir, 0.3);
+        this.worldLight = vec3.add(this.worldLight, scaledView, rm);
+        this.worldLight = vec3.add(this.worldLight, this.worldLight, um);
+        this.worldLight = vec3.normalize(this.worldLight, this.worldLight);
+    },
+
+    setLight: function (_light) {
+        if (this.lightPosition !== _light) {
+            this.lightPosition = _light;
+        }
+    },
+
+    setLUT: function (_lut) {
+        for (var i = 0; i < 256; i+=1) {
+            var idx = i * 4;
+            var val = i / 255;
+            var color = _lut(val);
+            // console.log("val:", val, "color:", color);
+            this.lutView[idx] = Math.round(color[0]);
+            this.lutView[idx + 1] = Math.round(color[1]);
+            this.lutView[idx + 2] = Math.round(color[2]);
+            this.lutView[idx + 3] = 1.0;
+        }
+
+        console.log('Done setting lut table');
+    },
+
+    setLightColor: function (lightColor) {
+        this.lightColor[0] = lightColor[0];
+        this.lightColor[1] = lightColor[1];
+        this.lightColor[2] = lightColor[2];
+    },
+
+    setLightTerms: function (terms) {
+        this.lightTerms = terms;
+    },
+
     /**
      * Computes the composite image and writes it into the composite buffer.
      * @param data The payload from the composite image manager c:data.ready
@@ -267,7 +341,8 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
         }
 
         var imgw = dim[0], imgh = dim[1];
-        var viewDir = this._spherical2Cartesian(this.controls.getControl('phi'), this.controls.getControl('theta'));
+        var viewDir = this._spherical2Cartesian(this.controlModel.getControl('phi'), this.controlModel.getControl('theta'));
+        this._recomputeLight(viewDir);
 
         for (var i = 0; i < idxList.length; i+=1) {
             if (typeof(idxList[i]) === 'number') {
@@ -306,7 +381,8 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
                 scalarCtx.clearRect(0, 0, imgw, imgh);
                 scalarCtx.drawImage(data.image, srcX, srcY, imgw, imgh, 0, 0, imgw, imgh);
 
-                this.webglCompositor.drawLitCompositePass(viewDir, nxCanvas, nyCanvas, nzCanvas, scalarCanvas);
+                this.webglCompositor.drawLitCompositePass(viewDir, this.worldLight, this.lightTerms, this.lightColor,
+                                                          nxCanvas, nyCanvas, nzCanvas, scalarCanvas, this.lutView);
             }
         }
 
@@ -354,7 +430,7 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
      */
     showViewpoint: function (forced) {
         var changed = false,
-            fields = this.controls.getControls();
+            fields = this.controlModel.getControls();
 
         // Search for change
         for (var key in fields) {
@@ -367,11 +443,14 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
             }
         }
         this._fields = _.extend(this._fields, fields);
+        /*
         if (changed || forced) {
             this.compositeManager.downloadData(this._fields);
         } else {
             this.drawImage();
         }
+        */
+        this.compositeManager.downloadData(this._fields);
         return this;
     },
 
@@ -380,6 +459,12 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
         this.compositeCache = {};
         this._computeLayerOffset();
         this._fields = {}; // force redraw
+        this.showViewpoint();
+    },
+
+    forceRedraw: function () {
+        console.log("Inside forceRedraw");
+        this._forceRedraw = true;
         this.showViewpoint();
     },
 

@@ -11,6 +11,7 @@
     texCoordBuffer = 0,
     posCoordBuffer = 0,
     texture = 0,
+    lutTexture = 0,
     fbo = 0,
     renderTexture = 0,
     numSprites = 22,
@@ -135,6 +136,7 @@
         gl.deleteFramebuffer(fbo);
         gl.deleteTexture(renderTexture);
         gl.deleteTexture(texture);
+        gl.deleteTexture(lutTexture);
         gl.deleteBuffer(texCoordBuffer);
         gl.deleteBuffer(posCoordBuffer);
 
@@ -346,6 +348,18 @@
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
       }
 
+      // Create one more texture for the lookup table
+      lutTexture = gl.createTexture();
+
+      gl.bindTexture(gl.TEXTURE_2D, lutTexture);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+
+      // Set the parameters so we can render any size image.
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
       gl.bindTexture(gl.TEXTURE_2D, null);
     }
 
@@ -379,6 +393,12 @@
       gl.drawArrays(gl.TRIANGLES, 0, 6);
 
       gl.finish();
+
+      // Now unbind the textures we used
+      for (var i = 0; i < 1; i+=1) {
+        gl.activeTexture(gl.TEXTURE0 + i);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+      }
     }
 
 
@@ -412,13 +432,19 @@
       gl.drawArrays(gl.TRIANGLES, 0, 6);
 
       gl.finish();
+
+      // Now unbind the textures we used
+      for (var i = 0; i < 2; i+=1) {
+        gl.activeTexture(gl.TEXTURE0 + i);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+      }
     }
 
 
     // --------------------------------------------------------------------------
     //
     // --------------------------------------------------------------------------
-    function drawLitCompositePass(viewDir, nxCanvas, nyCanvas, nzCanvas, scalarCanvas) {
+    function drawLitCompositePass(viewDir, lightDir, lightTerms, lightColor, nxCanvas, nyCanvas, nzCanvas, scalarCanvas, lutData) {
       // Draw to the fbo on this pass
       gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
 
@@ -430,6 +456,18 @@
       var viewDirection = vec4.fromValues(viewDir[0], viewDir[1], viewDir[2], 0.0);
       var vdir = gl.getUniformLocation(compositeLightProgram, "viewDir");
       gl.uniform4fv(vdir, viewDirection);
+
+      var lightDirection = vec4.fromValues(lightDir[0], lightDir[1], lightDir[2], 0.0);
+      var ldir = gl.getUniformLocation(compositeLightProgram, "lightDir");
+      gl.uniform4fv(ldir, lightDirection);
+
+      var lightingConstants = vec4.fromValues(lightTerms.ka, lightTerms.kd, lightTerms.ks, lightTerms.alpha);
+      var lterms = gl.getUniformLocation(compositeLightProgram, "lightTerms");
+      gl.uniform4fv(lterms, lightingConstants);
+
+      var lightColor = vec4.fromValues(lightColor[0], lightColor[1], lightColor[2], 1.0);
+      var lcolor = gl.getUniformLocation(compositeLightProgram, "lightColor");
+      gl.uniform4fv(lcolor, lightColor);
 
       // Set up the scalar texture
       var scalar = gl.getUniformLocation(compositeLightProgram, "scalarSampler");
@@ -465,10 +503,23 @@
       gl.activeTexture(gl.TEXTURE0 + 4);
       gl.bindTexture(gl.TEXTURE_2D, renderTexture);
 
+      // Set up the lookup table texture
+      var lut = gl.getUniformLocation(compositeLightProgram, "lutSampler");
+      gl.uniform1i(lut, 5);
+      gl.activeTexture(gl.TEXTURE0 + 5);
+      gl.bindTexture(gl.TEXTURE_2D, lutTexture);
+      gl.texImage2D (gl.TEXTURE_2D, 0, gl.RGBA, 256, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, lutData);
+
       // Draw the rectangle.
       gl.drawArrays(gl.TRIANGLES, 0, 6);
 
       gl.finish();
+
+      // Now unbind the textures we used
+      for (var i = 0; i < 6; i+=1) {
+        gl.activeTexture(gl.TEXTURE0 + i);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+      }
     }
 
 
