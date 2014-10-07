@@ -134,7 +134,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         this.fieldKeys = _.keys(this.fieldsModel.fields);
         this.swatchColors = swatches.colors;
         this.controlPoints = this.renderingModel.getControlPoints(this.fieldName);
-        this.render();y
+        this.render();
     },
 
     render:  function () {
@@ -153,16 +153,17 @@ cinema.views.RenderingWidget = Backbone.View.extend({
                 this.context = this.lookuptableCanvas.getContext('2d');
                 this.drawLookupTable();
             }
-            var fieldSelect = this.$('select[data-type="fieldName"]');
+            var fieldSelect = this.$('select[data-type="fieldName"]'),
+                j;
             fieldSelect.empty();
-            for (var j = 0; j < this.fieldKeys.length; j = j + 1){
-                fieldSelect.append("<option value='" +this.fieldKeys[j]+ "'>" +this.fieldKeys[j]+ "</option>");
+            for (j = 0; j < this.fieldKeys.length; j = j + 1) {
+                fieldSelect.append("<option value='" + this.fieldKeys[j] + "'>" + this.fieldKeys[j] + "</option>");
             }
             fieldSelect.trigger('change');
             var lutSelect = this.$('select[data-type="lutName"]');
             lutSelect.empty();
-            for (var j = 0; j < this.lutKeys.length; j = j + 1){
-                lutSelect.append("<option value='" +this.lutKeys[j]+ "'>" +this.lutKeys[j]+ "</option>");
+            for (j = 0; j < this.lutKeys.length; j = j + 1) {
+                lutSelect.append("<option value='" + this.lutKeys[j] + "'>" + this.lutKeys[j] + "</option>");
             }
             lutSelect.trigger('change');
         }
@@ -241,7 +242,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
 
     findControlPoint: function (canvas, x) {
         var rect = canvas.getBoundingClientRect(),
-            dx = 4/(rect.right - rect.left),
+            dx = 4 / (rect.right - rect.left),
             i;
         this.selectedControlPoint = -1;
         for (i = 0; i < this.controlPoints.length; i = i + 1) {
@@ -253,7 +254,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
 
     findFrontItem: function (x) {
         var i,
-            frontItem=1;
+            frontItem = 1;
         for (i = 0; i < this.controlPoints.length; i = i + 1) {
             if (x > this.controlPoints[i].x) {
                 frontItem = i + 1;
@@ -265,7 +266,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
     getMouseX: function (canvas, event) {
         var rect = canvas.getBoundingClientRect();
         return {
-            x: (event.clientX - rect.left)/(rect.right - rect.left)
+            x: (event.clientX - rect.left) / (rect.right - rect.left)
         };
     },
 
@@ -302,18 +303,18 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         this.drawLookupTable();
     },
 
-    interpolate: function(x, i, component) {
+    interpolate: function (x, i, component) {
         var value = 0,
-            fraction = (x - this.controlPoints[i].x)/(this.controlPoints[i+1].x - this.controlPoints[i].x);
+            fraction = (x - this.controlPoints[i].x) / (this.controlPoints[i + 1].x - this.controlPoints[i].x);
 
         if (component === 'r') {
-            value = this.controlPoints[i].r + fraction * (this.controlPoints[i+1].r - this.controlPoints[i].r);
+            value = this.controlPoints[i].r + fraction * (this.controlPoints[i + 1].r - this.controlPoints[i].r);
         }
         else if (component === 'g') {
-            value = this.controlPoints[i].g + fraction * (this.controlPoints[i+1].g - this.controlPoints[i].g);
+            value = this.controlPoints[i].g + fraction * (this.controlPoints[i + 1].g - this.controlPoints[i].g);
         }
         else if (component === 'b') {
-            value = this.controlPointsy[i].b + fraction * (this.controlPoints[i+1].b - this.controlPoints[i].b);
+            value = this.controlPointsy[i].b + fraction * (this.controlPoints[i + 1].b - this.controlPoints[i].b);
         }
         return Math.floor(value);
     },
@@ -334,9 +335,9 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         color[2] = Number(color[2]);
         this.$('.c-lookuptable-color').css('background', "rgb(" + color.join(', ') + ")");
         if (this.selectedControlPoint !== -1) {
-            this.controlPoints[this.selectedControlPoint].r = color[0]/255.0;
-            this.controlPoints[this.selectedControlPoint].g = color[1]/255.0;
-            this.controlPoints[this.selectedControlPoint].b = color[2]/255.0;
+            this.controlPoints[this.selectedControlPoint].r = color[0] / 255.0;
+            this.controlPoints[this.selectedControlPoint].g = color[1] / 255.0;
+            this.controlPoints[this.selectedControlPoint].b = color[2] / 255.0;
             this.drawLookupTable();
             this.updateLookupTable();
         }
@@ -481,11 +482,11 @@ cinema.views.RenderingWidget = Backbone.View.extend({
             var lutForField = this.renderingModel.getLUTForField(this.fieldName);
             var lutSelect = this.$('select[data-type="lutName"]');
             lutSelect.empty();
-            for (var j = 0; j < this.lutKeys.length; j = j + 1){
+            for (var j = 0; j < this.lutKeys.length; j = j + 1) {
                 if (this.lutKeys[j] === lutForField) {
-                    lutSelect.append("<option selected value='" +this.lutKeys[j]+ "'>" +this.lutKeys[j]+ "</option>");
+                    lutSelect.append("<option selected value='" + this.lutKeys[j] + "'>" + this.lutKeys[j] + "</option>");
                 } else {
-                    lutSelect.append("<option value='" +this.lutKeys[j]+ "'>" +this.lutKeys[j]+ "</option>");
+                    lutSelect.append("<option value='" + this.lutKeys[j] + "'>" + this.lutKeys[j] + "</option>");
                 }
             }
             lutSelect.trigger('change');

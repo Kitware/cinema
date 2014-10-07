@@ -23,7 +23,7 @@ cinema.models.RenderingModel = Backbone.Model.extend({
 
     getControlPoints: function (name) {
         var lutname = this.getLUTForField(name);
-        if(this.has('lookuptables')) {
+        if (this.has('lookuptables')) {
             return this.get('lookuptables')[lutname].controlpoints;
         }
         return null;
@@ -33,11 +33,11 @@ cinema.models.RenderingModel = Backbone.Model.extend({
         return ((b - a) * ratio) + a;
     },
 
-    setLUTForField: function(fieldname, lutname) {
+    setLUTForField: function y(fieldname, lutname) {
         this.luts[fieldname] = lutname;
     },
 
-    getLUTForField: function(fn) {
+    getLUTForField: function (fn) {
         if (!(fn in this.luts)) {
             this.luts[fn] = 'spectral';
         }

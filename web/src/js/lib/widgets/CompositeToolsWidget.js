@@ -68,6 +68,6 @@ cinema.views.CompositeToolsWidget = Backbone.View.extend({
             link.attr('state', state);
             link.fadeIn();
         }
-    },
+    }
 
 });

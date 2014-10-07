@@ -12,8 +12,10 @@ cinema.models.FieldsModel = Backbone.Model.extend({
         this.fields = {};
         //find all of the value fields arrays and make a LUT for each of them
         for (var key in this.compositeModel.attributes.metadata.ranges) {
-            this.fields[key] = this.compositeModel.attributes.metadata.ranges[key];
+            if (this.compositeModel.attributes.metadata.ranges.hasOwnProperty(key)) {
+                this.fields[key] = this.compositeModel.attributes.metadata.ranges[key];
+            }
         }
-    },
+    }
 
 });
