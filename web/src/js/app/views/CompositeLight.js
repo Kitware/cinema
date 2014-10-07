@@ -8,6 +8,7 @@
             controlModel = new cinema.models.ControlModel({ info: model }),
             viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
             layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup()),
+            fieldsModel = new cinema.models.FieldsModel({ compositeModel: compositeModel }),
             renderer = new cinema.views.VisualizationCanvasWidgetLight({
                 el: $('.body-content', container),
                 model: compositeModel,
@@ -39,6 +40,7 @@
                 el: $('.c-rendering-panel', container),
                 model: compositeModel,
                 toolbarSelector: '.c-panel-toolbar',
+                fieldsModel: fieldsModel,
                 viewport: renderer
             }),
             controlList = [
@@ -46,27 +48,29 @@
                 { position: 'right', key: 'tools',     icon: 'icon-tools', title: 'Tools' }
             ];
 
-            function render () {
-                var root = $(rootSelector);
-                renderer.setElement($('.c-body-container', root)).render();
-                compositeTools.setElement($('.c-tools-panel', root)).render();
-                renderingView.setElement($('.c-rendering-panel', root)).render();
-                renderer.forceRedraw();
-            }
+        renderer.renderingModel = renderingView.renderingModel;
 
-            function refreshCamera () {
-                renderer.showViewpoint();
-            }
+        function render() {
+            var root = $(rootSelector);
+            renderer.setElement($('.c-body-container', root)).render();
+            compositeTools.setElement($('.c-tools-panel', root)).render();
+            renderingView.setElement($('.c-rendering-panel', root)).render();
+            renderer.forceRedraw();
+        }
 
-            function resetCamera () {
-                renderer.showViewpoint();
-                renderer.resetCamera();
-            }
+        function refreshCamera() {
+            renderer.showViewpoint();
+        }
 
-            controlModel.on('change', refreshCamera);
-            viewpointModel.on('change', refreshCamera);
-            renderingView.on('change', refreshCamera);
-            cinema.events.on('c:resetCamera', resetCamera);
+        function resetCamera() {
+            renderer.showViewpoint();
+            renderer.resetCamera();
+        }
+
+        controlModel.on('change', refreshCamera);
+        viewpointModel.on('change', refreshCamera);
+        renderingView.on('change', refreshCamera);
+        cinema.events.on('c:resetCamera', resetCamera);
 
         render();
 
