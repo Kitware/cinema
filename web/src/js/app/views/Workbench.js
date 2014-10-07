@@ -9,15 +9,6 @@
                 models: {}
             };
 
-        var renderWhenReady = function () {
-            var ready = _.every(configuration.models, function (model) {
-                return model.loaded();
-            });
-            if (ready) {
-                render();
-            }
-        };
-
         // Load internal models
         _.each(model.get('runs'), function (run) {
             var internalModel = new cinema.models.VisualizationModel({
