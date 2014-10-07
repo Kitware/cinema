@@ -37,7 +37,13 @@ cinema.views.WorkbenchElementWidget = Backbone.View.extend({
     },
 
     _showAnalysis: function (analysis) {
-        // TODO
-        console.log(analysis);
+        var visModel = new cinema.models.VisualizationModel({
+            basePath: this.model.basePath + '/' + analysis.id,
+            infoFile: 'info.json'
+        });
+
+        visModel.on('change', function () {
+            cinema.viewFactory.render(this.$('.c-analysis-container'), 'view', visModel);
+        }, this).fetch();
     }
 });

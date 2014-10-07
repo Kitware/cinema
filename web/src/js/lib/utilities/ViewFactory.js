@@ -33,7 +33,7 @@
         return {
             controlList: [],
             render: function() {
-                $('.c-body-container', $(rootSelector)).html(cinema.app.templates.invalidatePage({view: viewType, data: model.getDataType() }));
+                $(rootSelector).html(cinema.app.templates.invalidatePage({view: viewType, data: model.getDataType() }));
             }
         };
     }
@@ -66,12 +66,14 @@
 
             // Update the view if it exist
             var view = this.viewInstances[key];
-            if(view) {
+            if (view) {
                 view.render();
                 return view.controlList;
             } else {
                 console.log("no instance for " + key);
             }
+        } else {
+            console.log('model is not loaded.', model);
         }
         return [];
     };

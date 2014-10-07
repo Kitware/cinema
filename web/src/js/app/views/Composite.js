@@ -14,7 +14,7 @@
             histogramModel = new cinema.models.HistogramModel({ layers: layers,
                                                                 basePath: model.get('basePath') }),
             renderer = new cinema.views.VisualizationCanvasWidget({
-                el: $('.c-body-container', container),
+                el: container,
                 model: compositeModel,
                 layers: layers,
                 controlModel: controlModel,
@@ -60,9 +60,9 @@
 
         function render () {
             var root = $(rootSelector);
-            renderer.setElement($('.c-body-container', root)).render();
-            compositeHistogram.setElement($('.c-histogram-panel', root)).render();
-            compositeTools.setElement($('.c-tools-panel', root)).render();
+            compositeHistogram.setElement($('.c-histogram-panel')).render();
+            compositeTools.setElement($('.c-tools-panel')).render();
+            renderer.render();
             renderer.showViewpoint(true);
             if (firstRender) {
                 firstRender = false;
@@ -118,8 +118,8 @@
 
         function render () {
             var root = $(rootSelector);
-            page.setElement($('.c-body-container', root)).render();
-            compositeTools.setElement($('.c-tools-panel', root)).render();
+            page.setElement(root).render();
+            compositeTools.setElement($('.c-tools-panel')).render();
         }
 
         return {

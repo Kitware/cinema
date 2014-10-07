@@ -58,7 +58,7 @@ cinema.StandaloneApp = Backbone.View.extend({
         }
 
         // Find out what the view control list is for control panel container
-        var controlList = cinema.viewFactory.getViewControlList('body', cinema.viewType, cinema.model);
+        var controlList = cinema.viewFactory.getViewControlList('.c-body-container', cinema.viewType, cinema.model);
 
         // Create container for control panels
         this.$el.html(cinema.app.templates.layout({controlList:controlList}));
@@ -77,7 +77,7 @@ cinema.StandaloneApp = Backbone.View.extend({
         }
 
         // Fill the layout base on the type of the view and model.
-        cinema.viewFactory.render('body', cinema.viewType, cinema.model);
+        cinema.viewFactory.render($('.c-body-container'), cinema.viewType, cinema.model);
 
         // Create nice tooltip for the full page
         this.$('[title]').tooltip({
