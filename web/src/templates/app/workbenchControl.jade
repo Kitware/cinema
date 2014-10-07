@@ -1,3 +1,10 @@
+.btn-group
+  button.btn.btn-sm.btn-default.dropdown-toggle(data-toggle="dropdown", title="Runs")
+    span.caret
+  ul.dropdown-menu.dropdown-menu-right(role="menu")
+    each run in runs
+      li
+        a.c-vis-option(path="#{run.path}")= run.title
 a.c-wb-layout(data-rows="1",data-cols="1",data-template="workbenchGridLayout") 1x1
 a.c-wb-layout(data-rows="2",data-cols="2",data-template="workbenchGridLayout") 2x2
 a.c-wb-layout(data-rows="2",data-cols="3",data-template="workbenchGridLayout") 2x3

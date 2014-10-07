@@ -1,0 +1,9 @@
+.c-analysis-select-container
+  .btn-group
+    button.c-analysis-select.btn.btn-default.dropdown-toggle(
+        data-toggle="dropdown", title="Select analysis")
+      span.caret
+    ul.dropdown-menu(role="menu")
+      each analysis in analyses
+        li
+          a.c-analysis-option(analysis-id="#{analysis.id}")= analysis.title
