@@ -42,6 +42,7 @@ cinema.views.CompositeToolsWidget = Backbone.View.extend({
 
     togglePipelineEditor: function () {
         this.$('.c-pipeline-edit').fadeToggle();
+
     },
 
     toggleControlEditor: function () {

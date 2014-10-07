@@ -7,7 +7,6 @@ cinema.models.RenderingModel = Backbone.Model.extend({
         Backbone.Model.apply(this, arguments);
 
         this.url = settings.url;
-        this.luts = {};
     },
 
     defaults: {
@@ -21,27 +20,22 @@ cinema.models.RenderingModel = Backbone.Model.extend({
         return this.url;
     },
 
-    getControlPoints: function (name) {
-        var lutname = this.getLUTForField(name);
-        if (this.has('lookuptables')) {
-            return this.get('lookuptables')[lutname].controlpoints;
+    getData: function (name) {
+        if(this.loaded()) {
+            return this.get(name);
         }
-        return null;
+        return 'no-match';
+    },
+
+    getControlPoints: function (name) {
+        if(this.loaded()) {
+            return this.get('lookuptables')[name].controlpoints;
+        }
+        return 'no-match';
     },
 
     applyRatio: function (a, b, ratio) {
         return ((b - a) * ratio) + a;
-    },
-
-    setLUTForField: function y(fieldname, lutname) {
-        this.luts[fieldname] = lutname;
-    },
-
-    getLUTForField: function (fn) {
-        if (!(fn in this.luts)) {
-            this.luts[fn] = 'spectral';
-        }
-        return this.luts[fn];
     },
 
     interpolateColor: function (pointA, pointB, value) {
@@ -56,10 +50,8 @@ cinema.models.RenderingModel = Backbone.Model.extend({
     },
 
     getLookupTableFunction: function (name) {
-        var lutname = this.getLUTForField(name);
-
         var table =  [],
-            controlPoints = this.get('lookuptables')[lutname].controlpoints,
+            controlPoints = this.get('lookuptables')[name].controlpoints,
             currentControlIdx = 0;
 
         for (var idx = 0; idx < 256; idx += 1) {

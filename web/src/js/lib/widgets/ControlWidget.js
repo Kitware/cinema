@@ -36,7 +36,7 @@ cinema.views.ControlWidget = Backbone.View.extend({
         this.model = settings.model;
         this.exclude = settings.exclude || [];
 
-        if (this.model.has("control")) {
+        if(this.model.has("control")) {
             this.order = this.model.get("control").order;
         } else {
             this.order = [];
