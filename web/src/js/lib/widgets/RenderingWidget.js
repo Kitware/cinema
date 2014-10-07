@@ -137,6 +137,15 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         this.render();
     },
 
+    updateText: function() {
+        this.$('.c-minimum-x').html(this.clampMinimum.toFixed(3));
+        this.$('.c-midpoint-x').html(this.clampMidpoint.toFixed(3));
+        this.$('.c-maximum-x').html(this.clampMaximum.toFixed(3));
+        if (this.selectedControlPoint > -1) {
+            this.$('.c-lookuptable-x').val(this.mapToClampedRange(this.controlPoints[this.selectedControlPoint].x));
+        }
+    },
+
     render:  function () {
         if (this.renderingModel.loaded()) {
             this.$('.c-control-panel-body').html(cinema.templates.rendering({
@@ -145,9 +154,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
                 colors: this.swatchColors
             }));
             this.toolbarRendering.setElement(this.$(this.toolbarSelector)).render();
-            this.$('.c-minimum-x').html(this.clampMinimum.toFixed(3));
-            this.$('.c-midpoint-x').html(this.clampMidpoint.toFixed(3));
-            this.$('.c-maximum-x').html(this.clampMaximum.toFixed(3));
+            this.updateText();
             this.lookuptableCanvas = this.$('.c-lookuptable-canvas')[0];
             if (this.lookuptableCanvas) {
                 this.context = this.lookuptableCanvas.getContext('2d');
@@ -479,6 +486,13 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         }
         else if (type === 'fieldName') {
             this.fieldName = origin.val();
+            var range = this.fieldsModel.fields[this.fieldName];
+            this.xMinimum = range[0];
+            this.xMaximum = range[1];
+            this.clampMinimum = this.xMinimum;
+            this.clampMaximum = this.xMaximum;
+            this.clampMidpoint = this.mapToClampedRange(0.5);
+            this.updateText();
             var lutForField = this.renderingModel.getLUTForField(this.fieldName);
             var lutSelect = this.$('select[data-type="lutName"]');
             lutSelect.empty();
@@ -495,6 +509,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
             this.lutName = origin.val();
             this.renderingModel.setLUTForField(this.fieldName, this.lutName);
             this.controlPoints = this.renderingModel.getControlPoints(this.fieldName);
+            this.selectedControlPoint = -1;
             this.updateLookupTable();
             this.drawLookupTable();
         }
