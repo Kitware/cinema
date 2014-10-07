@@ -311,10 +311,8 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
         $(nzCanvas).attr(        { width: dim[0],            height: dim[1] });
         $(scalarCanvas).attr(    { width: dim[0],            height: dim[1] });
 
-        this.webglCompositor.clearFbo();
-
-        var idxList = [ this._maxOffset ];
-        //var idxList = [];
+        // var idxList = [ this._maxOffset ];
+        var idxList = [];
         for (var layerName in this.layerOffset) {
             if (_.has(this.layerOffset, layerName)) {
                 // Figure out if this is a "lightable" layer
@@ -340,9 +338,18 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
             }
         }
 
+        // Clear the fbo for a new round of compositing
+        this.webglCompositor.clearFbo();
+
         var imgw = dim[0], imgh = dim[1];
         var viewDir = this._spherical2Cartesian(this.controlModel.getControl('phi'), this.controlModel.getControl('theta'));
         this._recomputeLight(viewDir);
+
+        // Draw a background pass
+        var bgColor = [ 1.0, 1.0, 1.0 ];
+        compositeCtx.clearRect(0, 0, imgw, imgh);
+        compositeCtx.drawImage(data.image, 0, (this._maxOffset * imgh), imgw, imgh, 0, 0, imgw, imgh);
+        this.webglCompositor.drawBackgroundPass(compositeCanvas, bgColor);
 
         for (var i = 0; i < idxList.length; i+=1) {
             if (typeof(idxList[i]) === 'number') {

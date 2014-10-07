@@ -8,6 +8,7 @@
     displayProgram = null,
     compositeProgram = null,
     compositeLightProgram = null,
+    backgroundProgram = null,
     texCoordBuffer = 0,
     posCoordBuffer = 0,
     texture = 0,
@@ -103,6 +104,21 @@
       gl.enableVertexAttribArray(compositeLightProgram.texCoordLocation);
       gl.vertexAttribPointer(compositeLightProgram.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
+      // Initialize the compositing program shaders
+      backgroundProgram = createShaderProgram(loadShaderFiles('/shaders/vertex/compositeVertex.c', '/shaders/fragment/backgroundFragment.c'));
+
+      // look up where the vertex position coords need to go when using the compositing program
+      gl.bindBuffer(gl.ARRAY_BUFFER, posCoordBuffer);
+      backgroundProgram.positionLocation = gl.getAttribLocation(backgroundProgram, "a_position");
+      gl.enableVertexAttribArray(backgroundProgram.positionLocation);
+      gl.vertexAttribPointer(backgroundProgram.positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+      // ditto for vertex texture coords
+      gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+      backgroundProgram.texCoordLocation = gl.getAttribLocation(backgroundProgram, "a_texCoord");
+      gl.enableVertexAttribArray(backgroundProgram.texCoordLocation);
+      gl.vertexAttribPointer(backgroundProgram.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+
       // Create a framebuffer for rendering to texture
       var fboResult = initFrameBuffer();
       fbo = fboResult[0];
@@ -131,6 +147,12 @@
           gl.deleteShader(compositeLightProgram.shaders[j]);
         }
         gl.deleteProgram(compositeLightProgram);
+
+        // Clean up the background program and its shaders
+        for (var j = 0; j < backgroundProgram.shaders.length; j+=1) {
+          gl.deleteShader(backgroundProgram.shaders[j]);
+        }
+        gl.deleteProgram(backgroundProgram);
 
         // Now clean up fbo, textures, and buffers
         gl.deleteFramebuffer(fbo);
@@ -444,6 +466,43 @@
     // --------------------------------------------------------------------------
     //
     // --------------------------------------------------------------------------
+    function drawBackgroundPass(backgroundCanvas, backgroundColor) {
+      // Draw to the fbo on this pass
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+
+      // Using the background shader program
+      gl.useProgram(backgroundProgram);
+
+      //gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.viewport(0, 0, imgw, imgh);
+
+      var bgColor = vec4.fromValues(backgroundColor[0], backgroundColor[1], backgroundColor[2], 1.0);
+      var bgc = gl.getUniformLocation(backgroundProgram, "backgroundColor");
+      gl.uniform4fv(bgc, bgColor);
+
+      // Set up the layer texture
+      var layer = gl.getUniformLocation(backgroundProgram, "backgroundSampler");
+      gl.uniform1i(layer, 0);
+      gl.activeTexture(gl.TEXTURE0 + 0);
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, backgroundCanvas);
+
+      // Draw the rectangle.
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+      gl.finish();
+
+      // Now unbind the textures we used
+      for (var i = 0; i < 1; i+=1) {
+        gl.activeTexture(gl.TEXTURE0 + i);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+      }
+    }
+
+
+    // --------------------------------------------------------------------------
+    //
+    // --------------------------------------------------------------------------
     function drawLitCompositePass(viewDir, lightDir, lightTerms, lightColor, nxCanvas, nyCanvas, nzCanvas, scalarCanvas, lutData) {
       // Draw to the fbo on this pass
       gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
@@ -535,6 +594,7 @@
     return {
       'init': init,
       'clearFbo': clearFbo,
+      'drawBackgroundPass': drawBackgroundPass,
       'drawCompositePass': drawCompositePass,
       'drawLitCompositePass': drawLitCompositePass,
       'drawDisplayPass': drawDisplayPass
