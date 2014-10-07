@@ -33,32 +33,34 @@
                 keyModifiers: null
             }),
 
+           compositeHistogram = new cinema.views.HistogramWidget({
+                el: $('.c-histogram-panel', container),
+                basePath: model.get('basePath'),
+                histogramModel: histogramModel,
+                viewpoint: viewpointModel,
+                layers: layers,
+                toolbarSelector: '.c-panel-toolbar'
+            }),
+
+            compositeTools = new cinema.views.CompositeToolsWidget({
+                el: $('.c-tools-panel', container),
+                model: compositeModel,
+                controlModel: controlModel,
+                viewpoint: viewpointModel,
+                layers: layers,
+                toolbarSelector: '.c-panel-toolbar'
+            }),
+
             controlList = [
                 { position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' },
                 { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
             ];
 
-        cinema.events.trigger('c:initCompositeHistogram', {
-            container: container,
-            basePath: model.get('basePath'),
-            histogramModel: histogramModel,
-            viewpointModel: viewpointModel,
-            layers: layers
-        });
-
-        cinema.events.trigger('c:initCompositeTools', {
-            container: container,
-            compositeModel: compositeModel,
-            controlModel: controlModel,
-            viewpointModel: viewpointModel,
-            layers: layers
-        });
-
         function render () {
             var root = $(rootSelector);
             renderer.setElement($('.c-body-container', root)).render();
-            cinema.events.trigger('c:renderCompositeHistogram', {root: root});
-            cinema.events.trigger('c:renderCompositeTools', {root: root});
+            compositeHistogram.setElement($('.c-histogram-panel', root)).render();
+            compositeTools.setElement($('.c-tools-panel', root)).render();
             renderer.showViewpoint(true);
         }
 
@@ -94,22 +96,24 @@
                 visModel: compositeModel,
                 layerModel: layers
             }),
+
+            compositeTools = new cinema.views.CompositeToolsWidget({
+                el: $('.c-tools-panel', container),
+                model: compositeModel,
+                controlModel: controlModel,
+                viewpoint: viewpointModel,
+                layers: layers,
+                toolbarSelector: '.c-panel-toolbar'
+            }),
+
             controlList = [
                 { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
             ];
 
-            cinema.events.trigger('c:initCompositeTools', {
-                container: container,
-                compositeModel: compositeModel,
-                controlModel: controlModel,
-                viewpointModel: viewpointModel,
-                layers: layers
-            });
-
         function render () {
             var root = $(rootSelector);
             page.setElement($('.c-body-container', root)).render();
-            cinema.events.trigger('c:renderCompositeTools', {root: root});
+            compositeTools.setElement($('.c-tools-panel', root)).render();
         }
 
         return {
