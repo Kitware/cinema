@@ -67,7 +67,9 @@ cinema.StandaloneApp = Backbone.View.extend({
         if (cinema.model.getDataType() === 'workbench') {
             // Workbench Cinema App
             this.$('.header-left').html(cinema.app.templates.headerLeft({icon: 'icon-cinema', title: 'Workbench', active: cinema.viewType, views: this.views}));
-            this.$('.header-right').html(cinema.app.templates.workbenchControl());
+            this.$('.header-right').html(cinema.app.templates.workbenchControl({
+                runs: cinema.model.get('runs')
+            }));
         } else {
             // Single Cinema App
             this.$('.header-left').html(cinema.app.templates.headerLeft({icon: 'icon-cinema', title: 'Cinema', active: cinema.viewType, views: this.views}));
