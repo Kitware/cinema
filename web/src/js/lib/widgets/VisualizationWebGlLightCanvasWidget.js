@@ -268,8 +268,6 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
             this.lutView[idx + 2] = Math.round(color[2]);
             this.lutView[idx + 3] = 1.0;
         }
-
-        console.log('Done setting lut table');
     },
 
     setLightColor: function (lightColor) {
@@ -470,7 +468,6 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
     },
 
     forceRedraw: function () {
-        console.log("Inside forceRedraw");
         this._forceRedraw = true;
         this.showViewpoint();
     },

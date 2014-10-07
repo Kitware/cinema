@@ -62,16 +62,22 @@ void main() {
         float ks = lightTerms[2];
         float alpha = lightTerms[3];
 
+        vec4 vDir = normalize(viewDir);
+        vec4 lDir = normalize(lightDir);
+
         // Calculate ambient term
         vec4 ambientColor = lightColor * ka;
 
+        // This will be used in both diffuse and specular terms
+        float lDotN = dot(lDir, normal);
+
         // Calculate diffuse term
-        vec4 diffuseColor = kd * lutColor * dot(lightDir, normal);
+        vec4 diffuseColor = kd * lutColor * lDotN;
 
         // Calculate specular term
-        vec4 R = (normal * 2.0 * dot(normalize(viewDir), normal)) - normalize(viewDir);
-        float specularTerm = ks * pow(dot(R, normalize(lightDir)), alpha);
-        vec4 specularColor = lightColor * specularTerm;
+        vec4 R = (normal * 2.0 * lDotN) - lDir;
+        float specularTerm = ks * pow(dot(R, vDir), alpha);
+        vec4 specularColor = lightColor * specularTerm * step(-lDotN, 0.0);
 
         // Clamp them individually and sum them up
         vec3 fColor = clamp(ambientColor.rgb, 0.0, 1.0) + clamp(diffuseColor.rgb, 0.0, 1.0) + clamp(specularColor.rgb, 0.0, 1.0);
