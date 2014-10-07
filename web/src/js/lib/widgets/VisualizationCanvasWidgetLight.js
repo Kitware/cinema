@@ -17,7 +17,7 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         this.lightPosition = [-1, 1, 0];
         this.worldLight = new Vector(-1, 0, 1);
         this.lightColor = new Vector(1, 1, 1);
-        this.lightTerms = { ka: 0.1, kd: 0.6, ks: 0.3, alpha: 20.0 };
+        this.lightTerms = { ka: 0.5, kd: 0.3, ks: 0.2, alpha: 20.0 };
         this._forceRedraw = false;
         this.eye = new Vector(0, 0, 1);
         this.count = 0;
@@ -102,8 +102,8 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
             pG = renderTerms[term][1],
             pB = renderTerms[term][2],
             // value = (pR << 16 | pG << 8 | pB),
-            value = (pR * 65536 + pG * 256 + pB),
-            toOne = value / 16777216;
+            value = (pR * 65536 + pG * 256 + pB) - 1,
+            toOne = value / (16777216 - 1);
         return toOne;
     },
 
@@ -141,7 +141,8 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
             var ka = this.lightTerms.ka;
             var lightColor = this.lightColor;
             var ambientTerm = ka;
-            var ambientColor = lightColor.multiply(255).multiply(ka);
+            //var ambientColor = lightColor.multiply(255).multiply(ka);
+            var ambientColor = Color.multiply(ka);
             //return [ambientColor.x, ambientColor.y, ambientColor.z, 255.0];
 
             //todo: foreach light
