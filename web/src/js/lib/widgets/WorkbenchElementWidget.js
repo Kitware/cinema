@@ -16,13 +16,6 @@ cinema.views.WorkbenchElementWidget = Backbone.View.extend({
      * and optionally a pre-existing CompositeImageManager.
      */
     initialize: function (settings) {
-        this.visTypes = {
-            'catalyst-pvweb': cinema.views.CatalystPvWebWidget,
-            'catalyst-viewer': cinema.views.CatalystViewerWidget,
-            'catalyst-resample-viewer': cinema.views.CatalystResampleViewerWidget,
-            'composite-image-stack': cinema.views.CompositeImageStackViewer
-        };
-
         // TODO handle the case where this model is not loaded yet.
 
         // Map IDs to analysis info
