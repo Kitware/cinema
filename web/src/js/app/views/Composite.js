@@ -9,7 +9,8 @@
             compositeManager = new cinema.utilities.CompositeImageManager({ visModel: model }),
             controlModel = new cinema.models.ControlModel({ info: model }),
             viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
-            layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup()),
+            layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup(),
+                                                  { info: model }),
             histogramModel = new cinema.models.HistogramModel({ layers: layers,
                                                                 basePath: model.get('basePath') }),
             renderer = new cinema.views.VisualizationCanvasWidget({
@@ -54,7 +55,8 @@
             controlList = [
                 { position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' },
                 { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
-            ];
+            ],
+            firstRender = true;
 
         function render () {
             var root = $(rootSelector);
@@ -62,6 +64,10 @@
             compositeHistogram.setElement($('.c-histogram-panel', root)).render();
             compositeTools.setElement($('.c-tools-panel', root)).render();
             renderer.showViewpoint(true);
+            if (firstRender) {
+                firstRender = false;
+                $('.c-histogram-panel', root).hide();
+            }
         }
 
         function refreshCamera () {
@@ -91,7 +97,7 @@
             compositeModel = new cinema.decorators.Composite(model),
             controlModel = new cinema.models.ControlModel({ info: model }),
             viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
-            layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup()),
+            layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup(), { info: model }),
             page = new cinema.views.CompositeSearchPage({
                 visModel: compositeModel,
                 layerModel: layers
