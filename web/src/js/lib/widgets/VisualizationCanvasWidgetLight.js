@@ -52,7 +52,7 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         //find eye point
         //console.log("PT", this._viewpoint.phi, this._viewpoint.theta);
         this.eye = Vector.fromArray(this._spherical2Cartesian(this.controlModel.getControl('phi'), this.controlModel.getControl('theta'))).unit();
-        //console.log("EYE", this.eye.x.toFixed(3), this.eye.y.toFixed(3), this.eye.z.toFixed(3));
+        console.log("EYE", this.eye.x.toFixed(3), this.eye.y.toFixed(3), this.eye.z.toFixed(3));
 
         //this.worldlight = this.eye;
         //console.log("WLIGHT", this.worldlight.x.toFixed(3), this.worldlight.y.toFixed(3), this.worldlight.z.toFixed(3));
@@ -79,7 +79,7 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         //console.log("um", um.x.toFixed(3), um.y.toFixed(3), um.z.toFixed(3));
 
         this.worldlight = this.eye.multiply(0.3).add(rm).add(um).unit();
-        //console.log("WLIGHT", this.worldlight.x.toFixed(3), this.worldlight.y.toFixed(3), this.worldlight.z.toFixed(3));
+        console.log("WLIGHT", this.worldlight.x.toFixed(3), this.worldlight.y.toFixed(3), this.worldlight.z.toFixed(3));
     },
 
     setLight: function (_light) {
@@ -137,13 +137,18 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
             //return [color[0], color[1], color[2], 255]
 
             var Color = Vector.fromArray(color);
+            /*
+            var Color = Vector.fromArray(renderTerms[renderTerms.scalarArray][0],
+                                         renderTerms[renderTerms.scalarArray][1],
+                                         renderTerms[renderTerms.scalarArray][2]);
+            */
 
             //apply lighting
             var ka = this.lightTerms.ka;
             var lightColor = this.lightColor;
             var ambientTerm = ka;
             var ambientColor = lightColor.multiply(255).multiply(ka);
-            //return [ambientColor.x, ambientColor.y, ambientColor.z, 255.0];
+            // return [ambientColor.x, ambientColor.y, ambientColor.z, 255.0];
 
             //todo: foreach light
             var lightPosition = this.worldlight;
@@ -152,7 +157,7 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
             var kd = this.lightTerms.kd;
             var diffuseTerm = kd * lightPosition.dot(normal);
             var diffuseColor = Color.multiply(diffuseTerm);
-            //return [diffuseColor.x, diffuseColor.y, diffuseColor.z, 255];
+            // return [diffuseColor.x, diffuseColor.y, diffuseColor.z, 255];
 
             //todo: foreach light
             var viewPosition = this.eye;

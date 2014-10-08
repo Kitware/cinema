@@ -1,5 +1,5 @@
 
-import re, json, argparse, os, math, itertools, time
+import re, json, argparse, os, math, itertools, time, math
 from collections import deque
 from PIL import Image
 
@@ -34,13 +34,16 @@ class DepthImageGenerator(object):
             else:
                 self.composite_array.append(pixel)
 
+        self.depthMultiplier = int(math.floor(256.0 / (len(self.layers) + 1)))
+
         self.calculateCorrectOffsets()
 
     # =========================================================================
     #
     # =========================================================================
     def generateDepthImage(self):
-        rgb_img_path = os.path.join(self.base_path, "rgb.jpg")
+        #rgb_img_path = os.path.join(self.base_path, "rgb.jpg")
+        rgb_img_path = os.path.join(self.base_path, "rgb.png")
         self.spriteImg = Image.open(rgb_img_path)
 
         depth_img_path = os.path.join(self.base_path, "rgbd.png")
@@ -69,7 +72,7 @@ class DepthImageGenerator(object):
                         yOffset = layerIdx * self.dimensions[1]
                         color = self.spriteImg.getpixel((x,y+yOffset))
                         #newColor = (color[0], color[1], color[2], depthValue)
-                        newColor = (color[0], color[1], color[2], 255 - (depthValue * 20))
+                        newColor = (color[0], color[1], color[2], 255 - (depthValue * self.depthMultiplier))
                         img.putpixel((x,y+yOffset), newColor)
                         #print 'original color: ',color,', new color: ',newColor
                     depthValue += 1
@@ -118,7 +121,7 @@ class DepthImageGenerator(object):
                         yOffset = layerIdx * self.dimensions[1]
                         #color = self.spriteImg.getpixel((x,y+yOffset))
                         #newColor = (color[0], color[1], color[2], depthValue)
-                        depthColor = ( 255 - (depthValue * 20), 0, 0 )
+                        depthColor = ( 255 - (depthValue * self.depthMultiplier), 0, 0 )
                         img.putpixel((x,y+yOffset), depthColor)
                         #print 'original color: ',color,', new color: ',newColor
                     depthValue += 1
@@ -189,8 +192,8 @@ def recurse(infoJsonPath, directory):
                 if matcher:
                     print 'Going to process ',nextPath
                     imageGenerator = DepthImageGenerator(infoJsonPath, nextPath)
-                    #imageGenerator.generateDepthImage()
-                    imageGenerator.generateDepthJpeg()
+                    imageGenerator.generateDepthImage()
+                    #imageGenerator.generateDepthJpeg()
 
                 continue
 
@@ -207,7 +210,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description=description)
 
-    parser.add_argument("--rootdir", type=str, default="", help="Path to the composite file")
+    parser.add_argument("--rootdir", type=str, default="", help="Path to root of data set (where info.json lives)")
 
     args = parser.parse_args()
 
