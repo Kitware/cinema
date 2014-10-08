@@ -33,6 +33,6 @@
 
     prototype.getDefaultPipelineSetup = function () {
         // Not stored currently in data model
-        return '';
+        return 'ACBACADAEAFAGBHBIBJBKB';
     };
 }());

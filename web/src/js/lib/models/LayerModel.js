@@ -50,9 +50,6 @@ cinema.models.LayerModel = Backbone.Model.extend({
 
         var processLayer = function (layer) {
             var id = layer.ids[0], layerObj;
-
-            // If the layer object exists, then use it
-            // or get a new one.
             layerObj = this._controlStates[id] || {
                 children: {},
                 hidden: true,
@@ -61,7 +58,7 @@ cinema.models.LayerModel = Backbone.Model.extend({
             };
             if (_.has(state, id)) {
                 layerObj.hidden = false;
-                layerObj.color = state.id;
+                layerObj.color = state[id];
             }
             this._controlStates[id] = layerObj;
             return layerObj;
@@ -142,6 +139,7 @@ cinema.models.LayerModel = Backbone.Model.extend({
             }
         });
         this.set({'state': state}, {'silent': true});
+        console.log(this.get('state'));
         this.trigger('change');
     },
 
@@ -248,10 +246,23 @@ cinema.models.LayerModel = Backbone.Model.extend({
         }
 
         if (arg1.state !== undefined) {
+            var layerObj;
+
             _.each(arg1.state, function (color, layerId) {
-                this._controlStates[layerId].hidden = false;
-                this._controlStates[layerId].closed = false;
-                this._controlStates[layerId].color = color;
+                if (this._controlStates[layerId]) {
+                    this._controlStates[layerId].hidden = false;
+                    this._controlStates[layerId].closed = false;
+                    this._controlStates[layerId].color = color;
+                }
+                else {
+                    layerObj = {
+                        children: { },
+                        hidden: false,
+                        closed: false,
+                        color: color
+                    };
+                    this._controlStates[layerId] = layerObj;
+                }
             }.bind(this));
         }
         return Backbone.Model.prototype.set.apply(this, arguments);
@@ -305,7 +316,6 @@ cinema.models.LayerModel = Backbone.Model.extend({
      */
     setFromString: function (query) {
         var obj = this.unserialize(query);
-
-        this.set('state', obj);
+        this.set({'state': obj}, {'silent': true});
     }
 });

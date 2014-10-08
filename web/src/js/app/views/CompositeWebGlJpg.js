@@ -9,7 +9,8 @@
             compositeManager = new cinema.utilities.CompositeImageManager({ visModel: model, files: ['rgb.jpg', 'depth.jpg']  }),
             controlsModel = new cinema.models.ControlModel({ info: model }),
             viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlsModel }),
-            layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup()),
+            layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup(),
+                                                  { info: model }),
             compositor = new cinema.utilities.CreateWebGlJpgCompositor(),
             renderer = new cinema.views.VisualizationWebGlJpgCanvasWidget({
                 el: $('.c-body-container', container),
