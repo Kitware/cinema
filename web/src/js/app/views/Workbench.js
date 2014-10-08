@@ -46,6 +46,7 @@
                 var path = $(e.currentTarget).attr('path');
 
                 _.each($('.c-dv-layout-item'), function (el) {
+                    $(el).off();
                     new cinema.views.WorkbenchElementWidget({
                         el: el,
                         model: configuration.models[path]
