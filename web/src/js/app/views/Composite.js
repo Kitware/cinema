@@ -55,7 +55,8 @@
             controlList = [
                 { position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' },
                 { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
-            ];
+            ],
+            firstRender = true;
 
         function render () {
             var root = $(rootSelector);
@@ -63,6 +64,10 @@
             compositeHistogram.setElement($('.c-histogram-panel', root)).render();
             compositeTools.setElement($('.c-tools-panel', root)).render();
             renderer.showViewpoint(true);
+            if (firstRender) {
+                firstRender = false;
+                $('.c-histogram-panel', root).hide();
+            }
         }
 
         function refreshCamera () {

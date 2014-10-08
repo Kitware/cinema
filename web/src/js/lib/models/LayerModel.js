@@ -139,7 +139,6 @@ cinema.models.LayerModel = Backbone.Model.extend({
             }
         });
         this.set({'state': state}, {'silent': true});
-        console.log(this.get('state'));
         this.trigger('change');
     },
 
