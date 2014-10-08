@@ -200,33 +200,15 @@ cinema.views.VisualizationWebGlJpgCanvasWidget = Backbone.View.extend({
      * cache entry so it won't have to recompute it.
      */
     _writeCompositeBuffer: function (data) {
-        /*
-        if (!_.has(this.compositeCache, data.key)) {
-            this._computeCompositeInfo(data);
-        }
-        */
-
         var compositeCanvas = this.$('.c-webglvis-composite-buffer')[0],
             depthCanvas = this.$('.c-webglvis-depth-buffer')[0],
-            spriteCanvas = this.$('.c-webglvis-spritesheet-buffer')[0],
-            spriteDepthCanvas = this.$('.c-webglvis-spritesheet-depthbuffer')[0],
             webglCanvas = this.$('.c-webglvis-webgl-canvas')[0],
             dim = this.compositeModel.getImageSize(),
             spritesheetDim = [ data.image.width, data.image.height ],
-            spriteCtx = spriteCanvas.getContext('2d'),
-            spriteDepthCtx = spriteDepthCanvas.getContext('2d'),
             compositeCtx = compositeCanvas.getContext('2d'),
             depthCtx = depthCanvas.getContext('2d'),
             composite = this.compositeCache[data.key];
 
-        $(spriteCanvas).attr({
-            width: spritesheetDim[0],
-            height: spritesheetDim[1]
-        });
-        $(spriteDepthCanvas).attr({
-            width: spritesheetDim[0],
-            height: spritesheetDim[1]
-        });
         $(compositeCanvas).attr({
             width: dim[0],
             height: dim[1]
@@ -236,18 +218,9 @@ cinema.views.VisualizationWebGlJpgCanvasWidget = Backbone.View.extend({
             height: dim[1]
         });
 
-        // Fill full spritesheet buffer with raw image data
-        // spriteCtx.clearRect(0, 0, spritesheetDim[0], spritesheetDim[1]);
-        spriteCtx.drawImage(data.image, 0, 0);
-
-        // Fill spritesheet depth buffer with raw depth image data
-        spriteDepthCtx.clearRect(0, 0, spritesheetDim[0], spritesheetDim[1]);
-        spriteDepthCtx.drawImage(data.depthimage, 0, 0);
-
         this.webglCompositor.clearFbo();
 
-
-        var idxList = [ 21 ];
+        var idxList = [];
         for (var layerName in this.layerOffset) {
             if (_.has(this.layerOffset, layerName)) {
                 idxList.push(this.layerOffset[layerName]);
@@ -261,12 +234,12 @@ cinema.views.VisualizationWebGlJpgCanvasWidget = Backbone.View.extend({
           var srcX = 0;
           var srcY = layerIdx * imgh;
 
-          compositeCtx.drawImage(spriteCanvas,
+          compositeCtx.drawImage(data.image,
                           srcX, srcY, imgw, imgh,
                           0, 0, imgw, imgh);
 
           depthCtx.clearRect(0, 0, imgw, imgh);
-          depthCtx.drawImage(spriteDepthCanvas,
+          depthCtx.drawImage(data.depthimage,
                           srcX, srcY, imgw, imgh,
                           0, 0, imgw, imgh);
 

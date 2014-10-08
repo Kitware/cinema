@@ -176,30 +176,20 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
     _writeCompositeBuffer: function (data) {
 
         var compositeCanvas = this.$('.c-webglvis-composite-buffer')[0],
-            spriteCanvas = this.$('.c-webglvis-spritesheet-buffer')[0],
             webglCanvas = this.$('.c-webglvis-webgl-canvas')[0],
             dim = this.compositeModel.getImageSize(),
             spritesheetDim = [ data.image.width, data.image.height ],
-            spriteCtx = spriteCanvas.getContext('2d'),
             compositeCtx = compositeCanvas.getContext('2d'),
             composite = this.compositeCache[data.key];
 
-        $(spriteCanvas).attr({
-            width: spritesheetDim[0],
-            height: spritesheetDim[1]
-        });
         $(compositeCanvas).attr({
             width: dim[0],
             height: dim[1]
         });
 
-        // Fill full spritesheet buffer with raw image data
-        spriteCtx.clearRect(0, 0, spritesheetDim[0], spritesheetDim[1]);
-        spriteCtx.drawImage(data.image, 0, 0);
-
         this.webglCompositor.clearFbo();
 
-        var idxList = [ 21 ];
+        var idxList = [];
         for (var layerName in this.layerOffset) {
             if (_.has(this.layerOffset, layerName)) {
                 idxList.push(this.layerOffset[layerName]);
@@ -217,8 +207,7 @@ cinema.views.VisualizationWebGlCanvasWidget = Backbone.View.extend({
           // Because the png has transparency, we need to clear the canvas, or else
           // we end up with some blending when we draw the next image
           compositeCtx.clearRect(0, 0, imgw, imgh);
-
-          compositeCtx.drawImage(spriteCanvas,
+          compositeCtx.drawImage(data.image,
                           srcX, srcY, imgw, imgh,
                           0, 0, imgw, imgh);
 
