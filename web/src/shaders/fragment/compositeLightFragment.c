@@ -71,13 +71,19 @@ void main() {
         // This will be used in both diffuse and specular terms
         float lDotN = dot(lDir, normal);
 
+        // Adding this check allows us to light whichever side is facing the light
+        if (lDotN < 0.0) {
+            normal = -1.0 * normal;
+            lDotN = dot(lDir, normal);
+        }
+
         // Calculate diffuse term
         vec4 diffuseColor = kd * lutColor * lDotN;
 
         // Calculate specular term
         vec4 R = (normal * 2.0 * lDotN) - lDir;
         float specularTerm = ks * pow(dot(R, vDir), alpha);
-        vec4 specularColor = lightColor * specularTerm * step(-lDotN, 0.0);
+        vec4 specularColor = lightColor * specularTerm; // * step(-lDotN, 0.0);
 
         // Clamp them individually and sum them up
         vec3 fColor = clamp(ambientColor.rgb, 0.0, 1.0) + clamp(diffuseColor.rgb, 0.0, 1.0) + clamp(specularColor.rgb, 0.0, 1.0);
@@ -88,7 +94,7 @@ void main() {
         // gl_FragColor = vec4(ambientColor.rgb, scalarColor.a);
         // gl_FragColor = vec4(diffuseColor.rgb, scalarColor.a);
         // gl_FragColor = vec4(specularColor.rgb, scalarColor.a);
-        // gl_FragColor = scalarColor;
+        // gl_FragColor = vec4(lutColor.rgb, scalarColor.a);
         // gl_FragColor = vec4(((normal.rgb + 1.0) / 2.0), scalarColor.a);
     }
 }

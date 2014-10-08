@@ -210,7 +210,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description=description)
 
-    parser.add_argument("--rootdir", type=str, default="", help="Path to the composite file")
+    parser.add_argument("--rootdir", type=str, default="", help="Path to root of data set (where info.json lives)")
 
     args = parser.parse_args()
 

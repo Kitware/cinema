@@ -123,11 +123,7 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
 
         // Generate map of where to find needed sprite offets for each layer
         this._fieldNameMap = {};
-        this._lightingFields = [ 'nX', 'nY', 'nZ', 'vRTData' ];
-        this._contextMap = { 'nX': null,
-                             'nY': null,
-                             'nZ': null,
-                             'vRTData': null };
+        this._lightingFields = [ 'nX', 'nY', 'nZ' ];
 
         var fieldJson = this.model.attributes.metadata.fields;
         for (var fieldCode in fieldJson) {
@@ -328,7 +324,7 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
                 }
 
                 if (lightableLayer === true) {
-                    // idxList.push({ 'scalarOffset': });
+                    lightingOffsets['scalar'] = this.layerOffset[layerName];
                     idxList.push(lightingOffsets);
                 } else {
                     idxList.push(this.layerOffset[layerName]);
@@ -382,7 +378,7 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
                 nzCtx.drawImage(data.image, srcX, srcY, imgw, imgh, 0, 0, imgw, imgh);
 
                 // Copy the scalar buffer
-                srcY = lOffMap['vRTData'] * imgh;
+                srcY = lOffMap['scalar'] * imgh;
                 scalarCtx.clearRect(0, 0, imgw, imgh);
                 scalarCtx.drawImage(data.image, srcX, srcY, imgw, imgh, 0, 0, imgw, imgh);
 
