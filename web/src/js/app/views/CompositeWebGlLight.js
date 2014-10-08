@@ -9,7 +9,8 @@
             compositeManager = new cinema.utilities.CompositeImageManager({ visModel: model }),
             controlModel = new cinema.models.ControlModel({ info: model }),
             viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
-            layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup()),
+            layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup(),
+                                                  { info: model }),
             compositor = new cinema.utilities.CreateWebGlLightCompositor(),
             renderer = new cinema.views.VisualizationWebGlLightCanvasWidget({
                 el: $('.c-body-container', container),
