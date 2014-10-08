@@ -61,7 +61,7 @@
                 view.render();
                 return view.controlList;
             } else {
-                console.log("no instance for " + key);
+                console.log("no view instance could be created", rootSelector, viewType, model);
             }
         } else {
             console.log('model is not loaded.', model);
