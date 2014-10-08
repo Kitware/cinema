@@ -1,37 +1,27 @@
 each object, idx in metadata.pipeline
   if object.type === 'directory'
-    .c-pipeline-element-header
-      a.c-pipeline-visibility-toggle(type="directory", state="on")
+    .c-pipeline-element-header(directory-id="#{idx}")
+      a.c-pipeline-visibility-toggle
         i.icon-eye.c-pipeline-icon
-      - var colorValue = metadata.layer_fields[object.children[0].ids[0]][0]
-      a.c-directory-color-select(directory-id="#{idx}", layer-id="#{object.children[0].ids[0]}", data-toggle="popover",
-      data-trigger="click", color-field="#{colorValue}", tabindex="-1")
+      a.c-directory-color-select(data-toggle="popover", data-trigger="click", tabindex="-1")
         i.icon-brush
       span.c-pipeline-name= object.name
-      a.c-pipeline-layers-select(directory-id="#{idx}", data-toggle="popover",
-      data-trigger="click", tabindex="-1")
+      a.c-pipeline-layers-select(data-toggle="popover", data-trigger="click", tabindex="-1")
         i.icon-plus-circled
 
       each layer in object.children
-        .c-pipeline-layer-wrapper(id="LayerWrapper-#{idx}-#{layer.ids[0]}", directory-id="#{idx}",
-        layer-id="#{layer.ids[0]}")
-          a.c-remove-layer-toggle(id="LayerVisibility-#{idx}-#{layer.ids[0]}", directory-id="#{idx}",
-            layer-id="#{layer.ids[0]}", state="on", visible="on")
+        .c-pipeline-layer-wrapper(layer-id="#{layer.ids[0]}", directory-id="-1")
+          a.c-remove-layer-toggle
             i.icon-cancel-circled.c-pipeline-icon
-          - var colorValue = metadata.layer_fields[layer.ids[0]][0]
-          a.c-layer-color-select(directory-id="#{idx}", layer-id="#{layer.ids[0]}", data-toggle="popover",
-          color-field="#{colorValue}", tabindex="-1")
+          a.c-layer-color-select(data-toggle="popover", tabindex="-1")
             i.icon-brush
           span.c-layer-name= layer.name
 
   else if object.type === 'layer'
-    .c-pipeline-element-header
-      a.c-pipeline-visibility-toggle(layer-id="#{object.ids[0]}", state="on", type="layer")
+    .c-pipeline-element-header(layer-id="#{object.ids[0]}", directory-id="-1")
+      a.c-pipeline-visibility-toggle
         i.icon-eye.c-pipeline-icon
-      - var colorValue = metadata.layer_fields[object.ids[0]][0]
-      a.c-layer-color-select(directory-id="#{idx}", layer-id="#{object.ids[0]}", data-toggle="popover",
-      data-trigger="click", color-field="#{colorValue}", tabindex="-1")
+      a.c-layer-color-select(data-toggle="popover", data-trigger="click", tabindex="-1")
         i.icon-brush
       span.c-pipeline-name= object.name
-      a.c-remove-layer-toggle.hide(layer-id="#{object.ids[0]}", state="on", visible="on",
-      color-field="#{metadata.layer_fields[object.ids[0]]}")
+      a.c-remove-layer-toggle.hide

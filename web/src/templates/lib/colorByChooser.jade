@@ -1,5 +1,5 @@
 .c-color-by-container
-  .c-layer-value-choice(directory-id="#{directoryId}", layer-id="#{layerId}")
+  .c-layer-value-choice
     each name, field in metadata.fields
       if metadata.layer_fields[layerId].indexOf(field) >= 0
         .radio.c-color-by-radio
