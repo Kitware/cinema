@@ -23,13 +23,13 @@
             var root = $(rootSelector);
 
             // Apply current layout inside model
-            $('.c-body-container', root).html(cinema.templates[configuration.template]({
+            root.html(cinema.templates[configuration.template]({
                 layout: configuration.layout
             }));
 
             // TODO we need to fix all this at some point, it's the wrong way
             // to do this.
-            $('.header-right .c-wb-layout', root).off().on('click', function (e) {
+            $('.header-right .c-wb-layout').off().on('click', function (e) {
                 var me = $(e.target),
                     rows = Number(me.attr('data-rows')),
                     cols = Number(me.attr('data-cols')),
@@ -42,7 +42,7 @@
                 }
             });
 
-            $('.header-right .c-vis-option', root).off().on('click', function (e) {
+            $('.header-right .c-vis-option').off().on('click', function (e) {
                 var path = $(e.currentTarget).attr('path');
 
                 _.each($('.c-dv-layout-item'), function (el) {
