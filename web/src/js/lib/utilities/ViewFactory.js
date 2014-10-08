@@ -20,8 +20,6 @@
     cinema.utilities.ViewFactory = function () {
         this.visModel = null;
         this.factoryMap = {};
-        this.compatibilityMap = {};
-        this.viewInstances = {};
         return _.extend(this, Backbone.Events);
     };
 
@@ -57,15 +55,8 @@
 
     prototype.render = function (rootSelector, viewType, model) {
         if (model.loaded()) {
-            var key = [rootSelector, viewType, model.getDataType()].join(':');
-
-            // Create view if not exist
-            if (!this.viewInstances.hasOwnProperty(key) || this.viewInstances[key] === null) {
-                this.viewInstances[key] = this.createView(rootSelector, viewType, model);
-            }
-
             // Update the view if it exist
-            var view = this.viewInstances[key];
+            var view = this.createView(rootSelector, viewType, model);
             if (view) {
                 view.render();
                 return view.controlList;
@@ -78,24 +69,16 @@
         return [];
     };
 
-    prototype.getViewControlList = function (rootSelector, viewType, model) {
-        var key = [rootSelector, viewType, model.getDataType()].join(':');
-
-        if(!this.viewInstances.hasOwnProperty(key)) {
-            this.viewInstances[key] = this.createView(rootSelector, viewType, model);
-        }
-
-        var view = this.viewInstances[key];
-        if(view) {
+    prototype.getViewControlList = function (viewType, model) {
+        // TODO this method should go away, each widget should be configurable
+        // at instantiation time rather than trying to maintain a global mapping
+        // of widgets and their options based on parent selector...
+        var view = this.createView(viewType, model);
+        if (view) {
             return view.controlList;
         }
 
         return [];
-    };
-
-    prototype.deleteView = function (rootSelector, viewType, model) {
-        var key = [rootSelector, viewType, model.getDataType()].join(':');
-        delete this.viewInstances[key];
     };
 
     /**
