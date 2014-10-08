@@ -324,7 +324,7 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
                 }
 
                 if (lightableLayer === true) {
-                    lightingOffsets['scalar'] = this.layerOffset[layerName];
+                    lightingOffsets.scalar = this.layerOffset[layerName];
                     idxList.push(lightingOffsets);
                 } else {
                     idxList.push(this.layerOffset[layerName]);
@@ -345,12 +345,14 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
         compositeCtx.drawImage(data.image, 0, (this._maxOffset * imgh), imgw, imgh, 0, 0, imgw, imgh);
         this.webglCompositor.drawBackgroundPass(compositeCanvas, bgColor);
 
+        var srcX = 0, srcY = 0;
+
         for (var i = 0; i < idxList.length; i+=1) {
             if (typeof(idxList[i]) === 'number') {
                 //console.log(i);
                 var layerIdx = idxList[i];
-                var srcX = 0;
-                var srcY = layerIdx * imgh;
+                srcX = 0;
+                srcY = layerIdx * imgh;
 
                 // Because the png has transparency, we need to clear the canvas, or else
                 // we end up with some blending when we draw the next image
@@ -360,25 +362,26 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
                 this.webglCompositor.drawCompositePass(compositeCanvas);
             } else {
                 var lOffMap = idxList[i];
-                var srcX = 0, srcY = 0;
+                srcX = 0;
+                srcY = 0;
 
                 // Copy the nx buffer
-                srcY = lOffMap['nX'] * imgh;
+                srcY = lOffMap.nX * imgh;
                 nxCtx.clearRect(0, 0, imgw, imgh);
                 nxCtx.drawImage(data.image, srcX, srcY, imgw, imgh, 0, 0, imgw, imgh);
 
                 // Copy the ny buffer
-                srcY = lOffMap['nY'] * imgh;
+                srcY = lOffMap.nY * imgh;
                 nyCtx.clearRect(0, 0, imgw, imgh);
                 nyCtx.drawImage(data.image, srcX, srcY, imgw, imgh, 0, 0, imgw, imgh);
 
                 // Copy the nz buffer
-                srcY = lOffMap['nZ'] * imgh;
+                srcY = lOffMap.nZ * imgh;
                 nzCtx.clearRect(0, 0, imgw, imgh);
                 nzCtx.drawImage(data.image, srcX, srcY, imgw, imgh, 0, 0, imgw, imgh);
 
                 // Copy the scalar buffer
-                srcY = lOffMap['scalar'] * imgh;
+                srcY = lOffMap.scalar * imgh;
                 scalarCtx.clearRect(0, 0, imgw, imgh);
                 scalarCtx.drawImage(data.image, srcX, srcY, imgw, imgh, 0, 0, imgw, imgh);
 

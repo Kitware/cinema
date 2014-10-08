@@ -143,14 +143,14 @@
         gl.deleteProgram(compositeProgram);
 
         // Clean up the composite light program and its shaders
-        for (var j = 0; j < compositeLightProgram.shaders.length; j+=1) {
-          gl.deleteShader(compositeLightProgram.shaders[j]);
+        for (var k = 0; k < compositeLightProgram.shaders.length; k+=1) {
+          gl.deleteShader(compositeLightProgram.shaders[k]);
         }
         gl.deleteProgram(compositeLightProgram);
 
         // Clean up the background program and its shaders
-        for (var j = 0; j < backgroundProgram.shaders.length; j+=1) {
-          gl.deleteShader(backgroundProgram.shaders[j]);
+        for (var l = 0; l < backgroundProgram.shaders.length; l+=1) {
+          gl.deleteShader(backgroundProgram.shaders[l]);
         }
         gl.deleteProgram(backgroundProgram);
 
@@ -162,8 +162,8 @@
         gl.deleteBuffer(texCoordBuffer);
         gl.deleteBuffer(posCoordBuffer);
 
-        for (var i = 0; i < lightingTextureNames.length; i+=1) {
-          gl.deleteTexture(lightingTextures[lightingTextureNames[i]]);
+        for (var m = 0; m < lightingTextureNames.length; m+=1) {
+          gl.deleteTexture(lightingTextures[lightingTextureNames[m]]);
         }
     }
 
@@ -524,36 +524,36 @@
       var lterms = gl.getUniformLocation(compositeLightProgram, "lightTerms");
       gl.uniform4fv(lterms, lightingConstants);
 
-      var lightColor = vec4.fromValues(lightColor[0], lightColor[1], lightColor[2], 1.0);
+      var lightCol = vec4.fromValues(lightColor[0], lightColor[1], lightColor[2], 1.0);
       var lcolor = gl.getUniformLocation(compositeLightProgram, "lightColor");
-      gl.uniform4fv(lcolor, lightColor);
+      gl.uniform4fv(lcolor, lightCol);
 
       // Set up the scalar texture
       var scalar = gl.getUniformLocation(compositeLightProgram, "scalarSampler");
       gl.uniform1i(scalar, 0);
       gl.activeTexture(gl.TEXTURE0 + 0);
-      gl.bindTexture(gl.TEXTURE_2D, lightingTextures['scalars']);
+      gl.bindTexture(gl.TEXTURE_2D, lightingTextures.scalars);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,  gl.RGBA, gl.UNSIGNED_BYTE, scalarCanvas);
 
       // Set up the normals (x component) texture
       var nx = gl.getUniformLocation(compositeLightProgram, "nxSampler");
       gl.uniform1i(nx, 1);
       gl.activeTexture(gl.TEXTURE0 + 1);
-      gl.bindTexture(gl.TEXTURE_2D, lightingTextures['nx']);
+      gl.bindTexture(gl.TEXTURE_2D, lightingTextures.nx);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,  gl.RGBA, gl.UNSIGNED_BYTE, nxCanvas);
 
       // Set up the normals (y component) texture
       var ny = gl.getUniformLocation(compositeLightProgram, "nySampler");
       gl.uniform1i(ny, 2);
       gl.activeTexture(gl.TEXTURE0 + 2);
-      gl.bindTexture(gl.TEXTURE_2D, lightingTextures['ny']);
+      gl.bindTexture(gl.TEXTURE_2D, lightingTextures.ny);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,  gl.RGBA, gl.UNSIGNED_BYTE, nyCanvas);
 
       // Set up the normals (z component) texture
       var nz = gl.getUniformLocation(compositeLightProgram, "nzSampler");
       gl.uniform1i(nz, 3);
       gl.activeTexture(gl.TEXTURE0 + 3);
-      gl.bindTexture(gl.TEXTURE_2D, lightingTextures['nz']);
+      gl.bindTexture(gl.TEXTURE_2D, lightingTextures.nz);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,  gl.RGBA, gl.UNSIGNED_BYTE, nzCanvas);
 
       // Set up the sampler uniform and bind the rendered texture
