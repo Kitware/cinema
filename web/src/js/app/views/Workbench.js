@@ -1,6 +1,7 @@
 (function () {
     cinema.viewFactory.registerView('workbench', 'view', function (rootSelector, viewType, model) {
         var container = $(rootSelector),
+            currentRun = null,
             configuration = {
                 // 1x1, 2x2, 2x3, 1x3
                 layout: { rows: 1, cols: 1 },
@@ -44,15 +45,24 @@
 
             $('.header-right .c-vis-option').off().on('click', function (e) {
                 var path = $(e.currentTarget).attr('path');
+                currentRun = configuration.models[path];
+                console.log(currentRun);
+                selectCurrentRun();
+            });
 
+            var selectCurrentRun = function () {
                 _.each($('.c-dv-layout-item'), function (el) {
                     $(el).off();
                     new cinema.views.WorkbenchElementWidget({
                         el: el,
-                        model: configuration.models[path]
+                        model: currentRun
                     }).render();
                 });
-            });
+            };
+
+            if (currentRun) {
+                selectCurrentRun();
+            }
         };
 
         return {
