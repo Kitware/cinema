@@ -61,7 +61,7 @@ cinema.StandaloneApp = Backbone.View.extend({
         var controlList = cinema.viewFactory.getViewControlList(cinema.viewType, cinema.model);
 
         // Create container for control panels
-        this.$el.html(cinema.app.templates.layout({controlList:controlList}));
+        this.$el.html(cinema.app.templates.layout({controlList:controlList, viewType:cinema.viewType}));
 
         // Handle header bar base on application type (workbench/cinema)
         if (cinema.model.getDataType() === 'workbench') {

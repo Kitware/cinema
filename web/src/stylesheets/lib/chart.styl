@@ -1,0 +1,47 @@
+$textColor = #666
+$highlightTextColor = #333
+$opacityDuration = 0.4s
+
+.c-chart-content
+  color $textColor
+
+  .c-chart-graph
+    display inline-block
+    position relative
+
+  .c-chart-range
+    display inline-block
+    position relative
+    height 95px
+
+  .rickshaw_graph .detail .x_label
+    color white
+    opacity 1.0
+    background-color rgba(0, 0, 0, 0.8)
+
+  label.c-chart-ylabel
+    display block
+    color $textColor
+    text-align left
+
+  label.c-chart-xlabel
+    display block
+    color $textColor
+    text-align center
+
+  .c-chart-legend.rickshaw_legend
+    display inline-block
+    border-radius 3px
+    background-color rgba(255, 255, 255, 0.0)
+    color $textColor
+    position absolute
+    top 10px
+    right 320px
+    padding 2px 2px
+    border 1px solid #d3d3d3
+
+    a
+      color $textColor
+
+    &:hover
+      background-color rgba(255, 255, 255, 0.8)

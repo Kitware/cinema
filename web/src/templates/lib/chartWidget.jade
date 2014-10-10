@@ -1,0 +1,35 @@
+.c-chart-panel-body(class=".c-chart-tools-panel")
+    .c-chart-representation-container
+      label Representation
+      .c-chart-representation-toolbar
+          block buttons
+          a(title="Area")
+              i.icon-area.c-chart-representation(state="on", type="area")
+          a(title="Bar")
+              i.icon-bar.c-chart-representation(state="off", type="bar")
+          a(title="Lines")
+              i.icon-lines.c-chart-representation(state="off", type="lines")
+          a(title="Scatter")
+              i.icon-scatter.c-chart-representation(state="off", type="scatter")
+    .c-chart-offset-container
+      label Offset
+      .c-chart-offset-toolbar
+        block buttons
+        a(title="Stacked")
+          i.icon-stacked.c-chart-offset(state="on", type="stacked")
+        a(title="Stream")
+          i.icon-stream.c-chart-offset(state="off", type="stream")
+        a(title="Percent")
+          i.icon-percent.c-chart-offset(state="off", type="percent")
+        a(title="Value")
+          i.icon-value.c-chart-offset(state="off", type="value")
+    .c-chart-interpolation-container
+      label Interpolation
+      .c-chart-interpolation-toolbar
+        block buttons
+        a(title="Cardinal")
+          i.icon-cardinal.c-chart-interpolation(state="on", type="cardinal")
+        a(title="Linear")
+          i.icon-linear.c-chart-interpolation(state="off", type="linear")
+        a(title="Step")
+          i.icon-step.c-chart-interpolation(state="off", type="step")
