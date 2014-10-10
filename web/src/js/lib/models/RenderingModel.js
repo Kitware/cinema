@@ -7,9 +7,51 @@ cinema.models.RenderingModel = Backbone.Model.extend({
         Backbone.Model.apply(this, arguments);
 
         this.url = settings.url;
+        this.visModel = settings.visModel;
+        this.fieldMap = {};
+        this.lutMap = {};
     },
 
     defaults: {
+    },
+
+    initializeLookupTables: function() {
+        var fields = this.visModel.attributes.metadata.fields;
+        for (var fieldCode in fields) {
+            if (_.has(fields, fieldCode)) {
+                var fieldName = fields[fieldCode];
+                this.initializeLutForFieldToPreset(fieldCode, 'spectral');
+                this.fieldMap[fieldName] = fieldCode;
+            }
+        }
+    },
+
+    ensureLookupTablesReady: function() {
+        if (_.isEmpty(this.lutMap)) {
+            this.initializeLookupTables();
+        }
+    },
+
+    initializeLutForFieldToPreset: function(fieldCode, presetName) {
+        var controlPoints = this.getControlPoints(presetName);
+        if (controlPoints !== 'no-match') {
+            var controlPointsArray = $.extend(true, [], controlPoints);
+            this.lutMap[fieldCode] = controlPointsArray;
+        }
+    },
+
+    getLookupTableForField: function(fieldCode) {
+        this.ensureLookupTablesReady();
+        return this.getLutFunctionFromControlPoints(this.lutMap[fieldCode]);
+    },
+
+    getControlPointsForField: function(fieldCode) {
+        return this.lutMap[fieldCode];
+    },
+
+    getFields: function() {
+        this.ensureLookupTablesReady();
+        return this.fieldMap;
     },
 
     loaded: function () {
@@ -50,8 +92,12 @@ cinema.models.RenderingModel = Backbone.Model.extend({
     },
 
     getLookupTableFunction: function (name) {
+        var controlPoints = this.getControlPoints(name);
+        return this.getLutFunctionFromControlPoints(controlPoints);
+    },
+
+    getLutFunctionFromControlPoints: function(controlPoints) {
         var table =  [],
-            controlPoints = this.get('lookuptables')[name].controlpoints,
             currentControlIdx = 0;
 
         for (var idx = 0; idx < 256; idx += 1) {

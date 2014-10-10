@@ -41,8 +41,6 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
         this._forceRedraw = false;
         this.lightTerms = { ka: 0.1, kd: 0.6, ks: 0.3, alpha: 20.0 };
         this.lightColor = [ 1, 1, 1 ];
-        this.lutArrayBuffer = new ArrayBuffer(256*1*4);
-        this.lutView = new Uint8Array(this.lutArrayBuffer);
     },
 
     /**
@@ -74,6 +72,18 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
         this.orderMapping = {};
         this.compositeCache = {};
         this._fields = {};
+        this.renderingModel = settings.renderingModel;
+
+        this.lutArrayBuffers = {};
+        this.lutArrayViews = {};
+        var fieldsMap = this.renderingModel.getFields();
+        for (var fieldName in fieldsMap) {
+            if (_.has(fieldsMap, fieldName)) {
+                var fieldCode = fieldsMap[fieldName];
+                this.lutArrayBuffers[fieldCode] = new ArrayBuffer(256*1*4);
+                this.lutArrayViews[fieldCode] = new Uint8Array(this.lutArrayBuffers[fieldCode]);
+            }
+        }
 
         this.compositeManager = settings.compositeManager ||
             new cinema.utilities.CompositeImageManager({
@@ -253,16 +263,16 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
         }
     },
 
-    setLUT: function (_lut) {
+    setLUT: function (fieldCode, _lut) {
         for (var i = 0; i < 256; i+=1) {
             var idx = i * 4;
             var val = i / 255;
             var color = _lut(val);
             // console.log("val:", val, "color:", color);
-            this.lutView[idx] = Math.round(color[0]);
-            this.lutView[idx + 1] = Math.round(color[1]);
-            this.lutView[idx + 2] = Math.round(color[2]);
-            this.lutView[idx + 3] = 1.0;
+            this.lutArrayViews[fieldCode][idx] = Math.round(color[0]);
+            this.lutArrayViews[fieldCode][idx + 1] = Math.round(color[1]);
+            this.lutArrayViews[fieldCode][idx + 2] = Math.round(color[2]);
+            this.lutArrayViews[fieldCode][idx + 3] = 1.0;
         }
     },
 
@@ -283,6 +293,11 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
      * cache entry so it won't have to recompute it.
      */
     _writeCompositeBuffer: function (data) {
+
+        if (!this.renderingModel.loaded()) {
+            console.log("Not ready to render yet.");
+            return;
+        }
 
         var compositeCanvas = this.$('.c-webgllit-composite-buffer')[0],
             webglCanvas = this.$('.c-webgllit-webgl-canvas')[0],
@@ -325,6 +340,7 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
 
                 if (lightableLayer === true) {
                     lightingOffsets.scalar = this.layerOffset[layerName];
+                    lightingOffsets.colorBy = this.layers.attributes.state[layerName];
                     idxList.push(lightingOffsets);
                 } else {
                     idxList.push(this.layerOffset[layerName]);
@@ -385,8 +401,12 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
                 scalarCtx.clearRect(0, 0, imgw, imgh);
                 scalarCtx.drawImage(data.image, srcX, srcY, imgw, imgh, 0, 0, imgw, imgh);
 
+                // var lutFunc = this.renderingModel.getLookupTableForField(lOffMap.colorBy);
+                // this.updateLUT(lutFunc);
+
                 this.webglCompositor.drawLitCompositePass(viewDir, this.worldLight, this.lightTerms, this.lightColor,
-                                                          nxCanvas, nyCanvas, nzCanvas, scalarCanvas, this.lutView);
+                                                          nxCanvas, nyCanvas, nzCanvas, scalarCanvas,
+                                                          this.lutArrayViews[lOffMap.colorBy]);
             }
         }
 

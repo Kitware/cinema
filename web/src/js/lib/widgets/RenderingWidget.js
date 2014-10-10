@@ -108,6 +108,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         this.mousePressed = false;
         this.selectedControlPoint = -1;
         this.lutName = "spectral";
+        this.currentField = "none";
 
         this.listenTo(this.model, 'change', function () {
             this.render();
@@ -116,22 +117,37 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         this.listenTo(cinema.events, 'c:editlookuptable', this.toggleLookupTableEditor);
         this.listenTo(cinema.events, 'c:editlighting', this.toggleLightingEditor);
 
-        this.renderingModel = new cinema.models.RenderingModel({
-            url: '/rendering/rendering.json'
-        });
+        this.renderingModel = settings.renderingModel;
+
         this.listenTo(this.renderingModel, 'change', this.readyRenderingModel);
         this.renderingModel.fetch();
     },
 
-    readyRenderingModel: function () {
-        var lookuptables = this.renderingModel.getData('lookuptables'),
-            swatches = this.renderingModel.getData('swatches');
+    initializeAllLookupTables: function() {
+        for (var fieldName in this.fields) {
+            if (_.has(this.fields, fieldName)) {
+                var fieldCode = this.fields[fieldName];
+                var lutFunction = this.renderingModel.getLookupTableForField(fieldCode);
+                this.viewport.setLUT(fieldCode, lutFunction);
+            }
+        }
+    },
 
+    readyRenderingModel: function () {
+        //var lookuptables = this.renderingModel.getData('lookuptables'),
+        var swatches = this.renderingModel.getData('swatches');
+
+        this.fields = this.renderingModel.getFields();
         this.lutMap = {};
-        this.lutKeys = _.keys(lookuptables);
+        this.lutKeys = _.keys(this.fields);
+        this.currentField = this.lutKeys[0];
+        this.currentFieldCode = this.fields[this.currentField];
         this.swatchColors = swatches.colors;
-        this.controlPoints = this.renderingModel.getControlPoints(this.lutName);
-        this.render();
+        this.controlPoints = this.renderingModel.getControlPointsForField(this.currentFieldCode);
+        if (!_.isEmpty(this.controlPoints)) {
+            this.initializeAllLookupTables();
+            this.render();
+        }
     },
 
     render:  function () {
@@ -451,8 +467,10 @@ cinema.views.RenderingWidget = Backbone.View.extend({
     },
 
     updateLookupTable: function () {
-        var lutFunction = this.renderingModel.getLookupTableFunction(this.lutName);
-        this.viewport.setLUT(lutFunction);
+        // var lutFunction = this.renderingModel.getLookupTableFunction(this.lutName);
+        var fieldCode = this.fields[this.currentField];
+        var lutFunction = this.renderingModel.getLookupTableForField(fieldCode);
+        this.viewport.setLUT(fieldCode, lutFunction);
         this.viewport.forceRedraw();
     },
 
@@ -469,8 +487,8 @@ cinema.views.RenderingWidget = Backbone.View.extend({
             this.updateLight(vectorLight);
         }
         else if (type === 'lutName') {
-            this.lutName = origin.val();
-            this.controlPoints = this.renderingModel.getControlPoints(this.lutName);
+            this.currentField = origin.val();
+            this.controlPoints = this.renderingModel.getControlPointsForField(this.fields[this.currentField]);
             this.updateLookupTable();
             this.drawLookupTable();
         }
