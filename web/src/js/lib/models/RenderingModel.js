@@ -49,6 +49,10 @@ cinema.models.RenderingModel = Backbone.Model.extend({
         return this.lutMap[fieldCode];
     },
 
+    getRangeForField: function(fieldName) {
+        return this.visModel.attributes.metadata.ranges[fieldName];
+    },
+
     getFields: function() {
         this.ensureLookupTablesReady();
         return this.fieldMap;
@@ -67,6 +71,13 @@ cinema.models.RenderingModel = Backbone.Model.extend({
             return this.get(name);
         }
         return 'no-match';
+    },
+
+    getPresetNames: function() {
+        if (this.loaded()) {
+            return _.keys(this.get('lookuptables'));
+        }
+        return [];
     },
 
     getControlPoints: function (name) {

@@ -118,8 +118,8 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
 
                 var curFps = Math.floor((1.0 / elapsedMillis) * 1000);
                 var avgFps = Math.floor((1.0 / this.averageElapsedMillis) * 1000);
-                this.$('.s-timing-info-current').text(curFps);
-                this.$('.s-timing-info-average').text(avgFps);
+
+                cinema.events.trigger('c:fpsupdate', {'curFps': curFps, 'avgFps': avgFps});
             }
         });
         this.listenTo(this.controlModel, 'change', this.drawImage);
@@ -400,9 +400,6 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
                 srcY = lOffMap.scalar * imgh;
                 scalarCtx.clearRect(0, 0, imgw, imgh);
                 scalarCtx.drawImage(data.image, srcX, srcY, imgw, imgh, 0, 0, imgw, imgh);
-
-                // var lutFunc = this.renderingModel.getLookupTableForField(lOffMap.colorBy);
-                // this.updateLUT(lutFunc);
 
                 this.webglCompositor.drawLitCompositePass(viewDir, this.worldLight, this.lightTerms, this.lightColor,
                                                           nxCanvas, nyCanvas, nzCanvas, scalarCanvas,

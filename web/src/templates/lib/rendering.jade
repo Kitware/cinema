@@ -1,6 +1,12 @@
 .c-rendering-content
     .c-lookuptable-edit(state="on")
        .row
+         .c-lookuptable-field-name
+           span.lookup-table-select-label Field Name
+           select(data-type="lutName").input-sm.c-lookuptable-select
+             each name in luts
+               option #{name}
+       .row
          .col-sm-9.c-lookuptable-swatches
            each c, i in colors
              if i % 31 === 0
@@ -9,7 +15,12 @@
                     .color.c-swatch-color(style="background: rgb(#{color.r},#{color.g},#{color.b})", color="#{color.r},#{color.g},#{color.b}")
          input.input-sm.c-lookuptable-x(type="number", name="x")
          .c-lookuptable-color(style="background: rgb(0,255,0)")
-         .c-lookuptable-presets.
+         .c-lookuptable-presets.btn-group
+           i.icon-eyedropper.btn.btn.default.btn-xs.dropdown-toggle.presets-button(title="Apply Preset", type="button", data-toggle="dropdown")
+             span.caret
+           ul.dropdown-menu(role="menu")
+             each p in presets
+               li.preset-lookup-table(data-type="#{p}")= p
 
        hr.c-rendering-hr
 
@@ -74,3 +85,18 @@
           .color.c-light-color(style="background: #FF00FF;",color="1,0,1")
         b.pull-right(style="top:4px;position:relative;")
           i.icon-tint(title="Light color")
+
+    .row
+      .c-frame-timing-view(state="on")
+        hr.c-rendering-timing-info-hr
+        table.frame-timing-table
+          tr
+            td
+              span.c-current-frames-label Current FPS:
+            td
+              span.c-current-frames-value
+          tr
+            td
+              span.c-average-frames-label Average FPS:
+            td
+              span.c-average-frames-value

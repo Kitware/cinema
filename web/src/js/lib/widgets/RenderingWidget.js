@@ -2,6 +2,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
     events: {
         'change .c-lookuptable-x': 'updateControlPoint',
         'click .c-swatch-color': 'updateColor',
+        'click .preset-lookup-table': 'applyPreset',
         'change select' : 'updateViewPort',
         'click .c-light-color': 'updateLightColor',
         'change input': 'updateLighting',
@@ -116,6 +117,8 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         this.listenTo(this.controlModel, 'change', this._refresh);
         this.listenTo(cinema.events, 'c:editlookuptable', this.toggleLookupTableEditor);
         this.listenTo(cinema.events, 'c:editlighting', this.toggleLightingEditor);
+        this.listenTo(cinema.events, 'c:viewfps', this.toggleFrameTiming);
+        this.listenTo(cinema.events, 'c:fpsupdate', this.updateFrameSpeed);
 
         this.renderingModel = settings.renderingModel;
 
@@ -142,6 +145,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         this.lutKeys = _.keys(this.fields);
         this.currentField = this.lutKeys[0];
         this.currentFieldCode = this.fields[this.currentField];
+        // this.presets = this.renderingModel.getPresetNames();
         this.swatchColors = swatches.colors;
         this.controlPoints = this.renderingModel.getControlPointsForField(this.currentFieldCode);
         if (!_.isEmpty(this.controlPoints)) {
@@ -153,6 +157,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
     render:  function () {
         if (this.renderingModel.loaded()) {
             this.$('.c-control-panel-body').html(cinema.templates.rendering({
+                presets: this.renderingModel.getPresetNames(),
                 luts: this.lutKeys,
                 colors: this.swatchColors
             }));
@@ -306,6 +311,25 @@ cinema.views.RenderingWidget = Backbone.View.extend({
             link.fadeIn();
         }
         this.drawLookupTable();
+    },
+
+    toggleFrameTiming: function() {
+        var link = this.$('.c-frame-timing-view'),
+            state;
+        if (link.attr('state') === 'on') {
+            state = 'off';
+            link.attr('state', state);
+            link.fadeOut();
+        } else {
+            state = 'on';
+            link.attr('state', state);
+            link.fadeIn();
+        }
+    },
+
+    updateFrameSpeed: function(event) {
+        this.$('.c-current-frames-value').html(event.curFps);
+        this.$('.c-average-frames-value').html(event.avgFps);
     },
 
     interpolate: function(x, i, component) {
@@ -474,6 +498,15 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         this.viewport.forceRedraw();
     },
 
+    updateScalarBarLabels: function() {
+        this.$('.c-minimum-x').html(this.clampMinimum.toFixed(3));
+        this.$('.c-midpoint-x').html(this.clampMidpoint.toFixed(3));
+        this.$('.c-maximum-x').html(this.clampMaximum.toFixed(3));
+        if (this.selectedControlPoint > -1) {
+            this.$('.c-lookuptable-x').val(this.mapToClampedRange(this.controlPoints[this.selectedControlPoint].x));
+        }
+    },
+
     updateViewPort: function (event) {
         var origin = $(event.target),
             type = origin.attr('data-type');
@@ -491,6 +524,26 @@ cinema.views.RenderingWidget = Backbone.View.extend({
             this.controlPoints = this.renderingModel.getControlPointsForField(this.fields[this.currentField]);
             this.updateLookupTable();
             this.drawLookupTable();
+            var range = this.renderingModel.getRangeForField(this.currentField);
+            this.xMinimum = range[0];
+            this.xMaximum = range[1];
+            this.clampMinimum = this.xMinimum;
+            this.clampMaximum = this.xMaximum;
+            this.clampMidpoint = this.mapToClampedRange(0.5);
+            this.updateScalarBarLabels();
         }
+    },
+
+    applyPreset: function(event) {
+        var origin = $(event.target),
+            presetName = origin.attr('data-type'),
+            fieldCode = this.fields[this.currentField];
+
+        console.log("Apply preset: " + presetName);
+
+        this.renderingModel.initializeLutForFieldToPreset(fieldCode, presetName);
+        this.controlPoints = this.renderingModel.getControlPointsForField(this.fields[this.currentField]);
+        this.updateLookupTable();
+        this.drawLookupTable();
     }
 });
