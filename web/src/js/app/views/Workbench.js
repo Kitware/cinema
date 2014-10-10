@@ -45,9 +45,10 @@
 
             $('.header-right .c-vis-option').off().on('click', function (e) {
                 var path = $(e.currentTarget).attr('path');
-                currentRun = configuration.models[path];
-                console.log(currentRun);
-                selectCurrentRun();
+                if (!currentRun || currentRun !== path) {
+                    currentRun = path;
+                    selectCurrentRun();
+                }
             });
 
             var selectCurrentRun = function () {
@@ -55,7 +56,7 @@
                     $(el).off();
                     new cinema.views.WorkbenchElementWidget({
                         el: el,
-                        model: currentRun
+                        model: configuration.models[currentRun]
                     }).render();
                 });
             };
