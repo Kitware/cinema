@@ -98,9 +98,21 @@
             controlModel = new cinema.models.ControlModel({ info: model }),
             viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
             layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup(), { info: model }),
+            histogramModel = new cinema.models.HistogramModel({ layers: layers,
+                basePath: model.get('basePath') }),
+
             page = new cinema.views.CompositeSearchPage({
                 visModel: compositeModel,
                 layerModel: layers
+            }),
+
+            compositeHistogram = new cinema.views.HistogramWidget({
+                el: $('.c-histogram-panel', container),
+                basePath: model.get('basePath'),
+                histogramModel: histogramModel,
+                viewpoint: viewpointModel,
+                layers: layers,
+                toolbarSelector: '.c-panel-toolbar'
             }),
 
             compositeTools = new cinema.views.CompositeToolsWidget({
@@ -113,6 +125,7 @@
             }),
 
             controlList = [
+                { position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' },
                 { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
             ];
 
@@ -120,6 +133,7 @@
             var root = $(rootSelector);
             page.setElement($('.c-body-container', root)).render();
             compositeTools.setElement($('.c-tools-panel', root)).render();
+            compositeHistogram.setElement($('.c-histogram-panel', root)).render();
         }
 
         return {
