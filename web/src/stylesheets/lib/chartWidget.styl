@@ -1,0 +1,70 @@
+$textColor = #666
+$highlightTextColor = #333
+
+.c-chart-panel-body
+
+  .c-chart-representation-container
+
+    .c-chart-representation-label
+      float left
+      color $textColor
+      text-align left
+
+    .c-chart-representation-toolbar
+      float right
+
+      .c-chart-representation
+        color $textColor
+        cursor pointer
+        margin 0 2px
+
+        &[state="off"]
+          border-radius 3px
+
+        &[state="on"]
+          border 2px solid #666
+
+  .c-chart-offset-container
+
+    .c-chart-offset-label
+      float left
+      color $textColor
+      text-align left
+
+    .c-chart-offset-toolbar
+      float right
+
+      .c-chart-offset
+        color $textColor
+        cursor pointer
+        margin 0 2px
+
+        &[state="off"]
+          border-radius 3px
+
+        &[state="on"]
+          border 2px solid #666
+
+        &:hover
+          background-color $disabledColor
+
+  .c-chart-interpolation-container
+
+    .c-chart-interpolation-label
+      float left
+      color $textColor
+      text-align left
+
+    .c-chart-interpolation-toolbar
+      float right
+
+      .c-chart-interpolation
+        color $textColor
+        cursor pointer
+        margin 0 2px
+
+        &[state="off"]
+          border-radius 3px
+
+        &[state="on"]
+          border 2px solid #666

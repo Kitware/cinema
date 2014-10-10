@@ -1,25 +1,19 @@
-/**
- * This widget provides visibility and color data controls for a VisualizationModel.
- * It emits an event anytime the value has changed, attaching data in the form
- * of a serialized query string.
- */
-cinema.views.CompositeToolsWidget = Backbone.View.extend({
+
+cinema.views.ChartToolsWidget = Backbone.View.extend({
     initialize: function (settings) {
         this.model = settings.model;
         this.controlModel = settings.controlModel || new cinema.models.ControlModel({ info: this.model });
         this.viewpoint = settings.viewpoint || new cinema.models.ViewPointModel({ controlModel: this.controlModel });
-        this.layers = settings.layers || new cinema.models.LayerModel(this.model.defaultLayers());
         this.toolbarSelector = settings.toolbarContainer || '.c-panel-toolbar';
 
-        this.$('.c-control-panel-body').html(cinema.templates.compositeToolsWidget());
+        this.$('.c-control-panel-body').html(cinema.templates.chartToolsWidget());
 
-        this.listenTo(cinema.events, 'c:editpipelines', this.togglePipelineEditor);
+        this.listenTo(cinema.events, 'c:editchart', this.toggleChartEditor);
         this.listenTo(cinema.events, 'c:editcontrols', this.toggleControlEditor);
 
-        this.pipelineWidget = new cinema.views.PipelineWidget({
-            el: this.$('.c-pipeline-content'),
-            model: this.model,
-            layers: this.layers
+        this.chartWidget = new cinema.views.ChartWidget({
+            el: this.$('.c-chart-content'),
+            model: this.model
         });
 
         this.controlWidget = new cinema.views.ControlWidget({
@@ -31,17 +25,18 @@ cinema.views.CompositeToolsWidget = Backbone.View.extend({
             toolbarRootView: this,
             exclude: ['layer', 'field', 'filename']
         });
+
         this.render();
     },
 
     render: function () {
-        this.$('.c-control-panel-body').html(cinema.templates.compositeToolsWidget());
-        this.pipelineWidget.setElement(this.$('.c-pipeline-content')).render();
+        this.$('.c-control-panel-body').html(cinema.templates.chartToolsWidget());
+        this.chartWidget.setElement(this.$('.c-chart-content')).render();
         this.controlWidget.setElement(this.$('.c-control-content')).render();
     },
 
-    togglePipelineEditor: function () {
-        this.$('.c-pipeline-edit').fadeToggle();
+    toggleChartEditor: function () {
+        this.$('.c-chart-edit').fadeToggle();
 
     },
 
