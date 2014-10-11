@@ -124,16 +124,31 @@
                 toolbarSelector: '.c-panel-toolbar'
             }),
 
+            searchInformation = new cinema.views.SearchInformationWidget({
+                el: $('.c-information-panel', container),
+                controlModel: controlModel,
+                layers: layers,
+                toolbarSelector: '.c-panel-toolbar'
+            }),
+
             controlList = [
+                { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
                 { position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' },
                 { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
-            ];
+            ],
+            firstRender = true;
 
         function render () {
             var root = $(rootSelector);
             page.setElement($('.c-body-container', root)).render();
             compositeTools.setElement($('.c-tools-panel', root)).render();
             compositeHistogram.setElement($('.c-histogram-panel', root)).render();
+            searchInformation.setElement($('.c-information-panel', root)).render();
+            if (firstRender) {
+                firstRender = false;
+                $('.c-histogram-panel', root).hide();
+                //$('.c-information-panel', root).hide();
+            }
         }
 
         return {

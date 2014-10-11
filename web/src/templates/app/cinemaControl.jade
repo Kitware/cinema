@@ -1,9 +1,10 @@
-a(title="Help", type="search")
-  i.icon-help.c-filter-help-button
+a(title="Information", type="search")
+  i.c-visibility-button(class="icon-help", container-class="c-information-panel")
 input.c-search-filter.input-sm(placeholder="Search filters")
 a(title="Filter", type="search")
   i.icon-search.c-search-filter-apply
 
 each controlPanel in controlList
-    a(title="#{controlPanel.title}")
-      i.c-visibility-button(class="#{controlPanel.icon}", container-class="c-#{controlPanel.key}-panel")
+    if (controlPanel.key !== 'information')
+      a(title="#{controlPanel.title}")
+        i.c-visibility-button(class="#{controlPanel.icon}", container-class="c-#{controlPanel.key}-panel")
