@@ -21,6 +21,9 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         this.lightTerms = { ka: 0.1, kd: 0.6, ks: 0.3, alpha: 20.0 };
         this._forceRedraw = false;
         this.eye = new Vector(0, 0, 1);
+        this.renderingModel = settings.renderingModel;
+        this.lf = {};
+        this.lutTable = {};
         /*
         for (var phi=0; phi <= 360; phi+=30) {
             var res = this._spherical2CartesianN(phi, 45.0);
@@ -133,7 +136,9 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
 
             //through LUT
             var toColor = value;
-            var color = this.LUT(toColor);
+            var lut = this.lutTable[renderTerms.fieldCode];
+            var color = lut(toColor);
+            //var color = this.LUT(toColor);
             //return [color[0], color[1], color[2], 255]
 
             var Color = Vector.fromArray(color);
@@ -191,6 +196,42 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         return -1;
     },
 
+    _findLayerAndField: function (pixellayers) {
+        //recover layer and field from the current pixel and the query
+        if (pixellayers in this.lf) {
+            return this.lf[pixellayers];
+        }
+
+        var query;
+        var layers = [];
+        var fields = [];
+        var layer = -1;
+        var field = -1;
+        var loc;
+        var i;
+
+        query = this.layers.serialize();
+        for (i = 0; i < query.length; i += 2) {
+            if (query[i + 1] !== -1) {
+                layers[i / 2] = query[i];
+                fields[i / 2] = query[i + 1];
+            }
+        }
+        for (i = 0; i < pixellayers.length; i += 1) {
+            loc = layers.indexOf(pixellayers[i]);
+            if (loc > -1) {
+                layer = layers[loc];
+                field = fields[loc];
+                break;
+            }
+        }
+        if (loc > -1) {
+            var lf = [layer, field];
+            this.lf[pixellayers] = lf;
+            return lf;
+        }
+        return -1;
+    },
 
     /**
      * Computes the composite image and writes it into the composite buffer.
@@ -221,6 +262,14 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
             width: dim[0],
             height: dim[1]
         });
+
+        var layerState = this.layers.attributes.state;
+        for (var l in layerState) {
+            if (_.has(layerState, l)) {
+                var fc = layerState[l];
+                this.lutTable[fc] = this.renderingModel.getLookupTableForField(fc);
+            }
+        }
 
         // Fill full spritesheet buffer with raw image data
         spriteCtx.drawImage(data.image, 0, 0);
@@ -313,7 +362,15 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
                     renderTerms.canLight = false;
                     if (canLight) {
                         //does this layer have lighting parameters?
-                        layer = this._findLayer(order);
+                        //layer = this._findLayer(order);
+
+                        var lf = this._findLayerAndField(order);
+                        layer = lf[0];
+                        field = lf[1];
+                        var fname = this.model.attributes.metadata.fields[field];
+                        renderTerms.fieldName = fname;
+                        renderTerms.fieldCode = field;
+
                         if (layer in lightTermsOffsets) {
                             //yes
                             var Offsets = {
@@ -375,6 +432,7 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         if (this._forceRedraw || changed) {
             changed = true;
             this._forceRedraw = false;
+            this.lf = {};
             this._recomputeLight();
         }
         if (changed) {

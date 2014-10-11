@@ -35,7 +35,7 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
     },
 
     //subclass uses to extend
-    _privateInit: function () {
+    _privateInit: function (settings) {
         this.lightPosition = [ -1, 1, 0 ];
         this.worldLight = new Vector(-1, 0, 1);
         this._forceRedraw = false;
