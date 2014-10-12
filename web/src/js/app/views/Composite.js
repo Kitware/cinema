@@ -52,7 +52,17 @@
                 toolbarSelector: '.c-panel-toolbar'
             }),
 
+            searchInformation = new cinema.views.SearchInformationWidget({
+                el: $('.c-information-panel', container),
+                model: compositeModel,
+                controlModel: controlModel,
+                exclude: ['layer', 'filename'],
+                layers: layers,
+                toolbarSelector: '.c-panel-toolbar'
+            }),
+
             controlList = [
+                { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
                 { position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' },
                 { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
             ],
@@ -63,10 +73,12 @@
             renderer.setElement($('.c-body-container', root)).render();
             compositeHistogram.setElement($('.c-histogram-panel', root)).render();
             compositeTools.setElement($('.c-tools-panel', root)).render();
+            searchInformation.setElement($('.c-information-panel', root)).render();
             renderer.showViewpoint(true);
             if (firstRender) {
                 firstRender = false;
                 $('.c-histogram-panel', root).hide();
+                $('.c-information-panel', root).hide();
             }
         }
 
@@ -126,7 +138,9 @@
 
             searchInformation = new cinema.views.SearchInformationWidget({
                 el: $('.c-information-panel', container),
+                model: compositeModel,
                 controlModel: controlModel,
+                exclude: ['layer', 'filename'],
                 layers: layers,
                 toolbarSelector: '.c-panel-toolbar'
             }),
@@ -147,7 +161,7 @@
             if (firstRender) {
                 firstRender = false;
                 $('.c-histogram-panel', root).hide();
-                //$('.c-information-panel', root).hide();
+                $('.c-information-panel', root).hide();
             }
         }
 

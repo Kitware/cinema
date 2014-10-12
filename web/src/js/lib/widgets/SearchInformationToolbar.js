@@ -1,6 +1,12 @@
 cinema.views.SearchInformationToolbar = Backbone.View.extend({
     events: {
+        'click .c-pipeline-info': function () {
+            cinema.events.trigger('c:infopipelines');
+        },
 
+        'click .c-control-info': function () {
+            cinema.events.trigger('c:infocontrols');
+        }
     },
 
     initialize: function () {
