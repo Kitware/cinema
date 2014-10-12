@@ -33,6 +33,19 @@
 
     prototype.getDefaultPipelineSetup = function () {
         // Not stored currently in data model
-        return 'ACBACADAEAFAGBHBIBJBKB';
+        if (_.has(this.get('metadata'), 'default_pipeline')) {
+            return this.get('metadata').default_pipeline;
+        }
+
+        var layers = this.get('metadata').layers;
+        var firstField = _.keys(this.get('metadata').fields)[0];
+
+        var pipeline = '';
+        for (var ch in layers) {
+            pipeline += layers[ch];
+            pipeline += firstField;
+        }
+
+        return pipeline;
     };
 }());
