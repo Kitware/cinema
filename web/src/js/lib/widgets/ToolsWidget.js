@@ -44,6 +44,6 @@ cinema.views.ToolsWidget = Backbone.View.extend({
             link.attr('state', state);
             link.fadeIn();
         }
-    },
+    }
 
 });

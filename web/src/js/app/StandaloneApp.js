@@ -13,11 +13,13 @@ cinema.StandaloneApp = Backbone.View.extend({
             cinema.events.trigger('toggle-control-panel', { panel: panel, key: panel.attr('key') });
         },
 
-        // Handle view navigation
-        'click .view-navigation': function (e) {
-            var origin = $(e.target).closest('.view-navigation'),
-                viewRoute = origin.attr('data-link');
-            cinema.router.navigate('#' + viewRoute, { trigger: true });
+        // Handle search navigation
+        'click .c-search-filter-apply': function (e) {
+            cinema.router.navigate('#search', { trigger: true });
+        },
+
+        'click .c-app-icon': function (e) {
+            cinema.router.navigate('#view', { trigger: true });
         }
     },
 
@@ -26,12 +28,7 @@ cinema.StandaloneApp = Backbone.View.extend({
         this.staticRoot = settings.staticRoot;
 
         // When additional view type are added just expand the given list
-        this.allowedViewType = ['view', 'search', 'cost'];
-        this.views = [
-            { label: 'Exploration', name: 'view', icon: 'icon-compass-1'},
-            { label: 'Search', name: 'search', icon: 'icon-search'},
-            { label: 'Cost', name: 'cost', icon: 'icon-dollar'},
-        ];
+        this.allowedViewType = ['view', 'search'];
 
         this.model = new cinema.models.VisualizationModel({
             basePath: this.dataRoot,
@@ -66,11 +63,11 @@ cinema.StandaloneApp = Backbone.View.extend({
         // Handle header bar base on application type (workbench/cinema)
         if (cinema.model.getDataType() === 'workbench') {
             // Workbench Cinema App
-            this.$('.header-left').html(cinema.app.templates.headerLeft({icon: 'icon-cinema', title: 'Workbench', active: cinema.viewType, views: this.views}));
+            this.$('.header-left').html(cinema.app.templates.headerLeft({icon: 'icon-cinema', title: 'Workbench', active: cinema.viewType}));
             this.$('.header-right').html(cinema.app.templates.workbenchControl());
         } else {
             // Single Cinema App
-            this.$('.header-left').html(cinema.app.templates.headerLeft({icon: 'icon-cinema', title: 'Cinema', active: cinema.viewType, views: this.views}));
+            this.$('.header-left').html(cinema.app.templates.headerLeft({icon: 'icon-cinema', title: 'Cinema', active: cinema.viewType}));
             this.$('.header-right').html(cinema.app.templates.cinemaControl({controlList:controlList}));
         }
 
