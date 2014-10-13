@@ -1,7 +1,10 @@
+@import 'nib'
+
 .c-analysis-select-container
   position absolute
   top 0
   left 0
+  z-index 1
 
   .c-analysis-select
     border-radius 0 0 2px 0
@@ -15,3 +18,20 @@
 .c-analysis-container
   width 100%
   height 100%
+
+  .c-tools-panel
+    position absolute
+    z-index 1
+    top 0
+    right 0
+    width 300px
+    max-height 100%
+    overflow-y scroll
+
+    .c-control-panel-body
+      background-color rgba(255, 255, 255, 0.4)
+      transition background-color 0.4s ease-in-out
+      padding 10px 10px 10px 5px
+
+      &:hover
+        background-color rgba(255, 255, 255, 0.9)
