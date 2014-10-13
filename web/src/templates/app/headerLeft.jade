@@ -1,6 +1,2 @@
-span.c-app-icon(class="#{icon}")
+span.c-app-icon(title="View", class="#{icon}")
 .c-app-title #{title}
-
-.btn-group.btn-group-xs
-    each viewType in views
-        button.btn.view-navigation(type="button", class="#{viewType.name === active ? 'active' : ''}", data-link="#{viewType.name}"): span(class="#{viewType.icon}",title="#{viewType.label}")
