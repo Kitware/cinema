@@ -378,6 +378,8 @@ cinema.views.RenderingWidget = Backbone.View.extend({
             x0to1;
         if (!(me.validity && !me.validity.valid))
         {
+            var clampedRange = this.renderingModel.getClampedRangeForField(this.fields[this.currentField]);
+
             x = Number(me.val());
 
             if (this.selectedControlPoint === 0) {
@@ -406,6 +408,8 @@ cinema.views.RenderingWidget = Backbone.View.extend({
                     this.$('.c-midpoint-x').html(this.clampMidpoint.toFixed(3));
                     this.$('.c-lookuptable-x').val(this.mapToClampedRange(this.controlPoints[this.selectedControlPoint].x));
                 }
+                this.renderingModel.setClampedRangeForField(this.fields[this.currentField],
+                                                            [this.clampMinimum, clampedRange[1]]);
                 this.updateLookupTable();
             }
             else if (this.selectedControlPoint === (this.controlPoints.length - 1)) {
@@ -413,7 +417,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
                     this.clampMaximum = this.xMinimum;
                     this.clampMidpoint = this.mapToClampedRange(0.5);
                     this.drawLookupTable();
-                    this.$('.c-minimum-x').html(this.clampMinimum.toFixed(3));
+                    this.$('.c-maximum-x').html(this.clampMaximum.toFixed(3));
                     this.$('.c-midpoint-x').html(this.clampMidpoint.toFixed(3));
                     this.$('.c-lookuptable-x').val(this.mapToClampedRange(this.controlPoints[this.selectedControlPoint].x));
                 }
@@ -421,7 +425,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
                     this.clampMaximum = this.xMaximum;
                     this.clampMidpoint = this.mapToClampedRange(0.5);
                     this.drawLookupTable();
-                    this.$('.c-minimum-x').html(this.clampMinimum.toFixed(3));
+                    this.$('.c-maximum-x').html(this.clampMaximum.toFixed(3));
                     this.$('.c-midpoint-x').html(this.clampMidpoint.toFixed(3));
                     this.$('.c-lookuptable-x').val(this.mapToClampedRange(this.controlPoints[this.selectedControlPoint].x));
 
@@ -430,10 +434,12 @@ cinema.views.RenderingWidget = Backbone.View.extend({
                     this.clampMaximum = x;
                     this.clampMidpoint = this.mapToClampedRange(0.5);
                     this.drawLookupTable();
-                    this.$('.c-minimum-x').html(this.clampMinimum.toFixed(3));
+                    this.$('.c-maximum-x').html(this.clampMaximum.toFixed(3));
                     this.$('.c-midpoint-x').html(this.clampMidpoint.toFixed(3));
                     this.$('.c-lookuptable-x').val(this.mapToClampedRange(this.controlPoints[this.selectedControlPoint].x));
                 }
+                this.renderingModel.setClampedRangeForField(this.fields[this.currentField],
+                                                            [clampedRange[0], this.clampMaximum]);
                 this.updateLookupTable();
             }
             else {
@@ -491,7 +497,6 @@ cinema.views.RenderingWidget = Backbone.View.extend({
     },
 
     updateLookupTable: function () {
-        // var lutFunction = this.renderingModel.getLookupTableFunction(this.lutName);
         var fieldCode = this.fields[this.currentField];
         var lutFunction = this.renderingModel.getLookupTableForField(fieldCode);
         this.viewport.setLUT(fieldCode, lutFunction);
@@ -521,15 +526,18 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         }
         else if (type === 'lutName') {
             this.currentField = origin.val();
+            var range = this.renderingModel.getRangeForField(this.currentField);
+            var clampedRange = this.renderingModel.getClampedRangeForField(this.fields[this.currentField]);
+            this.xMinimum = range[0];
+            this.xMaximum = range[1];
+            this.clampMinimum = clampedRange[0];
+            this.clampMaximum = clampedRange[1];
+            this.selectedControlPoint = -1;
+            this.clampMidpoint = this.mapToClampedRange(0.5);
             this.controlPoints = this.renderingModel.getControlPointsForField(this.fields[this.currentField]);
             this.updateLookupTable();
             this.drawLookupTable();
-            var range = this.renderingModel.getRangeForField(this.currentField);
-            this.xMinimum = range[0];
-            this.xMaximum = range[1];
-            this.clampMinimum = this.xMinimum;
-            this.clampMaximum = this.xMaximum;
-            this.clampMidpoint = this.mapToClampedRange(0.5);
+            this.$('.c-lookuptable-x').val('');
             this.updateScalarBarLabels();
         }
     },

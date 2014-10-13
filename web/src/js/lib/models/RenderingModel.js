@@ -8,7 +8,8 @@ cinema.models.RenderingModel = Backbone.Model.extend({
 
         this.url = settings.url;
         this.visModel = settings.visModel;
-        this.fieldMap = {};
+        this.fieldNamesToCodes = {};
+        this.fieldCodesToNames = {};
         this.lutMap = {};
     },
 
@@ -20,8 +21,9 @@ cinema.models.RenderingModel = Backbone.Model.extend({
         for (var fieldCode in fields) {
             if (_.has(fields, fieldCode)) {
                 var fieldName = fields[fieldCode];
+                this.fieldNamesToCodes[fieldName] = fieldCode;
+                this.fieldCodesToNames[fieldCode] = fieldName;
                 this.initializeLutForFieldToPreset(fieldCode, 'spectral');
-                this.fieldMap[fieldName] = fieldCode;
             }
         }
     },
@@ -36,17 +38,30 @@ cinema.models.RenderingModel = Backbone.Model.extend({
         var controlPoints = this.getControlPoints(presetName);
         if (controlPoints !== 'no-match') {
             var controlPointsArray = $.extend(true, [], controlPoints);
-            this.lutMap[fieldCode] = controlPointsArray;
+            var range = this.getRangeForField(this.fieldCodesToNames[fieldCode]);
+            this.lutMap[fieldCode] = {
+                'controlPoints': controlPointsArray,
+                'clampedRange': range,
+                'dataRange': range
+            };
         }
     },
 
     getLookupTableForField: function(fieldCode) {
         this.ensureLookupTablesReady();
-        return this.getLutFunctionFromControlPoints(this.lutMap[fieldCode]);
+        return this.getLutFunction(this.lutMap[fieldCode]);
     },
 
     getControlPointsForField: function(fieldCode) {
-        return this.lutMap[fieldCode];
+        return this.lutMap[fieldCode].controlPoints;
+    },
+
+    getClampedRangeForField: function(fieldCode) {
+        return this.lutMap[fieldCode].clampedRange;
+    },
+
+    setClampedRangeForField: function(fieldCode, clampedRange) {
+        this.lutMap[fieldCode].clampedRange = clampedRange;
     },
 
     getRangeForField: function(fieldName) {
@@ -55,7 +70,7 @@ cinema.models.RenderingModel = Backbone.Model.extend({
 
     getFields: function() {
         this.ensureLookupTablesReady();
-        return this.fieldMap;
+        return this.fieldNamesToCodes;
     },
 
     loaded: function () {
@@ -102,14 +117,24 @@ cinema.models.RenderingModel = Backbone.Model.extend({
         return [ controlPoints[idx].x, controlPoints[idx].r, controlPoints[idx].g, controlPoints[idx].b ];
     },
 
-    getLookupTableFunction: function (name) {
-        var controlPoints = this.getControlPoints(name);
-        return this.getLutFunctionFromControlPoints(controlPoints);
-    },
-
-    getLutFunctionFromControlPoints: function(controlPoints) {
+    getLutFunction: function(config) {
         var table =  [],
+            controlPoints = $.extend(true, [], config.controlPoints),
+            clampedRange = config.clampedRange,
+            dataRange = config.dataRange,
             currentControlIdx = 0;
+
+        if (clampedRange[0] > dataRange[0]) {
+            var cp1 = controlPoints[0];
+            var frac1 = (clampedRange[0] - dataRange[0]) / (dataRange[1] - dataRange[0]);
+            controlPoints.splice(1, 0, {'r': cp1.r, 'g': cp1.g, 'b': cp1.b, 'x': frac1});
+        }
+
+        if (clampedRange[1] < dataRange[1]) {
+            var cpn = controlPoints[controlPoints.length - 1];
+            var fracn = (clampedRange[1] - dataRange[0]) / (dataRange[1] - dataRange[0]);
+            controlPoints.splice(controlPoints.length - 1, 0, {'r': cpn.r, 'g': cpn.g, 'b': cpn.b, 'x': fracn});
+        }
 
         for (var idx = 0; idx < 256; idx += 1) {
             var value = idx / 255.0,
