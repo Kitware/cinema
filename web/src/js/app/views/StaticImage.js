@@ -13,7 +13,7 @@
             controlModel = new cinema.models.ControlModel({ info: model }),
             viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
             renderer = new cinema.views.StaticImageVisualizationCanvasWidget({
-                el: container,
+                el: $('.c-body-container', container),
                 model: model,
                 controlModel: controlModel,
                 viewpoint: viewpointModel
@@ -31,7 +31,7 @@
                 keyModifiers: null
             }),
             controlTools = new cinema.views.ToolsWidget({
-                el: $('.c-tools-panel'),
+                el: $('.c-tools-panel', container),
                 model: model,
                 controlModel: controlModel,
                 viewport: renderer,
@@ -45,8 +45,8 @@
             function render () {
                 var root = $(rootSelector);
                 fakeToolbarRootView.update(root);
-                renderer.setElement(root).render();
-                controlTools.setElement($('.c-tools-panel')).render();
+                renderer.setElement($('.c-body-container', root)).render();
+                controlTools.setElement($('.c-tools-panel', root)).render();
                 refreshCamera(true);
             }
 
