@@ -74,7 +74,7 @@ cinema.StandaloneApp = Backbone.View.extend({
         }
 
         // Fill the layout base on the type of the view and model.
-        cinema.viewFactory.render($('.c-body-container'), cinema.viewType, cinema.model);
+        cinema.viewFactory.render('body', cinema.viewType, cinema.model);
 
         // Create nice tooltip for the full page
         this.$('[title]').tooltip({

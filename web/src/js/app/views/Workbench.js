@@ -21,7 +21,7 @@
         });
 
         var render = function () {
-            var root = $(rootSelector);
+            var root = $('.c-body-container', rootSelector);
 
             // Apply current layout inside model
             root.html(cinema.templates[configuration.template]({
