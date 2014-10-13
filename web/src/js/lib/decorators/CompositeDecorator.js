@@ -38,12 +38,13 @@
         }
 
         var layers = this.get('metadata').layers;
-        var firstField = _.keys(this.get('metadata').fields)[0];
+        var layerFields = this.get('metadata').layer_fields;
 
         var pipeline = '';
         for (var ch in layers) {
+            var fieldsForLayer = layerFields[layers[ch]];
             pipeline += layers[ch];
-            pipeline += firstField;
+            pipeline += fieldsForLayer[0];
         }
 
         return pipeline;
