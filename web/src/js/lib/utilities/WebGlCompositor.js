@@ -104,6 +104,17 @@
     // --------------------------------------------------------------------------
     //
     // --------------------------------------------------------------------------
+    function resizeViewport(newWidth, newHeight) {
+      viewportWidth = newWidth;
+      viewportHeight = newHeight;
+      vpCenterX = viewportWidth / 2.0;
+      vpCenterY = viewportHeight / 2.0;
+    }
+
+
+    // --------------------------------------------------------------------------
+    //
+    // --------------------------------------------------------------------------
     function cleanUpGlState() {
         // Clean up the display program and its shaders
         for (var i = 0; i < displayProgram.shaders.length; i+=1) {
@@ -410,7 +421,8 @@
       'init': init,
       'clearFbo': clearFbo,
       'drawCompositePass': drawCompositePass,
-      'drawDisplayPass': drawDisplayPass
+      'drawDisplayPass': drawDisplayPass,
+      'resizeViewport': resizeViewport
     };
 
   };
