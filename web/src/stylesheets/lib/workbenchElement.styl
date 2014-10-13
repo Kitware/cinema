@@ -1,7 +1,7 @@
 @import 'nib'
 
 .c-analysis-select-container
-  position absolute
+  position relative
   top 0
   left 0
   z-index 1
@@ -14,6 +14,10 @@
   .dropdown-menu
     max-height 290px
     overflow-y scroll
+    position relative
+    top -3px
+    border-radius 0 3px 3px 3px
+    z-index 10000
 
 .c-analysis-container
   width 100%
