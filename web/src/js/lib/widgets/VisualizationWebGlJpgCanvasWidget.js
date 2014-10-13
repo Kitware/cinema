@@ -258,7 +258,7 @@ cinema.views.VisualizationWebGlJpgCanvasWidget = Backbone.View.extend({
         var zoomLevel = this.viewpoint.get('zoom'),
             drawingCenter = this.viewpoint.get('center');
 
-        this.webglCompositor.drawDisplayPass(this.xscale * zoomLevel, this.yscale * zoomLevel);
+        this.webglCompositor.drawDisplayPass(this.xscale / zoomLevel * 2.0, this.yscale / zoomLevel * 2.0, drawingCenter);
 
         this.trigger('c:drawn');
     },
