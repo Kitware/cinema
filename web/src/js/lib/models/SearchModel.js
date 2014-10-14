@@ -17,7 +17,10 @@ cinema.models.SearchModel = Backbone.Model.extend({
      */
     parseQuery: function (str) {
         try {
-            str = '{' + str.trim() + '}';
+            //str = '{' + str.trim() + '}';
+            console.log(str);
+            var parse_tree = jsep(str);
+            console.log(parse_tree);
             return $.parseJSON(str.replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2":'));
         } catch (e) {
             return null;
