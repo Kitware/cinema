@@ -20,6 +20,7 @@
     cinema.utilities.ViewFactory = function () {
         this.visModel = null;
         this.factoryMap = {};
+        this.viewInstances = {};
         return _.extend(this, Backbone.Events);
     };
 
@@ -55,8 +56,19 @@
 
     prototype.render = function (rootSelector, viewType, model) {
         if (model.loaded()) {
+            if (typeof(rootSelector) === 'string') {
+                var key = [rootSelector, viewType, model.getDataType()].join(':');
+
+                // Create view if not exist
+                if (!_.has(this.viewInstances, key) || this.viewInstances[key] === null) {
+                    this.viewInstances[key] = this.createView(rootSelector, viewType, model);
+                }
+                var view = this.viewInstances[key];
+            } else { // parent element is a DOM node or jquery object
+                var view = this.createView(rootSelector, viewType, model);
+            }
+
             // Update the view if it exist
-            var view = this.createView(rootSelector, viewType, model);
             if (view) {
                 view.render();
                 return view.controlList;
@@ -73,7 +85,17 @@
         // TODO this method should go away, each widget should be configurable
         // at instantiation time rather than trying to maintain a global mapping
         // of widgets and their options based on parent selector...
-        var view = this.createView(rootSelector, viewType, model);
+        if (typeof(rootSelector) === 'string') {
+            var key = [rootSelector, viewType, model.getDataType()].join(':');
+
+            if(!this.viewInstances.hasOwnProperty(key)) {
+                this.viewInstances[key] = this.createView(rootSelector, viewType, model);
+            }
+
+            var view = this.viewInstances[key];
+        } else {
+            var view = this.createView(rootSelector, viewType, model);
+        }
         if (view) {
             return view.controlList;
         }
