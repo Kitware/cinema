@@ -316,7 +316,6 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
                     var field = k.substr(1, 1);
                     var offset = (this.model.getSpriteSize() - p[k]) * isize;
                     if (field === pnX || field === pnY || field === pnZ) {
-                        var offset = (this.model.getSpriteSize() - p[k]) * isize;
                         if (!lightTermsOffsets[layer]) {
                             lightTermsOffsets[layer] = {};
                         }
@@ -358,10 +357,10 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
 
                         var lf = this._findLayerAndField(order);
                         layer = lf[0];
-                        field = lf[1];
-                        var fname = this.model.attributes.metadata.fields[field];
+                        var fieldCode = lf[1];
+                        var fname = this.model.attributes.metadata.fields[fieldCode];
                         renderTerms.fieldName = fname;
-                        renderTerms.fieldCode = field;
+                        renderTerms.fieldCode = fieldCode;
 
                         if (layer in lightTermsOffsets) {
                             //yes

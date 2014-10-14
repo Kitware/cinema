@@ -136,9 +136,9 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
         this._lightingFields = [ 'nX', 'nY', 'nZ' ];
 
         var fieldJson = this.model.attributes.metadata.fields;
-        for (var fieldCode in fieldJson) {
-            if (_.has(fieldJson, fieldCode)) {
-                this._fieldNameMap[fieldJson[fieldCode]] = fieldCode;
+        for (var fCode in fieldJson) {
+            if (_.has(fieldJson, fCode)) {
+                this._fieldNameMap[fieldJson[fCode]] = fCode;
             }
         }
 

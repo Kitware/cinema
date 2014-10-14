@@ -41,9 +41,9 @@
         var layerFields = this.get('metadata').layer_fields;
 
         var pipeline = '';
-        for (var ch in layers) {
-            var fieldsForLayer = layerFields[layers[ch]];
-            pipeline += layers[ch];
+        for (var idx = 0; idx < layers.length; idx += 1) {
+            var fieldsForLayer = layerFields[layers[idx]];
+            pipeline += layers[idx];
             pipeline += fieldsForLayer[0];
         }
 
