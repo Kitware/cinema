@@ -84,7 +84,7 @@ cinema.models.RenderingModel = Backbone.Model.extend({
         if (_.has(this.visModel.attributes.metadata.ranges, fieldName)) {
             return this.visModel.attributes.metadata.ranges[fieldName];
         }
-        return null
+        return null;
     },
 
     getFields: function() {
