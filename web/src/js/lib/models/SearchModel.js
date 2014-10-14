@@ -17,13 +17,24 @@ cinema.models.SearchModel = Backbone.Model.extend({
      */
     parseQuery: function (str) {
         try {
-            //str = '{' + str.trim() + '}';
-            console.log(str);
             var parse_tree = jsep(str);
-            console.log(parse_tree);
-            return $.parseJSON(str.replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2":'));
+            this.traverseParseTree(parse_tree);
         } catch (e) {
             return null;
+        }
+    },
+
+    traverseParseTree: function (tree) {
+        var str = "";
+        console.log(tree.left, tree.right);
+        if (tree.right.right) {
+            this.traverseParseTree(tree.right);
+        }
+        else {
+            if (tree.left.type === "Identifier" ) {
+                str = str + tree.left.name;
+            }
+            console.log(tree.left.value,tree.operator,tree.right.value);
         }
     },
 
