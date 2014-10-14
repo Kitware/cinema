@@ -55,7 +55,7 @@ cinema.StandaloneApp = Backbone.View.extend({
         }
 
         // Find out what the view control list is for control panel container
-        var controlList = cinema.viewFactory.getViewControlList(cinema.viewType, cinema.model);
+        var controlList = cinema.viewFactory.getViewControlList('body', cinema.viewType, cinema.model);
 
         // Create container for control panels
         this.$el.html(cinema.app.templates.layout({controlList:controlList, viewType:cinema.viewType}));

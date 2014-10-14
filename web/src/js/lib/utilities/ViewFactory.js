@@ -49,7 +49,7 @@
      */
     prototype.registerView = function (dataType, viewType, viewConstructorFunction) {
         var key = viewType + ':' + dataType;
-        this.factoryMap[key] = { "constructor" : viewConstructorFunction };
+        this.factoryMap[key] = { constructor: viewConstructorFunction };
         return this;
     };
 
@@ -69,11 +69,11 @@
         return [];
     };
 
-    prototype.getViewControlList = function (viewType, model) {
+    prototype.getViewControlList = function (rootSelector, viewType, model) {
         // TODO this method should go away, each widget should be configurable
         // at instantiation time rather than trying to maintain a global mapping
         // of widgets and their options based on parent selector...
-        var view = this.createView(viewType, model);
+        var view = this.createView(rootSelector, viewType, model);
         if (view) {
             return view.controlList;
         }
@@ -90,7 +90,7 @@
     prototype.createView = function (rootSelector, viewType, model) {
         if (model && model.loaded()) {
             var key = viewType + ':' + model.getDataType();
-            if(this.factoryMap.hasOwnProperty(key)) {
+            if (_.has(this.factoryMap, key)) {
                 return this.factoryMap[key].constructor(rootSelector, viewType, model);
             } else {
                 return createEmptyView(rootSelector, viewType, model);
