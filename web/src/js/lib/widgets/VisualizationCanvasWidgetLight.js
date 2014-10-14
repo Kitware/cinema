@@ -91,8 +91,8 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         }
     },
 
-    setLUT: function (_lut) {
-        this.LUT = _lut;
+    setLUT: function (fieldCode, _lut) {
+        this.lutTable[fieldCode] = _lut;
     },
 
     setLightColor: function (lightColor) {
@@ -262,14 +262,6 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
             width: dim[0],
             height: dim[1]
         });
-
-        var layerState = this.layers.attributes.state;
-        for (var l in layerState) {
-            if (_.has(layerState, l)) {
-                var fc = layerState[l];
-                this.lutTable[fc] = this.renderingModel.getLookupTableForField(fc);
-            }
-        }
 
         // Fill full spritesheet buffer with raw image data
         spriteCtx.drawImage(data.image, 0, 0);

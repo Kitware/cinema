@@ -547,8 +547,6 @@ cinema.views.RenderingWidget = Backbone.View.extend({
             presetName = origin.attr('data-type'),
             fieldCode = this.fields[this.currentField];
 
-        console.log("Apply preset: " + presetName);
-
         this.renderingModel.initializeLutForFieldToPreset(fieldCode, presetName);
         this.controlPoints = this.renderingModel.getControlPointsForField(this.fields[this.currentField]);
         this.updateLookupTable();
