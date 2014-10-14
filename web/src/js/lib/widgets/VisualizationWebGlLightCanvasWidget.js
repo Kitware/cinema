@@ -143,7 +143,6 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
         }
 
         this._maxOffset = this._calculateMaxOffset();
-        console.log(this._maxOffset);
     },
 
     render: function () {
@@ -269,6 +268,10 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
     },
 
     setLUT: function (fieldCode, _lut) {
+        if (!_.has(this.lutArrayBuffers, fieldCode)) {
+            this.lutArrayBuffers[fieldCode] = new ArrayBuffer(256*1*4);
+            this.lutArrayViews[fieldCode] = new Uint8Array(this.lutArrayBuffers[fieldCode]);
+        }
         for (var i = 0; i < 256; i+=1) {
             var idx = i * 4;
             var val = i / 255;

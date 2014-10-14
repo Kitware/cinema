@@ -130,8 +130,17 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         for (var fieldName in this.fields) {
             if (_.has(this.fields, fieldName)) {
                 var fieldCode = this.fields[fieldName];
-                var lutFunction = this.renderingModel.getLookupTableForField(fieldCode);
-                this.viewport.setLUT(fieldCode, lutFunction);
+                var lutFunction = null;
+
+                try {
+                    lutFunction = this.renderingModel.getLookupTableForField(fieldCode);
+                } catch (error) {
+                    console.log("RenderWidget: No LUT available for " + fieldCode + " => " + fieldName);
+                }
+
+                if (lutFunction !== null) {
+                    this.viewport.setLUT(fieldCode, lutFunction);
+                }
             }
         }
     },
@@ -547,8 +556,8 @@ cinema.views.RenderingWidget = Backbone.View.extend({
             presetName = origin.attr('data-type'),
             fieldCode = this.fields[this.currentField];
 
-        this.renderingModel.initializeLutForFieldToPreset(fieldCode, presetName);
-        this.controlPoints = this.renderingModel.getControlPointsForField(this.fields[this.currentField]);
+        this.renderingModel.initializeLutForFieldToPreset(fieldCode, this.currentField, presetName);
+        this.controlPoints = this.renderingModel.getControlPointsForField(fieldCode);
         this.updateLookupTable();
         this.drawLookupTable();
     }

@@ -156,9 +156,9 @@
       var fragmentUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
       var combinedUnits = gl.getParameter(gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS);
 
-      console.log("vertex texture image units: " + vertexUnits);
-      console.log("fragment texture image units: " + fragmentUnits);
-      console.log("combined texture image units: " + combinedUnits);
+      //console.log("vertex texture image units: " + vertexUnits);
+      //console.log("fragment texture image units: " + fragmentUnits);
+      //console.log("combined texture image units: " + combinedUnits);
     }
 
     // --------------------------------------------------------------------------

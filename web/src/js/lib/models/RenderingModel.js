@@ -21,9 +21,10 @@ cinema.models.RenderingModel = Backbone.Model.extend({
         for (var fieldCode in fields) {
             if (_.has(fields, fieldCode)) {
                 var fieldName = fields[fieldCode];
-                this.fieldNamesToCodes[fieldName] = fieldCode;
-                this.fieldCodesToNames[fieldCode] = fieldName;
-                this.initializeLutForFieldToPreset(fieldCode, 'spectral');
+                if (this.initializeLutForFieldToPreset(fieldCode, fieldName, 'spectral')) {
+                    this.fieldNamesToCodes[fieldName] = fieldCode;
+                    this.fieldCodesToNames[fieldCode] = fieldName;
+                }
             }
         }
     },
@@ -34,38 +35,56 @@ cinema.models.RenderingModel = Backbone.Model.extend({
         }
     },
 
-    initializeLutForFieldToPreset: function(fieldCode, presetName) {
+    initializeLutForFieldToPreset: function(fieldCode, fieldName, presetName) {
         var controlPoints = this.getControlPoints(presetName);
         if (controlPoints !== 'no-match') {
             var controlPointsArray = $.extend(true, [], controlPoints);
-            var range = this.getRangeForField(this.fieldCodesToNames[fieldCode]);
-            this.lutMap[fieldCode] = {
-                'controlPoints': controlPointsArray,
-                'clampedRange': range,
-                'dataRange': range
-            };
+            var range = this.getRangeForField(fieldName);
+            if (range !== null) {
+                this.lutMap[fieldCode] = {
+                    'controlPoints': controlPointsArray,
+                    'clampedRange': range,
+                    'dataRange': range
+                };
+                return true;
+            }
         }
+        return false;
     },
 
     getLookupTableForField: function(fieldCode) {
         this.ensureLookupTablesReady();
-        return this.getLutFunction(this.lutMap[fieldCode]);
+        if (_.has(this.lutMap, fieldCode)) {
+            return this.getLutFunction(this.lutMap[fieldCode]);
+        }
+        return null;
     },
 
     getControlPointsForField: function(fieldCode) {
-        return this.lutMap[fieldCode].controlPoints;
+        if (_.has(this.lutMap, fieldCode)) {
+            return this.lutMap[fieldCode].controlPoints;
+        }
+        return null;
     },
 
     getClampedRangeForField: function(fieldCode) {
-        return this.lutMap[fieldCode].clampedRange;
+        if (_.has(this.lutMap, fieldCode)) {
+            return this.lutMap[fieldCode].clampedRange;
+        }
+        return null;
     },
 
     setClampedRangeForField: function(fieldCode, clampedRange) {
-        this.lutMap[fieldCode].clampedRange = clampedRange;
+        if (_.has(this.lutMap, fieldCode)) {
+            this.lutMap[fieldCode].clampedRange = clampedRange;
+        }
     },
 
     getRangeForField: function(fieldName) {
-        return this.visModel.attributes.metadata.ranges[fieldName];
+        if (_.has(this.visModel.attributes.metadata.ranges, fieldName)) {
+            return this.visModel.attributes.metadata.ranges[fieldName];
+        }
+        return null
     },
 
     getFields: function() {

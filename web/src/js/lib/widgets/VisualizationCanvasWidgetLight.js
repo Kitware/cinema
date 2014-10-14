@@ -136,8 +136,23 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
 
             //through LUT
             var toColor = value;
-            var lut = this.lutTable[renderTerms.fieldCode];
-            var color = lut(toColor);
+
+            var lut = null;
+            if (!_.has(this.lutTable, renderTerms.fieldCode)) {
+                try {
+                    this.lutTable[renderTerms.fieldCode] = this.renderingModel.getLookupTableForField(renderTerms.fieldCode);
+                } catch (error) {
+                    console.log("No lookup table for " + renderTerms.fieldCode + " => " + renderTerms.fieldName);
+                    this.lutTable[renderTerms.fieldCode] = null;
+                }
+            }
+            lut = this.lutTable[renderTerms.fieldCode];
+
+            var color = toColor;
+
+            if (lut !== null) {
+                color = lut(toColor);
+            }
             //var color = this.LUT(toColor);
             //return [color[0], color[1], color[2], 255]
 
