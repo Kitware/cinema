@@ -5,9 +5,9 @@
  */
 cinema.views.WorkbenchElementWidget = Backbone.View.extend({
     events: {
-        'click .c-analysis-option': function (e) {
-            var id = $(e.currentTarget).attr('analysis-id');
-            this._showAnalysis(this.analysisOptions[id]);
+        'click .c-run-option': function (e) {
+            var id = $(e.currentTarget).attr('run-id');
+            this._showRun(this.runOptions[id]);
         }
     },
 
@@ -18,32 +18,32 @@ cinema.views.WorkbenchElementWidget = Backbone.View.extend({
     initialize: function (settings) {
         // TODO handle the case where this model is not loaded yet.
 
-        // Map IDs to analysis info
-        this.analysisOptions = {};
-        _.each(this.model.get('analysis'), function (analysis) {
-            this.analysisOptions[analysis.id] = analysis;
+        // Map IDs to run info
+        this.runOptions = {};
+        _.each(this.model.get('runs'), function (run) {
+            this.runOptions[run.path] = run;
         }, this);
     },
 
     render: function (settings) {
         this.$el.html(cinema.templates.workbenchElement({
-            analyses: this.model.get('analysis')
+            runs: this.model.get('runs')
         }));
 
-        this.$('.c-analysis-select').tooltip({
+        this.$('.c-run-select').tooltip({
             placement: 'right',
             container: this.el
         });
     },
 
-    _showAnalysis: function (analysis) {
+    _showRun: function (run) {
         var visModel = new cinema.models.VisualizationModel({
-            basePath: this.model.basePath + '/' + analysis.id,
+            basePath: this.model.basePath + '/' + run.path,
             infoFile: 'info.json'
         });
 
         visModel.on('change', function () {
-            cinema.viewFactory.render(this.$('.c-analysis-container'), 'view', visModel);
+            cinema.viewFactory.render(this.$('.c-run-container'), 'view', visModel);
         }, this).fetch();
     }
 });

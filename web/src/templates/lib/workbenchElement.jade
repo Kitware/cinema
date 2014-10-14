@@ -1,13 +1,13 @@
-.c-analysis-select-container
+.c-run-select-container
   .btn-group
-    button.c-analysis-select.btn.btn-default.dropdown-toggle(
-        data-toggle="dropdown", title="Select analysis")
+    button.c-run-select.btn.btn-default.dropdown-toggle(
+        data-toggle="dropdown", title="Select run")
       span.caret
     ul.dropdown-menu(role="menu")
-      each analysis in analyses
+      each run in runs
         li
-          a.c-analysis-option(analysis-id="#{analysis.id}")= analysis.title
-.c-analysis-container
+          a.c-run-option(run-id="#{run.path}")= run.title
+.c-run-container
   .c-body-container.c-workbench-body-container
   .c-tools-panel
     .c-control-panel-body
