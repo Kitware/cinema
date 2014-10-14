@@ -7,7 +7,7 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
             e.preventDefault();
             this.searchModel.compute();
         },
-        'input #c-search-filter': function (e) {
+        'input .c-search-filter': function (e) {
             var q = this.searchModel.parseQuery($(e.currentTarget).val());
 
             if (q) {
@@ -22,6 +22,8 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
     initialize: function (opts) {
         this.visModel = opts.visModel;
         this.layerModel = opts.layerModel;
+
+        this.listenTo(cinema.events, 'c:handlesearchquery', this.handleSearchQuery);
     },
 
     render: function () {
@@ -46,6 +48,11 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
         /*TODO listen to main toolsthis.listenTo(pipelineView.layers, 'change', function () {
             this.searchModel.compute();
         }, this);*/
+    },
+
+    handleSearchQuery:  function (event) {
+        var q = this.searchModel.parseQuery(event.searchQuery);
+        console.log(q);
     },
 
     clearResults: function () {

@@ -124,6 +124,7 @@ module.exports = function (grunt) {
                         'node_modules/backbone/backbone.js',
                         'node_modules/bootstrap/dist/js/bootstrap.js',
                         'node_modules/d3/d3.js',
+                        'node_modules/jsep/build/jsep.js',
                         'node_modules/rickshaw/rickshaw.js',
                         'node_modules/gl-matrix/dist/gl-matrix.js',
                         'web/ext/vector.js',
