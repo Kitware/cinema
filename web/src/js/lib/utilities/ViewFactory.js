@@ -32,7 +32,7 @@
         return {
             controlList: [],
             render: function() {
-                $(rootSelector).html(cinema.app.templates.invalidatePage({view: viewType, data: model.getDataType() }));
+                $('.c-body-container', rootSelector).html(cinema.app.templates.invalidatePage({view: viewType, data: model.getDataType() }));
             }
         };
     }
