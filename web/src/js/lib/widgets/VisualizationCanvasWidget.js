@@ -35,7 +35,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
     },
 
     //subclass uses to extend
-    _privateInit: function () {
+    _privateInit: function (settings) {
     },
 
     /**
@@ -60,7 +60,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
             return;
         }
 
-        this._privateInit();
+        this._privateInit(settings);
         this.compositeModel = new cinema.decorators.Composite(this.model);
         this.layers = settings.layers || new cinema.models.LayerModel(this.compositeModel.getDefaultPipelineSetup());
         this.backgroundColor = settings.backgroundColor || '#ffffff';
@@ -101,8 +101,8 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
 
                 var curFps = Math.floor((1.0 / elapsedMillis) * 1000);
                 var avgFps = Math.floor((1.0 / this.averageElapsedMillis) * 1000);
-                this.$('.s-timing-info-current').text(curFps);
-                this.$('.s-timing-info-average').text(avgFps);
+
+                cinema.events.trigger('c:fpsupdate', {'curFps': curFps, 'avgFps': avgFps});
             }
         });
         this.listenTo(this.controlModel, 'change', this.drawImage);

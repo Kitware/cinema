@@ -9,12 +9,15 @@
             viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
             layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup(),
                 { info: model }),
+            renderingModel = new cinema.models.RenderingModel({ url: '/rendering/rendering.json',
+                                                                visModel: model }),
             renderer = new cinema.views.VisualizationCanvasWidgetLight({
                 el: $('.body-content', container),
                 model: compositeModel,
                 layers: layers,
                 controlModel: controlModel,
-                viewpoint: viewpointModel
+                viewpoint: viewpointModel,
+                renderingModel: renderingModel
             }),
             mouseInteractor = new cinema.utilities.RenderViewMouseInteractor({
                 renderView: renderer,
@@ -40,7 +43,8 @@
                 el: $('.c-rendering-panel', container),
                 model: compositeModel,
                 toolbarSelector: '.c-panel-toolbar',
-                viewport: renderer
+                viewport: renderer,
+                renderingModel: renderingModel
             }),
             controlList = [
                 { position: 'left',  key: 'rendering', icon: 'icon-picture',   title: 'Rendering'},

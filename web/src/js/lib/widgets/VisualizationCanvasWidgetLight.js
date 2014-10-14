@@ -21,6 +21,9 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         this.lightTerms = { ka: 0.1, kd: 0.6, ks: 0.3, alpha: 20.0 };
         this._forceRedraw = false;
         this.eye = new Vector(0, 0, 1);
+        this.renderingModel = settings.renderingModel;
+        this.lf = {};
+        this.lutTable = {};
         /*
         for (var phi=0; phi <= 360; phi+=30) {
             var res = this._spherical2CartesianN(phi, 45.0);
@@ -52,7 +55,7 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         //find eye point
         //console.log("PT", this._viewpoint.phi, this._viewpoint.theta);
         this.eye = Vector.fromArray(this._spherical2Cartesian(this.controlModel.getControl('phi'), this.controlModel.getControl('theta'))).unit();
-        console.log("EYE", this.eye.x.toFixed(3), this.eye.y.toFixed(3), this.eye.z.toFixed(3));
+        //console.log("EYE", this.eye.x.toFixed(3), this.eye.y.toFixed(3), this.eye.z.toFixed(3));
 
         //this.worldlight = this.eye;
         //console.log("WLIGHT", this.worldlight.x.toFixed(3), this.worldlight.y.toFixed(3), this.worldlight.z.toFixed(3));
@@ -79,7 +82,7 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         //console.log("um", um.x.toFixed(3), um.y.toFixed(3), um.z.toFixed(3));
 
         this.worldlight = this.eye.multiply(0.3).add(rm).add(um).unit();
-        console.log("WLIGHT", this.worldlight.x.toFixed(3), this.worldlight.y.toFixed(3), this.worldlight.z.toFixed(3));
+        //console.log("WLIGHT", this.worldlight.x.toFixed(3), this.worldlight.y.toFixed(3), this.worldlight.z.toFixed(3));
     },
 
     setLight: function (_light) {
@@ -88,8 +91,8 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         }
     },
 
-    setLUT: function (_lut) {
-        this.LUT = _lut;
+    setLUT: function (fieldCode, _lut) {
+        this.lutTable[fieldCode] = _lut;
     },
 
     setLightColor: function (lightColor) {
@@ -126,22 +129,34 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
             var nX = this._realValueOfPixel('nX', renderTerms),
                 nY = this._realValueOfPixel('nY', renderTerms),
                 nZ = this._realValueOfPixel('nZ', renderTerms),
-                value = this._valueOfPixel(renderTerms.scalarArray, renderTerms);
+                value = this._valueOfPixel('layer', renderTerms);
 
             //to debug normals, use this
             //return [(nX+1)*128,(nY+1)*128,(nZ+1)*128,255];
 
             //through LUT
             var toColor = value;
-            var color = this.LUT(toColor);
+
+            var lut = null;
+            if (!_.has(this.lutTable, renderTerms.fieldCode)) {
+                try {
+                    this.lutTable[renderTerms.fieldCode] = this.renderingModel.getLookupTableForField(renderTerms.fieldCode);
+                } catch (error) {
+                    console.log("No lookup table for " + renderTerms.fieldCode + " => " + renderTerms.fieldName);
+                    this.lutTable[renderTerms.fieldCode] = null;
+                }
+            }
+            lut = this.lutTable[renderTerms.fieldCode];
+
+            var color = toColor;
+
+            if (lut !== null) {
+                color = lut(toColor);
+            }
+            //var color = this.LUT(toColor);
             //return [color[0], color[1], color[2], 255]
 
             var Color = Vector.fromArray(color);
-            /*
-            var Color = Vector.fromArray(renderTerms[renderTerms.scalarArray][0],
-                                         renderTerms[renderTerms.scalarArray][1],
-                                         renderTerms[renderTerms.scalarArray][2]);
-            */
 
             //apply lighting
             var ka = this.lightTerms.ka;
@@ -160,11 +175,16 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
             // return [diffuseColor.x, diffuseColor.y, diffuseColor.z, 255];
 
             //todo: foreach light
-            var viewPosition = this.eye;
-            var R = normal.multiply(2.0 * lightPosition.dot(normal)).subtract(lightPosition);
-            var ks = this.lightTerms.ks;
-            var alpha = this.lightTerms.alpha;
-            var specularTerm = ks * Math.pow(R.dot(viewPosition), alpha);
+            var specularTerm;
+            if (normal.dot(lightPosition) < 0) {
+                specularTerm = 0;
+            } else {
+                var viewPosition = this.eye;
+                var R = normal.multiply(2.0 * lightPosition.dot(normal)).subtract(lightPosition);
+                var ks = this.lightTerms.ks;
+                var alpha = this.lightTerms.alpha;
+                specularTerm = ks * Math.pow(R.dot(viewPosition), alpha);
+            }
             var specularColor = lightColor.multiply(specularTerm * 255);
             //return [specularColor.x, specularColor.y, specularColor.z, 255];
 
@@ -191,6 +211,42 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         return -1;
     },
 
+    _findLayerAndField: function (pixellayers) {
+        //recover layer and field from the current pixel and the query
+        if (pixellayers in this.lf) {
+            return this.lf[pixellayers];
+        }
+
+        var query;
+        var layers = [];
+        var fields = [];
+        var layer = -1;
+        var field = -1;
+        var loc;
+        var i;
+
+        query = this.layers.serialize();
+        for (i = 0; i < query.length; i += 2) {
+            if (query[i + 1] !== -1) {
+                layers[i / 2] = query[i];
+                fields[i / 2] = query[i + 1];
+            }
+        }
+        for (i = 0; i < pixellayers.length; i += 1) {
+            loc = layers.indexOf(pixellayers[i]);
+            if (loc > -1) {
+                layer = layers[loc];
+                field = fields[loc];
+                break;
+            }
+        }
+        if (loc > -1) {
+            var lf = [layer, field];
+            this.lf[pixellayers] = lf;
+            return lf;
+        }
+        return -1;
+    },
 
     /**
      * Computes the composite image and writes it into the composite buffer.
@@ -240,7 +296,6 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
                 0, this.model.getSpriteSize() * dim[1], dim[0], dim[1]);
         }
 
-
         var frontPixels = frontBuffer.data;
 
         var renderTerms = {};
@@ -253,8 +308,6 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         var canLight = false;
         var lightTermsOffsets = {};
         var pnX = -1, pnY = -1, pnZ = -1, pV = -1;
-        var scalarArray = 'vRTData'; //pick any array we have values for
-        renderTerms.scalarArray = scalarArray;
         var p = this.model.attributes.metadata.fields;
         for (var key in p) {
             if (p.hasOwnProperty(key)) {
@@ -267,12 +320,9 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
                 if (p[key] === 'nZ') {
                     pnZ = key;
                 }
-                if (p[key] === scalarArray) {
-                    pV = key;
-                }
             }
         }
-        if (pnX !== -1 && pnY !== -1 && pnZ !== -1 && pV !== -1) {
+        if (pnX !== -1 && pnY !== -1 && pnZ !== -1) {
             canLight = true;
             p = this.model.attributes.metadata.offset;
             for (var k in p) {
@@ -280,32 +330,18 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
                     layer = k.substr(0, 1);
                     var field = k.substr(1, 1);
                     var offset = (this.model.getSpriteSize() - p[k]) * isize;
-                    if (field === pnX) {
-                        if (lightTermsOffsets[layer]) {
+                    if (field === pnX || field === pnY || field === pnZ) {
+                        if (!lightTermsOffsets[layer]) {
+                            lightTermsOffsets[layer] = {};
+                        }
+                        if (field === pnX) {
                             lightTermsOffsets[layer].nX = offset;
-                        } else {
-                            lightTermsOffsets[layer] = {'nX': offset};
                         }
-                    }
-                    if (field === pnY) {
-                        if (lightTermsOffsets[layer]) {
+                        if (field === pnY) {
                             lightTermsOffsets[layer].nY = offset;
-                        } else {
-                            lightTermsOffsets[layer] = {'nY': offset};
                         }
-                    }
-                    if (field === pnZ) {
-                        if (lightTermsOffsets[layer]) {
+                        if (field === pnZ) {
                             lightTermsOffsets[layer].nZ = offset;
-                        } else {
-                            lightTermsOffsets[layer] = {'nZ': offset};
-                        }
-                    }
-                    if (field === pV) {
-                        if (lightTermsOffsets[layer]) {
-                            lightTermsOffsets[layer][scalarArray] = offset;
-                        } else {
-                            lightTermsOffsets[layer] = { scalarArray: offset };
                         }
                     }
                 }
@@ -325,12 +361,22 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
                     orderOffset *= isize;
                     orderOffset += localIdx;
 
-                    renderTerms.layer = [ pixelBuffer[orderOffset + 0], pixelBuffer[orderOffset + 1], pixelBuffer[orderOffset + 2] ];
+                    renderTerms.layer = [ pixelBuffer[orderOffset + 0],
+                                          pixelBuffer[orderOffset + 1],
+                                          pixelBuffer[orderOffset + 2] ];
 
                     renderTerms.canLight = false;
                     if (canLight) {
                         //does this layer have lighting parameters?
-                        layer = this._findLayer(order);
+                        //layer = this._findLayer(order);
+
+                        var lf = this._findLayerAndField(order);
+                        layer = lf[0];
+                        var fieldCode = lf[1];
+                        var fname = this.model.attributes.metadata.fields[fieldCode];
+                        renderTerms.fieldName = fname;
+                        renderTerms.fieldCode = fieldCode;
+
                         if (layer in lightTermsOffsets) {
                             //yes
                             var Offsets = {
@@ -338,7 +384,6 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
                                 'nY': lightTermsOffsets[layer].nY,
                                 'nZ': lightTermsOffsets[layer].nZ
                             };
-                            Offsets[scalarArray] = lightTermsOffsets[layer][scalarArray];
 
                             renderTerms.nX = [
                                 pixelBuffer[Offsets.nX + localIdx + 0],
@@ -355,11 +400,7 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
                                 pixelBuffer[Offsets.nZ + localIdx + 1],
                                 pixelBuffer[Offsets.nZ + localIdx + 2]
                             ];
-                            renderTerms[scalarArray] = [
-                                pixelBuffer[Offsets[scalarArray] + localIdx + 0],
-                                pixelBuffer[Offsets[scalarArray] + localIdx + 1],
-                                pixelBuffer[Offsets[scalarArray] + localIdx + 2]
-                            ];
+
                             renderTerms.canLight = true;
                         }
                     }
@@ -397,6 +438,7 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         if (this._forceRedraw || changed) {
             changed = true;
             this._forceRedraw = false;
+            this.lf = {};
             this._recomputeLight();
         }
         if (changed) {
