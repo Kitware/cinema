@@ -20,6 +20,13 @@ cinema.StandaloneApp = Backbone.View.extend({
 
         'click .c-app-icon': function (e) {
             cinema.router.navigate('#view', { trigger: true });
+        },
+
+        'keyup .c-search-filter': function (e) {
+            if (e.keyCode === 13) {
+                var searchQuery = $(e.currentTarget).val();
+                cinema.events.trigger('c:handlesearchquery', {searchQuery: searchQuery});
+            }
         }
     },
 
