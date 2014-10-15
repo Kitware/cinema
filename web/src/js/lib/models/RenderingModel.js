@@ -16,14 +16,34 @@ cinema.models.RenderingModel = Backbone.Model.extend({
     defaults: {
     },
 
+    _computeUnionOfColorBys: function() {
+        var colorBys = [];
+        if (_.has(this.visModel.attributes.metadata, 'layer_color_by')) {
+            var allcbs = [];
+            for (var layer in this.visModel.attributes.metadata.layer_color_by) {
+                if (_.has(this.visModel.attributes.metadata.layer_color_by, layer)) {
+                    allcbs.push(this.visModel.attributes.metadata.layer_color_by[layer]);
+                }
+            }
+            colorBys = _.union.apply(_, allcbs);
+        }
+        return colorBys;
+    },
+
     initializeLookupTables: function() {
+        var colorByFields = this._computeUnionOfColorBys();
         var fields = this.visModel.attributes.metadata.fields;
         for (var fieldCode in fields) {
             if (_.has(fields, fieldCode)) {
                 var fieldName = fields[fieldCode];
-                if (this.initializeLutForFieldToPreset(fieldCode, fieldName, 'spectral')) {
-                    this.fieldNamesToCodes[fieldName] = fieldCode;
-                    this.fieldCodesToNames[fieldCode] = fieldName;
+                // If either 1) this info.json doesn't have the "layer_color_by" in the
+                // metadata section, or 2) it does have it, and this field is in there
+                // somewhere, then we set up ui for this field and initialize a LUT for it.
+                if (_.isEmpty(colorByFields) || _.contains(colorByFields, fieldCode)) {
+                    if (this.initializeLutForFieldToPreset(fieldCode, fieldName, 'spectral')) {
+                        this.fieldNamesToCodes[fieldName] = fieldCode;
+                        this.fieldCodesToNames[fieldCode] = fieldName;
+                    }
                 }
             }
         }
