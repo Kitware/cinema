@@ -35,14 +35,12 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
     },
 
     //subclass uses to extend
-    _privateInit: function () {
+    _privateInit: function (settings) {
         this.lightPosition = [ -1, 1, 0 ];
         this.worldLight = new Vector(-1, 0, 1);
         this._forceRedraw = false;
         this.lightTerms = { ka: 0.1, kd: 0.6, ks: 0.3, alpha: 20.0 };
         this.lightColor = [ 1, 1, 1 ];
-        this.lutArrayBuffer = new ArrayBuffer(256*1*4);
-        this.lutView = new Uint8Array(this.lutArrayBuffer);
     },
 
     /**
@@ -74,6 +72,18 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
         this.orderMapping = {};
         this.compositeCache = {};
         this._fields = {};
+        this.renderingModel = settings.renderingModel;
+
+        this.lutArrayBuffers = {};
+        this.lutArrayViews = {};
+        var fieldsMap = this.renderingModel.getFields();
+        for (var fieldName in fieldsMap) {
+            if (_.has(fieldsMap, fieldName)) {
+                var fieldCode = fieldsMap[fieldName];
+                this.lutArrayBuffers[fieldCode] = new ArrayBuffer(256*1*4);
+                this.lutArrayViews[fieldCode] = new Uint8Array(this.lutArrayBuffers[fieldCode]);
+            }
+        }
 
         this.compositeManager = settings.compositeManager ||
             new cinema.utilities.CompositeImageManager({
@@ -108,8 +118,8 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
 
                 var curFps = Math.floor((1.0 / elapsedMillis) * 1000);
                 var avgFps = Math.floor((1.0 / this.averageElapsedMillis) * 1000);
-                this.$('.s-timing-info-current').text(curFps);
-                this.$('.s-timing-info-average').text(avgFps);
+
+                cinema.events.trigger('c:fpsupdate', {'curFps': curFps, 'avgFps': avgFps});
             }
         });
         this.listenTo(this.controlModel, 'change', this.drawImage);
@@ -126,47 +136,51 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
         this._lightingFields = [ 'nX', 'nY', 'nZ' ];
 
         var fieldJson = this.model.attributes.metadata.fields;
-        for (var fieldCode in fieldJson) {
-            if (_.has(fieldJson, fieldCode)) {
-                this._fieldNameMap[fieldJson[fieldCode]] = fieldCode;
+        for (var fCode in fieldJson) {
+            if (_.has(fieldJson, fCode)) {
+                this._fieldNameMap[fieldJson[fCode]] = fCode;
             }
         }
 
         this._maxOffset = this._calculateMaxOffset();
-        console.log(this._maxOffset);
     },
 
     render: function () {
         this.$el.html(cinema.templates.webglLightVisCanvas());
 
-
         if (this.$('.c-webgllit-webgl-canvas').length > 0) {
             var imgDim = this.compositeModel.getImageSize();
-            var imgAspect = imgDim[0] / imgDim[1];
+
             var vpDim = [
                 this.$('.c-webgllit-webgl-canvas').parent().width(),
                 this.$('.c-webgllit-webgl-canvas').parent().height()
             ];
-            var vpAspect = vpDim[0] / vpDim[1];
 
             $(this.$('.c-webgllit-webgl-canvas')[0]).attr({
                 width: vpDim[0],
                 height: vpDim[1]
             });
 
-            if (vpAspect > imgAspect) {
-                this.xscale = vpAspect;
-                this.yscale = 1.0;
-            } else {
-                this.xscale = 1.0;
-                this.yscale = 1.0 / vpAspect;
-            }
+            this._resizeViewport(vpDim, imgDim);
 
             this.webglCompositor.init(imgDim,
                                       this.$('.c-webgllit-webgl-canvas')[0]);
         }
 
         return this;
+    },
+
+    _resizeViewport: function (viewportDimensions, imageDimensions) {
+        var imgAspect = imageDimensions[0] / imageDimensions[1];
+        var vpAspect = viewportDimensions[0] / viewportDimensions[1];
+
+        if (vpAspect > imgAspect) {
+            this.xscale = vpAspect;
+            this.yscale = 1.0;
+        } else {
+            this.xscale = 1.0;
+            this.yscale = 1.0 / vpAspect;
+        }
     },
 
     _computeLayerOffset: function () {
@@ -253,16 +267,20 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
         }
     },
 
-    setLUT: function (_lut) {
+    setLUT: function (fieldCode, _lut) {
+        if (!_.has(this.lutArrayBuffers, fieldCode)) {
+            this.lutArrayBuffers[fieldCode] = new ArrayBuffer(256*1*4);
+            this.lutArrayViews[fieldCode] = new Uint8Array(this.lutArrayBuffers[fieldCode]);
+        }
         for (var i = 0; i < 256; i+=1) {
             var idx = i * 4;
             var val = i / 255;
             var color = _lut(val);
             // console.log("val:", val, "color:", color);
-            this.lutView[idx] = Math.round(color[0]);
-            this.lutView[idx + 1] = Math.round(color[1]);
-            this.lutView[idx + 2] = Math.round(color[2]);
-            this.lutView[idx + 3] = 1.0;
+            this.lutArrayViews[fieldCode][idx] = Math.round(color[0]);
+            this.lutArrayViews[fieldCode][idx + 1] = Math.round(color[1]);
+            this.lutArrayViews[fieldCode][idx + 2] = Math.round(color[2]);
+            this.lutArrayViews[fieldCode][idx + 3] = 1.0;
         }
     },
 
@@ -283,6 +301,11 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
      * cache entry so it won't have to recompute it.
      */
     _writeCompositeBuffer: function (data) {
+
+        if (!this.renderingModel.loaded()) {
+            console.log("Not ready to render yet.");
+            return;
+        }
 
         var compositeCanvas = this.$('.c-webgllit-composite-buffer')[0],
             webglCanvas = this.$('.c-webgllit-webgl-canvas')[0],
@@ -325,6 +348,7 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
 
                 if (lightableLayer === true) {
                     lightingOffsets.scalar = this.layerOffset[layerName];
+                    lightingOffsets.colorBy = this.layers.attributes.state[layerName];
                     idxList.push(lightingOffsets);
                 } else {
                     idxList.push(this.layerOffset[layerName]);
@@ -386,7 +410,8 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
                 scalarCtx.drawImage(data.image, srcX, srcY, imgw, imgh, 0, 0, imgw, imgh);
 
                 this.webglCompositor.drawLitCompositePass(viewDir, this.worldLight, this.lightTerms, this.lightColor,
-                                                          nxCanvas, nyCanvas, nzCanvas, scalarCanvas, this.lutView);
+                                                          nxCanvas, nyCanvas, nzCanvas, scalarCanvas,
+                                                          this.lutArrayViews[lOffMap.colorBy]);
             }
         }
 
@@ -399,12 +424,23 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
      * onto the render canvas.
      */
     drawImage: function () {
-        var zoomLevel = this.viewpoint.get('zoom'),
-            drawingCenter = this.viewpoint.get('center');
+        var webglCanvas = this.$('.c-webgllit-webgl-canvas')[0],
+            w = this.$el.width(),
+            h = this.$el.height();
+
+        $(webglCanvas).attr({
+            width: w,
+            height: h
+        });
 
         // console.log("zoom: " + zoomLevel + ", center: " + drawingCenter);
 
-        this.webglCompositor.drawDisplayPass(this.xscale * zoomLevel, this.yscale * zoomLevel);
+        var zoomLevel = this.viewpoint.get('zoom');
+        var drawingCenter = this.viewpoint.get('center');
+
+        this._resizeViewport([w, h], this.compositeModel.getImageSize());
+        this.webglCompositor.resizeViewport(w, h);
+        this.webglCompositor.drawDisplayPass(this.xscale / zoomLevel * 2.0, this.yscale / zoomLevel * 2.0, drawingCenter);
 
         this.trigger('c:drawn');
     },

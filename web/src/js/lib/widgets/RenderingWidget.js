@@ -2,6 +2,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
     events: {
         'change .c-lookuptable-x': 'updateControlPoint',
         'click .c-swatch-color': 'updateColor',
+        'click .preset-lookup-table': 'applyPreset',
         'change select' : 'updateViewPort',
         'click .c-light-color': 'updateLightColor',
         'change input': 'updateLighting',
@@ -108,6 +109,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         this.mousePressed = false;
         this.selectedControlPoint = -1;
         this.lutName = "spectral";
+        this.currentField = "none";
 
         this.listenTo(this.model, 'change', function () {
             this.render();
@@ -115,28 +117,56 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         this.listenTo(this.controlModel, 'change', this._refresh);
         this.listenTo(cinema.events, 'c:editlookuptable', this.toggleLookupTableEditor);
         this.listenTo(cinema.events, 'c:editlighting', this.toggleLightingEditor);
+        this.listenTo(cinema.events, 'c:viewfps', this.toggleFrameTiming);
+        this.listenTo(cinema.events, 'c:fpsupdate', this.updateFrameSpeed);
 
-        this.renderingModel = new cinema.models.RenderingModel({
-            url: '/rendering/rendering.json'
-        });
+        this.renderingModel = settings.renderingModel;
+
         this.listenTo(this.renderingModel, 'change', this.readyRenderingModel);
         this.renderingModel.fetch();
     },
 
-    readyRenderingModel: function () {
-        var lookuptables = this.renderingModel.getData('lookuptables'),
-            swatches = this.renderingModel.getData('swatches');
+    initializeAllLookupTables: function() {
+        for (var fieldName in this.fields) {
+            if (_.has(this.fields, fieldName)) {
+                var fieldCode = this.fields[fieldName];
+                var lutFunction = null;
 
+                try {
+                    lutFunction = this.renderingModel.getLookupTableForField(fieldCode);
+                } catch (error) {
+                    console.log("RenderWidget: No LUT available for " + fieldCode + " => " + fieldName);
+                }
+
+                if (lutFunction !== null) {
+                    this.viewport.setLUT(fieldCode, lutFunction);
+                }
+            }
+        }
+    },
+
+    readyRenderingModel: function () {
+        //var lookuptables = this.renderingModel.getData('lookuptables'),
+        var swatches = this.renderingModel.getData('swatches');
+
+        this.fields = this.renderingModel.getFields();
         this.lutMap = {};
-        this.lutKeys = _.keys(lookuptables);
+        this.lutKeys = _.keys(this.fields);
+        this.currentField = this.lutKeys[0];
+        this.currentFieldCode = this.fields[this.currentField];
+        // this.presets = this.renderingModel.getPresetNames();
         this.swatchColors = swatches.colors;
-        this.controlPoints = this.renderingModel.getControlPoints(this.lutName);
-        this.render();
+        this.controlPoints = this.renderingModel.getControlPointsForField(this.currentFieldCode);
+        if (!_.isEmpty(this.controlPoints)) {
+            this.initializeAllLookupTables();
+            this.render();
+        }
     },
 
     render:  function () {
         if (this.renderingModel.loaded()) {
             this.$('.c-control-panel-body').html(cinema.templates.rendering({
+                presets: this.renderingModel.getPresetNames(),
                 luts: this.lutKeys,
                 colors: this.swatchColors
             }));
@@ -292,6 +322,25 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         this.drawLookupTable();
     },
 
+    toggleFrameTiming: function() {
+        var link = this.$('.c-frame-timing-view'),
+            state;
+        if (link.attr('state') === 'on') {
+            state = 'off';
+            link.attr('state', state);
+            link.fadeOut();
+        } else {
+            state = 'on';
+            link.attr('state', state);
+            link.fadeIn();
+        }
+    },
+
+    updateFrameSpeed: function(event) {
+        this.$('.c-current-frames-value').html(event.curFps);
+        this.$('.c-average-frames-value').html(event.avgFps);
+    },
+
     interpolate: function(x, i, component) {
         var value = 0,
             fraction = (x - this.controlPoints[i].x)/(this.controlPoints[i+1].x - this.controlPoints[i].x);
@@ -338,6 +387,8 @@ cinema.views.RenderingWidget = Backbone.View.extend({
             x0to1;
         if (!(me.validity && !me.validity.valid))
         {
+            var clampedRange = this.renderingModel.getClampedRangeForField(this.fields[this.currentField]);
+
             x = Number(me.val());
 
             if (this.selectedControlPoint === 0) {
@@ -366,6 +417,8 @@ cinema.views.RenderingWidget = Backbone.View.extend({
                     this.$('.c-midpoint-x').html(this.clampMidpoint.toFixed(3));
                     this.$('.c-lookuptable-x').val(this.mapToClampedRange(this.controlPoints[this.selectedControlPoint].x));
                 }
+                this.renderingModel.setClampedRangeForField(this.fields[this.currentField],
+                                                            [this.clampMinimum, clampedRange[1]]);
                 this.updateLookupTable();
             }
             else if (this.selectedControlPoint === (this.controlPoints.length - 1)) {
@@ -373,7 +426,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
                     this.clampMaximum = this.xMinimum;
                     this.clampMidpoint = this.mapToClampedRange(0.5);
                     this.drawLookupTable();
-                    this.$('.c-minimum-x').html(this.clampMinimum.toFixed(3));
+                    this.$('.c-maximum-x').html(this.clampMaximum.toFixed(3));
                     this.$('.c-midpoint-x').html(this.clampMidpoint.toFixed(3));
                     this.$('.c-lookuptable-x').val(this.mapToClampedRange(this.controlPoints[this.selectedControlPoint].x));
                 }
@@ -381,7 +434,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
                     this.clampMaximum = this.xMaximum;
                     this.clampMidpoint = this.mapToClampedRange(0.5);
                     this.drawLookupTable();
-                    this.$('.c-minimum-x').html(this.clampMinimum.toFixed(3));
+                    this.$('.c-maximum-x').html(this.clampMaximum.toFixed(3));
                     this.$('.c-midpoint-x').html(this.clampMidpoint.toFixed(3));
                     this.$('.c-lookuptable-x').val(this.mapToClampedRange(this.controlPoints[this.selectedControlPoint].x));
 
@@ -390,10 +443,12 @@ cinema.views.RenderingWidget = Backbone.View.extend({
                     this.clampMaximum = x;
                     this.clampMidpoint = this.mapToClampedRange(0.5);
                     this.drawLookupTable();
-                    this.$('.c-minimum-x').html(this.clampMinimum.toFixed(3));
+                    this.$('.c-maximum-x').html(this.clampMaximum.toFixed(3));
                     this.$('.c-midpoint-x').html(this.clampMidpoint.toFixed(3));
                     this.$('.c-lookuptable-x').val(this.mapToClampedRange(this.controlPoints[this.selectedControlPoint].x));
                 }
+                this.renderingModel.setClampedRangeForField(this.fields[this.currentField],
+                                                            [clampedRange[0], this.clampMaximum]);
                 this.updateLookupTable();
             }
             else {
@@ -451,9 +506,19 @@ cinema.views.RenderingWidget = Backbone.View.extend({
     },
 
     updateLookupTable: function () {
-        var lutFunction = this.renderingModel.getLookupTableFunction(this.lutName);
-        this.viewport.setLUT(lutFunction);
+        var fieldCode = this.fields[this.currentField];
+        var lutFunction = this.renderingModel.getLookupTableForField(fieldCode);
+        this.viewport.setLUT(fieldCode, lutFunction);
         this.viewport.forceRedraw();
+    },
+
+    updateScalarBarLabels: function() {
+        this.$('.c-minimum-x').html(this.clampMinimum.toFixed(3));
+        this.$('.c-midpoint-x').html(this.clampMidpoint.toFixed(3));
+        this.$('.c-maximum-x').html(this.clampMaximum.toFixed(3));
+        if (this.selectedControlPoint > -1) {
+            this.$('.c-lookuptable-x').val(this.mapToClampedRange(this.controlPoints[this.selectedControlPoint].x));
+        }
     },
 
     updateViewPort: function (event) {
@@ -469,10 +534,31 @@ cinema.views.RenderingWidget = Backbone.View.extend({
             this.updateLight(vectorLight);
         }
         else if (type === 'lutName') {
-            this.lutName = origin.val();
-            this.controlPoints = this.renderingModel.getControlPoints(this.lutName);
+            this.currentField = origin.val();
+            var range = this.renderingModel.getRangeForField(this.currentField);
+            var clampedRange = this.renderingModel.getClampedRangeForField(this.fields[this.currentField]);
+            this.xMinimum = range[0];
+            this.xMaximum = range[1];
+            this.clampMinimum = clampedRange[0];
+            this.clampMaximum = clampedRange[1];
+            this.selectedControlPoint = -1;
+            this.clampMidpoint = this.mapToClampedRange(0.5);
+            this.controlPoints = this.renderingModel.getControlPointsForField(this.fields[this.currentField]);
             this.updateLookupTable();
             this.drawLookupTable();
+            this.$('.c-lookuptable-x').val('');
+            this.updateScalarBarLabels();
         }
+    },
+
+    applyPreset: function(event) {
+        var origin = $(event.target),
+            presetName = origin.attr('data-type'),
+            fieldCode = this.fields[this.currentField];
+
+        this.renderingModel.initializeLutForFieldToPreset(fieldCode, this.currentField, presetName);
+        this.controlPoints = this.renderingModel.getControlPointsForField(fieldCode);
+        this.updateLookupTable();
+        this.drawLookupTable();
     }
 });

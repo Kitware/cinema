@@ -20,6 +20,12 @@
     imgh = 500,
     viewportWidth = 0,
     viewportHeight = 0,
+    vpCenterX = 0,
+    vpCenterY = 0,
+    left = 0,
+    right = 0,
+    bottom = 0,
+    top = 0,
     projection = null,
     mvp = null,
     glCanvas = null,
@@ -42,6 +48,8 @@
       imgh = imgSize[1];
       viewportWidth = webglCanvas.width;
       viewportHeight = webglCanvas.height;
+      vpCenterX = viewportWidth / 2.0;
+      vpCenterY = viewportHeight / 2.0;
       glCanvas = webglCanvas;
 
       mvp = mat4.create();
@@ -129,6 +137,17 @@
     // --------------------------------------------------------------------------
     //
     // --------------------------------------------------------------------------
+    function resizeViewport(newWidth, newHeight) {
+      viewportWidth = newWidth;
+      viewportHeight = newHeight;
+      vpCenterX = viewportWidth / 2.0;
+      vpCenterY = viewportHeight / 2.0;
+    }
+
+
+    // --------------------------------------------------------------------------
+    //
+    // --------------------------------------------------------------------------
     function cleanUpGlState() {
         // Clean up the display program and its shaders
         for (var i = 0; i < displayProgram.shaders.length; i+=1) {
@@ -184,9 +203,9 @@
       var fragmentUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
       var combinedUnits = gl.getParameter(gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS);
 
-      console.log("vertex texture image units: " + vertexUnits);
-      console.log("fragment texture image units: " + fragmentUnits);
-      console.log("combined texture image units: " + combinedUnits);
+      //console.log("vertex texture image units: " + vertexUnits);
+      //console.log("fragment texture image units: " + fragmentUnits);
+      //console.log("combined texture image units: " + combinedUnits);
     }
 
     // --------------------------------------------------------------------------
@@ -389,7 +408,24 @@
     // --------------------------------------------------------------------------
     //
     // --------------------------------------------------------------------------
-    function drawDisplayPass(xscale, yscale) {
+    function calculateProjectionMatrix(matrix, xscale, yscale, center) {
+      // Relate the center of the current viewport to the center of clip space
+      var centerX = ((vpCenterX - center[0]) / vpCenterX) * xscale;
+      var centerY = ((center[1] - vpCenterY) / vpCenterY) * yscale;
+
+      left = centerX - xscale;
+      right = centerX + xscale;
+      bottom = centerY - yscale;
+      top = centerY + yscale;
+
+      mat4.ortho(matrix, left, right, bottom, top, 1.0, -1.0);
+    }
+
+
+    // --------------------------------------------------------------------------
+    //
+    // --------------------------------------------------------------------------
+    function drawDisplayPass(xscale, yscale, center) {
       // Draw to the screen framebuffer
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
@@ -405,9 +441,8 @@
       gl.activeTexture(gl.TEXTURE0 + 0);
       gl.bindTexture(gl.TEXTURE_2D, renderTexture);
 
-      // Send over the model-view-projection matrix for display pass
-      // left, right, bottom, top, near, far
-      projection = mat4.ortho(projection, -xscale, xscale, -yscale, yscale, 1.0, -1.0);
+      // Get a projection matrix to draw the final image at the correct scale and location
+      calculateProjectionMatrix(projection, xscale, yscale, center);
       var mvpLoc = gl.getUniformLocation(displayProgram, "mvp");
       gl.uniformMatrix4fv(mvpLoc, false, projection);
 
@@ -597,7 +632,8 @@
       'drawBackgroundPass': drawBackgroundPass,
       'drawCompositePass': drawCompositePass,
       'drawLitCompositePass': drawLitCompositePass,
-      'drawDisplayPass': drawDisplayPass
+      'drawDisplayPass': drawDisplayPass,
+      'resizeViewport': resizeViewport
     };
 
   };

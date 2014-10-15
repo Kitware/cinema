@@ -6,18 +6,20 @@ cinema.views.RenderingToolbar = Backbone.View.extend({
 
         'click .c-edit-lighting': function () {
             cinema.events.trigger('c:editlighting');
+        },
+
+        'click .c-view-fps-info': function () {
+            cinema.events.trigger('c:viewfps');
         }
     },
 
     initialize: function () {
-        this._template = cinema.templates.renderingToolbar;
-        this.luts = ["rainbow"];
+        //this._template = cinema.templates.renderingToolbar;
+        //this.luts = ["rainbow"];
     },
 
     render: function () {
-        this.$el.html(this._template({
-            luts: this.luts
-        }));
+        this.$el.html(cinema.templates.renderingToolbar({luts: []}));
 
         this.$('a[title]').tooltip({
             placement: 'bottom',
