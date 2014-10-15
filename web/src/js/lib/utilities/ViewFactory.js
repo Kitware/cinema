@@ -20,7 +20,6 @@
     cinema.utilities.ViewFactory = function () {
         this.visModel = null;
         this.factoryMap = {};
-        this.compatibilityMap = {};
         this.viewInstances = {};
         return _.extend(this, Backbone.Events);
     };
@@ -33,7 +32,7 @@
         return {
             controlList: [],
             render: function() {
-                $('.c-body-container', $(rootSelector)).html(cinema.app.templates.invalidatePage({view: viewType, data: model.getDataType() }));
+                $('.c-body-container', rootSelector).html(cinema.app.templates.invalidatePage({view: viewType, data: model.getDataType() }));
             }
         };
     }
@@ -51,49 +50,59 @@
      */
     prototype.registerView = function (dataType, viewType, viewConstructorFunction) {
         var key = viewType + ':' + dataType;
-        this.factoryMap[key] = { "constructor" : viewConstructorFunction };
+        this.factoryMap[key] = { constructor: viewConstructorFunction };
         return this;
     };
 
     prototype.render = function (rootSelector, viewType, model) {
         if (model.loaded()) {
-            var key = [rootSelector, viewType, model.getDataType()].join(':');
+            var view;
+            if (typeof(rootSelector) === 'string') {
+                var key = [rootSelector, viewType, model.getDataType()].join(':');
 
-            // Create view if not exist
-            if (!this.viewInstances.hasOwnProperty(key) || this.viewInstances[key] === null) {
-                this.viewInstances[key] = this.createView(rootSelector, viewType, model);
+                // Create view if not exist
+                if (!_.has(this.viewInstances, key) || this.viewInstances[key] === null) {
+                    this.viewInstances[key] = this.createView(rootSelector, viewType, model);
+                }
+                view = this.viewInstances[key];
+            } else { // parent element is a DOM node or jquery object
+                view = this.createView(rootSelector, viewType, model);
             }
 
             // Update the view if it exist
-            var view = this.viewInstances[key];
-            if(view) {
+            if (view) {
                 view.render();
                 return view.controlList;
             } else {
-                console.log("no instance for " + key);
+                console.log("no view instance could be created", rootSelector, viewType, model);
             }
+        } else {
+            console.log('model is not loaded.', model);
         }
         return [];
     };
 
     prototype.getViewControlList = function (rootSelector, viewType, model) {
-        var key = [rootSelector, viewType, model.getDataType()].join(':');
+        // TODO this method should go away, each widget should be configurable
+        // at instantiation time rather than trying to maintain a global mapping
+        // of widgets and their options based on parent selector...
+        var view;
+        if (typeof(rootSelector) === 'string') {
+            var key = [rootSelector, viewType, model.getDataType()].join(':');
 
-        if(!this.viewInstances.hasOwnProperty(key)) {
-            this.viewInstances[key] = this.createView(rootSelector, viewType, model);
+            if(!this.viewInstances.hasOwnProperty(key)) {
+                this.viewInstances[key] = this.createView(rootSelector, viewType, model);
+            }
+
+            view = this.viewInstances[key];
+        } else {
+            view = this.createView(rootSelector, viewType, model);
         }
-
-        var view = this.viewInstances[key];
-        if(view) {
+        if (view) {
             return view.controlList;
         }
 
         return [];
-    };
-
-    prototype.deleteView = function (rootSelector, viewType, model) {
-        var key = [rootSelector, viewType, model.getDataType()].join(':');
-        delete this.viewInstances[key];
     };
 
     /**
@@ -105,7 +114,7 @@
     prototype.createView = function (rootSelector, viewType, model) {
         if (model && model.loaded()) {
             var key = viewType + ':' + model.getDataType();
-            if(this.factoryMap.hasOwnProperty(key)) {
+            if (_.has(this.factoryMap, key)) {
                 return this.factoryMap[key].constructor(rootSelector, viewType, model);
             } else {
                 return createEmptyView(rootSelector, viewType, model);

@@ -143,6 +143,7 @@ cinema.views.RenderingWidget = Backbone.View.extend({
                 }
             }
         }
+        this.viewport.forceRedraw();
     },
 
     readyRenderingModel: function () {

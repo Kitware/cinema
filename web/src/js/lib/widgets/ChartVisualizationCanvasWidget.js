@@ -80,7 +80,7 @@ cinema.views.ChartVisualizationCanvasWidget = Backbone.View.extend({
                 count = array.length,
                 test = true;
 
-            while(count > 0) {
+            while (count > 0) {
                 count = count - 1;
                 if(array[count].value === value) {
                     return array[count].index;
@@ -198,4 +198,3 @@ cinema.views.ChartVisualizationCanvasWidget = Backbone.View.extend({
         return this;
     }
 });
-

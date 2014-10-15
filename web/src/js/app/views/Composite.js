@@ -14,7 +14,7 @@
             histogramModel = new cinema.models.HistogramModel({ layers: layers,
                                                                 basePath: model.get('basePath') }),
             renderer = new cinema.views.VisualizationCanvasWidget({
-                el: $('.c-body-container', container),
+                el: container,
                 model: compositeModel,
                 layers: layers,
                 controlModel: controlModel,

@@ -278,6 +278,11 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
             height: dim[1]
         });
 
+        if (_.isEmpty(this.lutTable)) {
+            // Lookup tables not initialized yet, do not draw at this time.
+            return;
+        }
+
         // Fill full spritesheet buffer with raw image data
         spriteCtx.drawImage(data.image, 0, 0);
 

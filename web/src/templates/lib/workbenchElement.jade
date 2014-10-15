@@ -1,0 +1,13 @@
+.c-run-select-container
+  .btn-group
+    button.c-run-select.btn.btn-default.dropdown-toggle(
+        data-toggle="dropdown", title="Select run")
+      span.caret
+    ul.dropdown-menu(role="menu")
+      each run in runs
+        li
+          a.c-run-option(run-id="#{run.path}")= run.title
+.c-run-container
+  .c-body-container.c-workbench-body-container
+  .c-tools-panel
+    .c-control-panel-body

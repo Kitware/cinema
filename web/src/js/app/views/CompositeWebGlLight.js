@@ -78,8 +78,6 @@
         renderingView.on('change', refreshCamera);
         cinema.events.on('c:resetCamera', resetCamera);
 
-        render();
-
         return {
             controlList: controlList,
             render: render
