@@ -97,7 +97,9 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
         this._argArrays = [];
         this._argKeys = [];
         this._maxOrdinal = 1;
+        this._multipliers = [];
         var self = this;
+
         _.each(compList.slice(0, compList.length - 1), function (value, idx, list) {
             var match = re.exec(value);
             self._argKeys.push(match[1]);
@@ -105,7 +107,16 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
             self._argArrays.push(arr);
             self._maxOrdinal *= arr.length;
          });
+
         this._maxOrdinal -= 1;
+
+        // Compute the multipliers here so we don't have to do it each time
+        // you want to convert an object to an ordinal.
+        var multiplier = 1;
+        for (var i = this._argArrays.length - 1; i >= 0; i-=1) {
+            this._multipliers.unshift(multiplier);
+            multiplier *= this._argArrays[i].length;
+        }
     },
 
     /**
@@ -117,6 +128,34 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
             'quo': Math.floor(dividend / divisor),
             'rem': dividend % divisor
         };
+    },
+
+
+    /**
+     * Given an object with a value for each of the arguments in the vis
+     * model, e.g.
+     *
+     *     {
+     *         "time": "0",
+     *         "theta": "10.0",
+     *         "phi": "170.0"
+     *     }
+     *
+     * return the image ordinal for the corresponding image.
+     */
+    objectToOrdinal: function(obj) {
+        if (!_.has(this, '_argArrays')) {
+            this.initializeArgArrays();
+        }
+
+        var ordinal = 0;
+
+        for (var argIdx = 0; argIdx < this._argKeys.length; argIdx+=1) {
+            var idxInArray = _.indexOf(this._argArrays[argIdx], obj[this._argKeys[argIdx]]);
+            ordinal += (idxInArray * this._multipliers[argIdx]);
+        }
+
+        return ordinal;
     },
 
     /**
