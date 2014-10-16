@@ -50,6 +50,8 @@ cinema.views.ChartVisualizationCanvasWidget = Backbone.View.extend({
             this.render();
         });
 
+        cinema.bindWindowResizeHandler(this, this.render, 200);
+
         this.showViewpoint();
     },
 
