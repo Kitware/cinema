@@ -18,6 +18,7 @@ cinema.models.SearchModel = Backbone.Model.extend({
     parseQuery: function (str) {
         try {
             var parse_tree = jsep(str);
+            console.log(parse_tree);
             this.traverseParseTree(parse_tree);
         } catch (e) {
             return null;
@@ -26,15 +27,70 @@ cinema.models.SearchModel = Backbone.Model.extend({
 
     traverseParseTree: function (tree) {
         var str = "";
-        console.log(tree.left, tree.right);
-        if (tree.right.right) {
-            this.traverseParseTree(tree.right);
+        if (tree.left) {
+            this.traverseParseTree(tree.left);
         }
-        else {
-            if (tree.left.type === "Identifier" ) {
-                str = str + tree.left.name;
+        if (tree.type === "UnaryExpression") {
+            if (tree.operator != "!") {
+                console.log("Unsupported unary expession in query!")
             }
-            console.log(tree.left.value,tree.operator,tree.right.value);
+            else {
+                str = str + tree.operator;
+                console.log(str);
+                this.traverseParseTree(tree.argument);
+            }
+        }
+        else if (tree.type === "LogicalExpression") {
+            if (tree.left.left) {
+                str = str + tree.operator;
+                console.log(str);
+            }
+            else {
+                if (tree.left.type === "Identifier") {
+                    str = str + tree.left.name;
+                }
+                else if (tree.left.type === "Literal") {
+                    str = str + tree.left.raw;
+                }
+                str = str + tree.operator;
+                if (tree.right.type === "Identifier") {
+                    str = str + tree.right.name;
+                }
+                else if (tree.right.type === "Literal") {
+                    str = str + tree.right.raw;
+                }
+                console.log(str);
+            }
+
+        }
+        else if (tree.type === "BinaryExpression") {
+            if (tree.left.left) {
+                str = str + tree.operator;
+                console.log(str);
+            }
+            else {
+                if (tree.operator == "==") {
+
+                }
+                if (tree.left.type === "Identifier") {
+                    str = str + tree.left.name;
+                }
+                else if (tree.left.type === "Literal") {
+                    str = str + tree.left.raw;
+                }
+                str = str + tree.operator;
+                if (tree.right.type === "Identifier") {
+                    str = str + tree.right.name;
+                }
+                else if (tree.right.type === "Literal") {
+                    str = str + tree.right.raw;
+                }
+                console.log(str);
+            }
+
+        }
+        if (tree.right) {
+            this.traverseParseTree(tree.right);
         }
     },
 
