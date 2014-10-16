@@ -1,9 +1,17 @@
 .c-color-by-container
   .c-layer-value-choice
-    each name, field in metadata.fields
-      if metadata.layer_fields[layerId].indexOf(field) >= 0
+    if metadata.layer_color_by && metadata.layer_color_by[layerId]
+      each field in metadata.layer_color_by[layerId]
         .radio.c-color-by-radio
           label
             input(directory-id="#{directoryId}", layer-id="#{layerId}", type="radio", name="color-by-select",
                   value="#{field}")
             = metadata.fields[field]
+    else
+      each name, field in metadata.fields
+        if metadata.layer_fields[layerId].indexOf(field) >= 0
+          .radio.c-color-by-radio
+            label
+              input(directory-id="#{directoryId}", layer-id="#{layerId}", type="radio", name="color-by-select",
+                    value="#{field}")
+              = metadata.fields[field]
