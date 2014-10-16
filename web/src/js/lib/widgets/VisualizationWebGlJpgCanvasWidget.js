@@ -108,6 +108,7 @@ cinema.views.VisualizationWebGlJpgCanvasWidget = Backbone.View.extend({
         this.listenTo(this.controls, 'change', this.drawImage);
         this.listenTo(this.viewpoint, 'change', this.drawImage);
         this.listenTo(this.layers, 'change', this.updateQuery);
+        cinema.bindWindowResizeHandler(this, this.drawImage, 200);
 
         this.xscale = 1.0;
         this.yscale = 1.0;
