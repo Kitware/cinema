@@ -8,7 +8,9 @@ cinema.backboneEvents = function (el) {
     var args;
     return {
         on: function (event, handler) {
-            if (args) throw new Error("duplicate event wrapper calls");
+            if (args) {
+                throw new Error("duplicate event wrapper calls");
+            }
             el.addEventListener(event, handler, false);
             args = [event, handler];
         },
