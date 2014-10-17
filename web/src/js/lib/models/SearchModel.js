@@ -74,6 +74,7 @@ cinema.models.SearchModel = Backbone.Model.extend({
     /**
      * Use an expression parse tree to validate query and block against code injection.
      */
+
     validateQuery: function (query) {
         try {
             var parse_tree = jsep(query);
