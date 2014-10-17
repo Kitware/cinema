@@ -79,7 +79,7 @@ cinema.views.HistogramWidget = Backbone.View.extend({
         if (histogramGraph.width() > 0 && histogramGraph.height() > 0) {
             this.graph = new Rickshaw.Graph({
                 element: histogramGraph[0],
-                width: histogramGraph.width() - 40,
+                width: histogramGraph.width(),
                 height: histogramGraph.height() - 0.01 * histogramGraph.height(),
                 renderer: this.representation,
                 stroke: true,
