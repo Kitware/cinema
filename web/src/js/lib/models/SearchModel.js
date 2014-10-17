@@ -33,6 +33,8 @@ cinema.models.SearchModel = Backbone.Model.extend({
         this._argArrays = [];
         this._argKeys = [];
         this._maxOrdinal = 1;
+        this._multipliers = [];
+
 
         _.each(compList.slice(0, compList.length - 1), function (value, idx, list) {
             var match = re.exec(value),
@@ -43,6 +45,13 @@ cinema.models.SearchModel = Backbone.Model.extend({
             self._maxOrdinal *= arr.length;
         });
         this._maxOrdinal -= 1;
+
+        var multiplier = 1;
+        for (var i = this._argArrays.length - 1; i >= 0; i-=1) {
+            this._multipliers.unshift(multiplier);
+            multiplier *= this._argArrays[i].length;
+        }
+
         this._dataMap = this.buildDataMap();
 
         this.trigger('change');
@@ -163,6 +172,29 @@ cinema.models.SearchModel = Backbone.Model.extend({
             'quo': Math.floor(dividend / divisor),
             'rem': dividend % divisor
         };
+    },
+
+    /**
+     * Given an object with a value for each of the arguments in the vis
+     * model, e.g.
+     *
+     *     {
+     *         "time": "0",
+     *         "theta": "10.0",
+     *         "phi": "170.0"
+     *     }
+     *
+     * return the image ordinal for the corresponding image.
+     */
+    objectToOrdinal: function(obj) {
+        var ordinal = 0;
+
+        for (var argIdx = 0; argIdx < this._argKeys.length; argIdx+=1) {
+            var idxInArray = _.indexOf(this._argArrays[argIdx], obj[this._argKeys[argIdx]]);
+            ordinal += (idxInArray * this._multipliers[argIdx]);
+        }
+
+        return ordinal;
     },
 
     /**
