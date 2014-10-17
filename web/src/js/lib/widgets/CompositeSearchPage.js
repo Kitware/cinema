@@ -3,25 +3,13 @@
  */
 cinema.views.CompositeSearchPage = Backbone.View.extend({
     events: {
-        'click .c-search-filter-apply': function (e) {
-            e.preventDefault();
-            this.searchModel.compute();
-        },
-        'input .c-search-filter': function (e) {
-            var q = this.searchModel.parseQuery($(e.currentTarget).val());
 
-            if (q) {
-                this.searchModel.query = q;
-                this.$('.c-search-filter-apply').removeAttr('disabled');
-            } else {
-                this.$('.c-search-filter-apply').attr('disabled', 'disabled');
-            }
-        }
     },
 
-    initialize: function (opts) {
-        this.visModel = opts.visModel;
-        this.layerModel = opts.layerModel;
+    initialize: function (settings) {
+        this.basePath = settings.basePath;
+        this.visModel = settings.visModel;
+        this.layerModel = settings.layerModel;
 
         this.listenTo(cinema.events, 'c:handlesearchquery', this.handleSearchQuery);
     },
@@ -35,6 +23,7 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
         });
 
         this.searchModel = new cinema.models.SearchModel({
+            basePath: this.basePath,
             visModel: this.visModel,
             layerModel: this.layerModel
         });
@@ -51,8 +40,26 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
     },
 
     handleSearchQuery:  function (event) {
-        var q = this.searchModel.parseQuery(event.searchQuery);
-        console.log(q);
+        var expressions = event.searchQuery.split(' Sort By '),
+            numberOfSearchResults = 0;
+        if (expressions.length == 2) {
+            var filterExpression = this.searchModel.validateQuery(expressions[0]);
+            var sortExpression = this.searchModel.validateQuery(expressions[1]);
+            if (filterExpression != null && filterExpression != '') {
+                numberOfSearchResults = this.searchModel.filterBy(filterExpression);
+                console.log('# ', numberOfSearchResults);
+            }
+            if (numberOfSearchResults > 0 && sortExpression != null && sortExpression != '') {
+                this.searchModel.sortBy(sortExpression);
+            }
+        }
+        else if (expressions.length == 1) {
+            var filterExpression = this.searchModel.validateQuery(expressions[0]);
+            if (filterExpression != null && filterExpression != '') {
+                numberOfSearchResults = this.searchModel.filterBy(filterExpression);
+                console.log('# ', numberOfSearchResults);
+            }
+        }
     },
 
     clearResults: function () {

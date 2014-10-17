@@ -113,7 +113,8 @@
             histogramModel = new cinema.models.HistogramModel({ layers: layers,
                 basePath: model.get('basePath') }),
 
-            page = new cinema.views.CompositeSearchPage({
+            searchPage = new cinema.views.CompositeSearchPage({
+                basePath: model.get('basePath'),
                 visModel: compositeModel,
                 layerModel: layers
             }),
@@ -154,7 +155,7 @@
 
         function render () {
             var root = $(rootSelector);
-            page.setElement($('.c-body-container', root)).render();
+            searchPage.setElement($('.c-body-container', root)).render();
             compositeTools.setElement($('.c-tools-panel', root)).render();
             compositeHistogram.setElement($('.c-histogram-panel', root)).render();
             searchInformation.setElement($('.c-information-panel', root)).render();

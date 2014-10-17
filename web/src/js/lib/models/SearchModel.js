@@ -6,91 +6,118 @@ cinema.models.SearchModel = Backbone.Model.extend({
     constructor: function (settings) {
         Backbone.Model.apply(this, arguments);
 
+        this.basePath = settings.basePath;
         this.layerModel = settings.layerModel;
         this.visModel = settings.visModel;
         this.query = settings.query || {};
+
+        this.listenTo(this.visModel, 'change', this.readyToInitialize);
+        this.readyToInitialize();
     },
 
     /**
-     * Convert a query string into a query object that can be used to filter
-     * results in this model.
+     * Use the info.json "name_pattern" and "arguments" keys to build an
+     * internal ordered list used in mapping ordinals to relative directory
+     * paths.
      */
-    parseQuery: function (str) {
+    readyToInitialize: function () {
+        if (!this.visModel.loaded()) {
+            return;
+        }
+        var pattern = this.visModel.get('name_pattern') || "",
+            args = this.visModel.get('arguments') || {},
+            compList = pattern.split('/'),
+            re = /{(.+)}/,
+            self = this;
+
+        this._argArrays = [];
+        this._argKeys = [];
+        this._maxOrdinal = 1;
+
+        _.each(compList.slice(0, compList.length - 1), function (value, idx, list) {
+            var match = re.exec(value),
+                arr = args[match[1]].values;
+
+            self._argKeys.push(match[1]);
+            self._argArrays.push(arr);
+            self._maxOrdinal *= arr.length;
+        });
+        this._maxOrdinal -= 1;
+        this._dataMap = this.buildDataMap();
+
+        this.trigger('change');
+    },
+
+    buildDataMap: function() {
+        var i,
+            obj,
+            results = [],
+            url;
+
+        for (i = 0; i <= this._maxOrdinal; i += 1) {
+            obj = this.ordinalToObject(i);
+            url = this.basePath + '/' + this.objectToPath(obj);
+            results.push( { "index": i, "obj": obj, "url": url, "keep": true } );
+        }
+        return results;
+    },
+
+    /**
+     * Use an expression parse tree to validate query and block against code injection.
+     */
+    validateQuery: function (query) {
         try {
-            var parse_tree = jsep(str);
-            console.log(parse_tree);
-            this.traverseParseTree(parse_tree);
-        } catch (e) {
+            var parse_tree = jsep(query);
+            return query;
+        }
+        catch (e) {
             return null;
         }
     },
 
-    traverseParseTree: function (tree) {
-        var str = "";
-        if (tree.left) {
-            this.traverseParseTree(tree.left);
-        }
-        if (tree.type === "UnaryExpression") {
-            if (tree.operator != "!") {
-                console.log("Unsupported unary expession in query!")
-            }
-            else {
-                str = str + tree.operator;
-                console.log(str);
-                this.traverseParseTree(tree.argument);
-            }
-        }
-        else if (tree.type === "LogicalExpression") {
-            if (tree.left.left) {
-                str = str + tree.operator;
-                console.log(str);
-            }
-            else {
-                if (tree.left.type === "Identifier") {
-                    str = str + tree.left.name;
-                }
-                else if (tree.left.type === "Literal") {
-                    str = str + tree.left.raw;
-                }
-                str = str + tree.operator;
-                if (tree.right.type === "Identifier") {
-                    str = str + tree.right.name;
-                }
-                else if (tree.right.type === "Literal") {
-                    str = str + tree.right.raw;
-                }
-                console.log(str);
-            }
+    filterBy: function (queryExpression) {
+        var functionTemplate = 'var LOCAL_VARS; return (EXP);',
+            variableTemplate = 'ARG = obj["ARG"]',
+            count = this._maxOrdinal + 1,
+            localVariables = [],
+            numberOfValidResults = 0;
 
+        // Generate filter function
+        for(var i = 0; i < this._argKeys.length; i += 1) {
+            localVariables.push(variableTemplate.replace(/ARG/g, this._argKeys[i]));
         }
-        else if (tree.type === "BinaryExpression") {
-            if (tree.left.left) {
-                str = str + tree.operator;
-                console.log(str);
-            }
-            else {
-                if (tree.operator == "==") {
+        functionTemplate = functionTemplate.replace(/LOCAL_VARS/g, localVariables.join(',')).replace(/EXP/g, queryExpression);
+        var validator = new Function('obj', functionTemplate);
 
-                }
-                if (tree.left.type === "Identifier") {
-                    str = str + tree.left.name;
-                }
-                else if (tree.left.type === "Literal") {
-                    str = str + tree.left.raw;
-                }
-                str = str + tree.operator;
-                if (tree.right.type === "Identifier") {
-                    str = str + tree.right.name;
-                }
-                else if (tree.right.type === "Literal") {
-                    str = str + tree.right.raw;
-                }
-                console.log(str);
+        // Filter by the query
+        while(count--) {
+            this._dataMap[count]['keep'] = validator(this._dataMap[count]["obj"]);
+            if(this._dataMap[count]['keep']) {
+                numberOfValidResults++;
             }
-
         }
-        if (tree.right) {
-            this.traverseParseTree(tree.right);
+
+        return numberOfValidResults;
+    },
+
+    sortBy: function showResults(sortExpression) {
+        var functionTemplate = 'function extractValue(obj) { var LOCAL_VARS; return (EXP);}; return extractValue(a) - extractValue(b);',
+            variableTemplate = 'ARG = obj["ARG"]',
+            count = this._maxOrdinal + 1,
+            localVariables = [];
+
+        for(var i = 0; i < this._argKeys.length; i += 1) {
+            localVariables.push(variableTemplate.replace(/ARG/g, this._argKeys[i]));
+        }
+
+        functionTemplate = functionTemplate.replace(/LOCAL_VARS/g, localVariables.join(',')).replace(/EXP/g, sortExpression);
+        var sortFunction = new Function(["a","b"], functionTemplate);
+        this._dataMap.sort(sortFunction);
+
+        while(count--) {
+            if(this._dataMap[count]['keep']) {
+                console.log(this._dataMap[count].url);
+            }
         }
     },
 
@@ -102,8 +129,8 @@ cinema.models.SearchModel = Backbone.Model.extend({
         this.results = [];
 
         var i;
-        for (i = 0; i < this.visModel.imageCount(); i += 1) {
-            var viewpoint = this.visModel.ordinalToObject(i);
+        for (i = 0; i <= this._maxOrdinal; i += 1) {
+            var viewpoint = this.ordinalToObject(i);
 
             if (this._filter(viewpoint)) {
                 this.results.push(viewpoint);
@@ -119,11 +146,80 @@ cinema.models.SearchModel = Backbone.Model.extend({
      * match, false if not.
      */
     _filter: function (viewpoint) {
-        return _.every(['phi', 'theta', 'time'], function (field) {
+        return _.every(this._argKeys, function (field) {
             if (!_.has(this.query, field)) {
                 return true;
             }
             return this.query[field].toString() === viewpoint[field];
         }, this);
+    },
+
+    /**
+     * Convenience function to return the quotient and remainder from
+     * integer division of the arguments
+     */
+    integerDivide: function (dividend, divisor) {
+        return {
+            'quo': Math.floor(dividend / divisor),
+            'rem': dividend % divisor
+        };
+    },
+
+    /**
+     * Convert an image ordinal to an object containing the correct
+     * values for each component in the info.json 'name_pattern', e.g.
+     *
+     *     {
+     *         "time": "0",
+     *         "theta": "10.0",
+     *         "phi": "170.0"
+     *     }
+     *
+     */
+    ordinalToObject: function (ordinal) {
+        if (ordinal > this._maxOrdinal) {
+            throw "Ordinal " + ordinal + " out of range, max ordinal: " + this._maxOrdinal;
+        }
+
+        // Now proceed to integer divide the ordinal by rightmost length, save
+        // remainder, then integer divide that quotient by the next
+        // length to the left, save the remainder, etc... until you
+        // get to the far left.
+        var quotient = ordinal;
+        var results = {};
+
+        for (var i = this._argArrays.length - 1; i >= 0; i -= 1) {
+            var r = this.integerDivide(quotient, this._argArrays[i].length);
+            results[this._argKeys[i]] = this._argArrays[i][r.rem];
+            quotient = r.quo;
+        }
+
+        return results;
+    },
+
+    /**
+     * Take an object of the form:
+     *
+     *    {
+     *        "time": "0",
+     *        "theta": "10.0",
+     *        "phi": "170.0"
+     *    }
+     *
+     * And use the internal order list _argKeys to create a relative path string
+     * from it.
+     *
+     */
+    objectToPath: function (obj) {
+        var result = [];
+        _.each(this._argKeys, function (value, idx, list) {
+            result.push(obj[value]);
+        });
+
+        return result.join('/');
+    },
+
+    imageCount: function () {
+        return this.visModel.lengthPhi() * this.visModel.lengthTime() * this.visModel.lengthTheta();
     }
 });
