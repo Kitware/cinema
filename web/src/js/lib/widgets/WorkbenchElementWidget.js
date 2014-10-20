@@ -8,6 +8,23 @@ cinema.views.WorkbenchElementWidget = Backbone.View.extend({
         'click .c-run-option': function (e) {
             var id = $(e.currentTarget).attr('run-id');
             this._showRun(this.runOptions[id]);
+        },
+
+        'click .c-side-panel-toggle': function (e) {
+            var el = $(e.currentTarget),
+                state = el.attr('state');
+
+            if (state === 'open') {
+                el.attr('state', 'closed').attr('title', 'Show controls');
+                el.find('i').removeClass('icon-angle-circled-up')
+                            .addClass('icon-angle-circled-down');
+                this.$('.c-control-panel-body').hide();
+            } else {
+                el.attr('state', 'open').attr('title', 'Minimize controls');
+                el.find('i').removeClass('icon-angle-circled-down')
+                            .addClass('icon-angle-circled-up');
+                this.$('.c-control-panel-body').show();
+            }
         }
     },
 
@@ -45,6 +62,7 @@ cinema.views.WorkbenchElementWidget = Backbone.View.extend({
         visModel.on('change', function () {
             cinema.viewFactory.render(this.$('.c-run-container'), 'view', visModel);
             this.$('.c-side-panel-title').text(visModel.get('metadata').title);
+            this.$('.c-side-panel-toggle').removeClass('hide');
         }, this).fetch();
     }
 });
