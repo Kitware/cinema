@@ -9,14 +9,14 @@
             compositeManager = new cinema.utilities.CompositeImageManager({ visModel: model }),
             controlModel = new cinema.models.ControlModel({ info: model }),
             viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
-            layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup(),
-                                                  { info: model }),
-            histogramModel = new cinema.models.HistogramModel({ layers: layers,
-                                                                basePath: model.get('basePath') }),
+            layerModel = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup(),
+                                                     { info: model }),
+            histogramModel = new cinema.models.CompositeHistogramModel({ layerModel: layerModel,
+                                                                         basePath: model.get('basePath') }),
             renderer = new cinema.views.VisualizationCanvasWidget({
                 el: container,
                 model: compositeModel,
-                layers: layers,
+                layers: layerModel,
                 controlModel: controlModel,
                 viewpoint: viewpointModel,
                 compositeManager: compositeManager
@@ -34,12 +34,12 @@
                 keyModifiers: null
             }),
 
-           compositeHistogram = new cinema.views.HistogramWidget({
+           compositeHistogram = new cinema.views.CompositeHistogramWidget({
                 el: $('.c-histogram-panel', container),
                 basePath: model.get('basePath'),
                 histogramModel: histogramModel,
                 viewpoint: viewpointModel,
-                layers: layers,
+                layerModel: layerModel,
                 toolbarSelector: '.c-panel-toolbar'
             }),
 
@@ -48,7 +48,7 @@
                 model: compositeModel,
                 controlModel: controlModel,
                 viewpoint: viewpointModel,
-                layers: layers,
+                layers: layerModel,
                 toolbarSelector: '.c-panel-toolbar'
             }),
 
@@ -57,7 +57,7 @@
                 model: compositeModel,
                 controlModel: controlModel,
                 exclude: ['layer', 'filename'],
-                layers: layers,
+                layers: layerModel,
                 toolbarSelector: '.c-panel-toolbar'
             }),
 
@@ -109,13 +109,13 @@
             compositeModel = new cinema.decorators.Composite(model),
             controlModel = new cinema.models.ControlModel({ info: model }),
             viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
-            layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup(), { info: model }),
-            histogramModel = new cinema.models.HistogramModel({ layers: layers,
+            layerModel = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup(), { info: model }),
+            histogramModel = new cinema.models.HistogramModel({ layers: layerModel,
                 basePath: model.get('basePath') }),
 
             page = new cinema.views.CompositeSearchPage({
                 visModel: compositeModel,
-                layerModel: layers
+                layerModel: layerModel
             }),
 
             compositeHistogram = new cinema.views.HistogramWidget({
@@ -123,7 +123,7 @@
                 basePath: model.get('basePath'),
                 histogramModel: histogramModel,
                 viewpoint: viewpointModel,
-                layers: layers,
+                layers: layerModel,
                 toolbarSelector: '.c-panel-toolbar'
             }),
 
@@ -132,7 +132,7 @@
                 model: compositeModel,
                 controlModel: controlModel,
                 viewpoint: viewpointModel,
-                layers: layers,
+                layers: layerModel,
                 toolbarSelector: '.c-panel-toolbar'
             }),
 
@@ -141,7 +141,7 @@
                 model: compositeModel,
                 controlModel: controlModel,
                 exclude: ['layer', 'filename'],
-                layers: layers,
+                layers: layerModel,
                 toolbarSelector: '.c-panel-toolbar'
             }),
 

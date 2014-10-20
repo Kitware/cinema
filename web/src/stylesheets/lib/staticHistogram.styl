@@ -1,0 +1,104 @@
+$textColor = #666
+$highlightTextColor = #333
+$opacityDuration = 0.4s
+
+.c-static-histogram-content
+  height 535px
+
+  .c-static-histogram-graph
+    height 400px
+
+  .c-static-histogram-range
+    display inline-block
+    height 95px
+    background-color rgba(255, 255, 255, 0.0)
+
+  label.c-static-histogram-ylabel
+    display block
+    color $textColor
+    text-align left
+
+  label.c-static-histogram-xlabel
+    display block
+    color $textColor
+    text-align center
+
+  .c-static-histogram-legend.rickshaw_legend
+    display inline-block
+    border-radius 3px
+    background-color rgba(255, 255, 255, 0.0)
+    color $textColor
+    position absolute
+    top 45px
+    right 10px
+    padding 2px 2px
+    border 1px solid #d3d3d3
+
+    a
+      color $textColor
+
+  .c-static-histogram-tools-panel
+    border-radius 3px
+    background-color rgba(255, 255, 255, 0.5)
+    -webkit-transition background-color $opacityDuration ease-in-out
+    -moz-transition background-color $opacityDuration ease-in-out
+    -ms-transition background-color $opacityDuration ease-in-out
+    -o-transition background-color $opacityDuration ease-in-out
+    transition background-color $opacityDuration ease-in-out
+    border 1px solid #d3d3d3
+    margin-bottom 10px
+    display block
+    background-color rgba(255, 255, 255, 0.0)
+    color $textColor
+    position absolute
+    top 45px
+    right 115px
+    width 150px
+    border 1px solid #d3d3d3
+
+  .c-static-histogram-representation-label
+    display block
+    color $textColor
+    text-align left
+
+  .c-static-histogram-representation-container
+    display inline-block
+    float right
+
+    .c-static-histogram-representation[state="off"]
+      color $textColor
+      border 2px
+
+    .c-static-histogram-representation[state="on"]
+      color $textColor
+      border 2px solid #666
+
+  .c-static-histogram-offset-label
+    display block
+    color $textColor
+    text-align left
+
+  .c-static-histogram-offset-container
+    display inline-block
+    float right
+
+    .c-static-histogram-offset[state="off"]
+      border 2px
+
+    .c-static-histogram-offset[state="on"]
+      border 2px solid #666
+
+  .c-static-histogram-interpolation-label
+    display block
+    color $textColor
+    text-align left
+
+  .c-static-histogram-interpolation-container
+    display inline-block
+    float right
+
+    .c-static-histogram-interpolation[state="off"]
+      border 2px
+
+    .c-static-histogram-interpolation[state="on"]
+      border 2px solid #666

@@ -1,41 +1,62 @@
-cinema.views.HistogramWidget = Backbone.View.extend({
+cinema.views.StaticHistogramWidget = Backbone.View.extend({
     events: {
-        'click .c-histogram-tools-panel-close': 'toggleHistogramTools',
-        'click .c-histogram-representation-area': 'toggleHistogramArea',
-        'click .c-histogram-representation-bar': 'toggleHistogramBar',
-        'click .c-histogram-representation-lines': 'toggleHistogramLines',
-        'click .c-histogram-representation-scatter': 'toggleHistogramScatter',
-        'click .c-histogram-offset-stacked': 'toggleHistogramStacked',
-        'click .c-histogram-offset-stream': 'toggleHistogramStream',
-        'click .c-histogram-offset-percent': 'toggleHistogramPercent',
-        'click .c-histogram-offset-value': 'toggleHistogramValue',
-        'click .c-histogram-interpolation-cardinal': 'toggleHistogramCardinal',
-        'click .c-histogram-interpolation-linear': 'toggleHistogramLinear',
-        'click .c-histogram-interpolation-step': 'toggleHistogramStep'
+        'click .c-static-histogram-tools-panel-close': 'toggleHistogramTools',
+        'click .c-static-histogram-representation-area': 'toggleHistogramArea',
+        'click .c-static-histogram-representation-bar': 'toggleHistogramBar',
+        'click .c-static-histogram-representation-lines': 'toggleHistogramLines',
+        'click .c-static-histogram-representation-scatter': 'toggleHistogramScatter',
+        'click .c-static-histogram-offset-stacked': 'toggleHistogramStacked',
+        'click .c-static-histogram-offset-stream': 'toggleHistogramStream',
+        'click .c-static-histogram-offset-percent': 'toggleHistogramPercent',
+        'click .c-static-histogram-offset-value': 'toggleHistogramValue',
+        'click .c-static-histogram-interpolation-cardinal': 'toggleHistogramCardinal',
+        'click .c-static-histogram-interpolation-linear': 'toggleHistogramLinear',
+        'click .c-static-histogram-interpolation-step': 'toggleHistogramStep'
     },
 
     initialize: function (settings) {
         this.basePath = settings.basePath;
         this.histogramModel = settings.histogramModel;
         this.viewpoint = settings.viewpoint;
-        this.layers = settings.layers;
+
         this.toolbarSelector = settings.toolbarSelector;
-        this.toolbarHistogram = new cinema.views.HistogramToolbar({el: settings.toolbarSelector});
+        this.toolbarHistogram = new cinema.views.StaticHistogramToolbar({el: settings.toolbarSelector});
         this.representation = 'area';
         this.interpolation = 'cardinal';
         this.offset = 'zero';
         this.unstacked = false;
+        this.controlModel = settings.controlModel;
+        this.visModel = settings.visModel;
+        this.b64 = cinema.utilities.Base64LookupTable();
 
-        this.histogramModel = new cinema.models.HistogramModel({
-            layerModel: this.layers,
-            basePath: this.basePath
-        });
+        this.buildStaticHistogramMap();
 
         this.listenTo(cinema.events, 'toggle-control-panel', this.toggleControlPanel);
         this.listenTo(cinema.events, 'c:edithistogram', this.toggleHistogramTools);
         this.listenTo(cinema.events, 'c:showhistogramlegend', this.toggleHistogramLegend);
-        this.listenTo(this.layers, 'change', this.updateHistogramModel);
+        this.listenTo(this.controlModel, 'change', this.updateHistogramModel);
         this.listenTo(this.histogramModel, 'change', this.readyHistogramModel);
+    },
+
+    buildStaticHistogramMap: function() {
+        var namePattern = this.visModel.attributes.name_pattern;
+        var ignoreComponents = ['time', 'phi', 'theta'];
+        var regex = /{([^}]+)}/g;
+        this.layerComponents = [];
+        this.layerEncodingMap = {};
+        var m = regex.exec(namePattern);
+
+        while (m) {
+            if (!_.contains(ignoreComponents, m[1])) {
+                this.layerComponents.push(m[1]);
+                var values = this.visModel.attributes.arguments[m[1]].values;
+                this.layerEncodingMap[m[1]] = {}
+                for (var j = 0; j < values.length; j += 1) {
+                    this.layerEncodingMap[m[1]][values[j]] = this.b64.o2b(j);
+                }
+            }
+            m = regex.exec(namePattern);
+        }
     },
 
     readyHistogramModel: function () {
@@ -55,12 +76,12 @@ cinema.views.HistogramWidget = Backbone.View.extend({
 
     render:  function () {
         if (this.histogramModel.loaded()) {
-            this.$('.c-control-panel-body').html(cinema.templates.histogram({
+            this.$('.c-control-panel-body').html(cinema.templates.staticHistogram({
             }));
             this.toolbarHistogram.setElement(this.$(this.toolbarSelector)).render();
             this.drawChart();
 
-            this.$('.c-histogram-tools-panel-close[title]').tooltip({
+            this.$('.c-static-histogram-tools-panel-close[title]').tooltip({
                 placement: 'bottom',
                 delay: {show: 200}
             });
@@ -72,9 +93,10 @@ cinema.views.HistogramWidget = Backbone.View.extend({
     },
 
     drawChart: function () {
-        var histogramGraph = this.$('.c-histogram-graph'),
-            histogramLegend = this.$('.c-histogram-legend'),
-            histogramRange = this.$('.c-histogram-range');
+
+        var histogramGraph = this.$('.c-static-histogram-graph'),
+            histogramLegend = this.$('.c-static-histogram-legend'),
+            histogramRange = this.$('.c-static-histogram-range');
 
         if (histogramGraph.width() > 0 && histogramGraph.height() > 0) {
             this.graph = new Rickshaw.Graph({
@@ -154,7 +176,7 @@ cinema.views.HistogramWidget = Backbone.View.extend({
 
 
     toggleHistogramTools: function () {
-        var link = this.$('.c-histogram-tools-panel'),
+        var link = this.$('.c-static-histogram-tools-panel'),
             state;
         if (link.attr('state') === 'on') {
             state = 'off';
@@ -169,7 +191,7 @@ cinema.views.HistogramWidget = Backbone.View.extend({
     },
 
     toggleHistogramLegend: function () {
-        var link = this.$('.c-histogram-legend'),
+        var link = this.$('.c-static-histogram-legend'),
             state;
         if (link.attr('state') === 'on') {
             state = 'off';
@@ -184,35 +206,35 @@ cinema.views.HistogramWidget = Backbone.View.extend({
     },
 
     toggleHistogramArea: function () {
-        var link = this.$('.c-histogram-representation-area'),
+        var link = this.$('.c-static-histogram-representation-area'),
             other, state, config;
         if (link.attr('state') !== 'on') {
             state = 'on';
             link.attr('state', state);
             state = 'off';
-            other = this.$('.c-histogram-representation-bar');
+            other = this.$('.c-static-histogram-representation-bar');
             other.attr('state', state);
-            other = this.$('.c-histogram-representation-lines');
+            other = this.$('.c-static-histogram-representation-lines');
             other.attr('state', state);
-            other = this.$('.c-histogram-representation-scatter');
+            other = this.$('.c-static-histogram-representation-scatter');
             other.attr('state', state);
-            other = this.$('.c-histogram-offset-stacked');
+            other = this.$('.c-static-histogram-offset-stacked');
             state = 'on';
             other.attr('state', state);
             state = 'off';
-            other = this.$('.c-histogram-offset-stream');
+            other = this.$('.c-static-histogram-offset-stream');
             other.attr('state', state);
-            other = this.$('.c-histogram-offset-percent');
+            other = this.$('.c-static-histogram-offset-percent');
             other.attr('state', state);
-            other = this.$('.c-histogram-offset-value');
+            other = this.$('.c-static-histogram-offset-value');
             other.attr('state', state);
-            other = this.$('.c-histogram-interpolation-cardinal');
+            other = this.$('.c-static-histogram-interpolation-cardinal');
             state = 'on';
             other.attr('state', state);
             state = 'off';
-            other = this.$('.c-histogram-interpolation-linear');
+            other = this.$('.c-static-histogram-interpolation-linear');
             other.attr('state', state);
-            other = this.$('.c-histogram-interpolation-step');
+            other = this.$('.c-static-histogram-interpolation-step');
             other.attr('state', state);
             this.representation = 'area';
             this.interpolation = 'cardinal';
@@ -231,35 +253,35 @@ cinema.views.HistogramWidget = Backbone.View.extend({
     },
 
     toggleHistogramBar: function () {
-        var link = this.$('.c-histogram-representation-bar'),
+        var link = this.$('.c-static-histogram-representation-bar'),
             other, state, config;
         if (link.attr('state') !== 'on') {
             state = 'on';
             link.attr('state', state);
             state = 'off';
-            other = this.$('.c-histogram-representation-area');
+            other = this.$('.c-static-histogram-representation-area');
             other.attr('state', state);
-            other = this.$('.c-histogram-representation-lines');
+            other = this.$('.c-static-histogram-representation-lines');
             other.attr('state', state);
-            other = this.$('.c-histogram-representation-scatter');
+            other = this.$('.c-static-histogram-representation-scatter');
             other.attr('state', state);
-            other = this.$('.c-histogram-offset-stacked');
+            other = this.$('.c-static-histogram-offset-stacked');
             state = 'on';
             other.attr('state', state);
             state = 'off';
-            other = this.$('.c-histogram-offset-stream');
+            other = this.$('.c-static-histogram-offset-stream');
             other.attr('state', state);
-            other = this.$('.c-histogram-offset-percent');
+            other = this.$('.c-static-histogram-offset-percent');
             other.attr('state', state);
-            other = this.$('.c-histogram-offset-value');
+            other = this.$('.c-static-histogram-offset-value');
             other.attr('state', state);
-            other = this.$('.c-histogram-interpolation-step');
+            other = this.$('.c-static-histogram-interpolation-step');
             state = 'on';
             other.attr('state', state);
             state = 'off';
-            other = this.$('.c-histogram-interpolation-cardinal');
+            other = this.$('.c-static-histogram-interpolation-cardinal');
             other.attr('state', state);
-            other = this.$('.c-histogram-interpolation-linear');
+            other = this.$('.c-static-histogram-interpolation-linear');
             other.attr('state', state);
             this.representation = 'bar';
             this.interpolation = 'step';
@@ -277,35 +299,35 @@ cinema.views.HistogramWidget = Backbone.View.extend({
     },
 
     toggleHistogramLines: function () {
-        var link = this.$('.c-histogram-representation-lines'),
+        var link = this.$('.c-static-histogram-representation-lines'),
             other, state, config;
         if (link.attr('state') !== 'on') {
             state = 'on';
             link.attr('state', state);
             state = 'off';
-            other = this.$('.c-histogram-representation-area');
+            other = this.$('.c-static-histogram-representation-area');
             other.attr('state', state);
-            other = this.$('.c-histogram-representation-bar');
+            other = this.$('.c-static-histogram-representation-bar');
             other.attr('state', state);
-            other = this.$('.c-histogram-representation-scatter');
+            other = this.$('.c-static-histogram-representation-scatter');
             other.attr('state', state);
-            other = this.$('.c-histogram-offset-value');
+            other = this.$('.c-static-histogram-offset-value');
             state = 'on';
             other.attr('state', state);
             state = 'off';
-            other = this.$('.c-histogram-offset-stacked');
+            other = this.$('.c-static-histogram-offset-stacked');
             other.attr('state', state);
-            other = this.$('.c-histogram-offset-stream');
+            other = this.$('.c-static-histogram-offset-stream');
             other.attr('state', state);
-            other = this.$('.c-histogram-offset-percent');
+            other = this.$('.c-static-histogram-offset-percent');
             other.attr('state', state);
-            other = this.$('.c-histogram-interpolation-cardinal');
+            other = this.$('.c-static-histogram-interpolation-cardinal');
             state = 'on';
             other.attr('state', state);
             state = 'off';
-            other = this.$('.c-histogram-interpolation-linear');
+            other = this.$('.c-static-histogram-interpolation-linear');
             other.attr('state', state);
-            other = this.$('.c-histogram-interpolation-step');
+            other = this.$('.c-static-histogram-interpolation-step');
             other.attr('state', state);
             this.representation = 'line';
             this.interpolation = 'cardinal';
@@ -323,35 +345,35 @@ cinema.views.HistogramWidget = Backbone.View.extend({
     },
 
     toggleHistogramScatter: function () {
-        var link = this.$('.c-histogram-representation-scatter'),
+        var link = this.$('.c-static-histogram-representation-scatter'),
             other, state, config;
         if (link.attr('state') !== 'on') {
             state = 'on';
             link.attr('state', state);
             state = 'off';
-            other = this.$('.c-histogram-representation-area');
+            other = this.$('.c-static-histogram-representation-area');
             other.attr('state', state);
-            other = this.$('.c-histogram-representation-bar');
+            other = this.$('.c-static-histogram-representation-bar');
             other.attr('state', state);
-            other = this.$('.c-histogram-representation-lines');
+            other = this.$('.c-static-histogram-representation-lines');
             other.attr('state', state);
-            other = this.$('.c-histogram-offset-value');
+            other = this.$('.c-static-histogram-offset-value');
             state = 'on';
             other.attr('state', state);
             state = 'off';
-            other = this.$('.c-histogram-offset-stacked');
+            other = this.$('.c-static-histogram-offset-stacked');
             other.attr('state', state);
-            other = this.$('.c-histogram-offset-stream');
+            other = this.$('.c-static-histogram-offset-stream');
             other.attr('state', state);
-            other = this.$('.c-histogram-offset-percent');
+            other = this.$('.c-static-histogram-offset-percent');
             other.attr('state', state);
-            other = this.$('.c-histogram-interpolation-step');
+            other = this.$('.c-static-histogram-interpolation-step');
             state = 'on';
             other.attr('state', state);
             state = 'off';
-            other = this.$('.c-histogram-interpolation-cardinal');
+            other = this.$('.c-static-histogram-interpolation-cardinal');
             other.attr('state', state);
-            other = this.$('.c-histogram-interpolation-linear');
+            other = this.$('.c-static-histogram-interpolation-linear');
             other.attr('state', state);
             this.representation = 'scatterplot';
             this.interpolation = 'step';
@@ -369,17 +391,17 @@ cinema.views.HistogramWidget = Backbone.View.extend({
     },
 
     toggleHistogramStacked: function () {
-        var link = this.$('.c-histogram-offset-stacked'),
+        var link = this.$('.c-static-histogram-offset-stacked'),
             other, state, config;
         if (link.attr('state') !== 'on') {
             state = 'on';
             link.attr('state', state);
             state = 'off';
-            other = this.$('.c-histogram-offset-stream');
+            other = this.$('.c-static-histogram-offset-stream');
             other.attr('state', state);
-            other = this.$('.c-histogram-offset-percent');
+            other = this.$('.c-static-histogram-offset-percent');
             other.attr('state', state);
-            other = this.$('.c-histogram-offset-value');
+            other = this.$('.c-static-histogram-offset-value');
             other.attr('state', state);
             this.offset = 'zero';
             this.unstacked = false;
@@ -395,17 +417,17 @@ cinema.views.HistogramWidget = Backbone.View.extend({
     },
 
     toggleHistogramStream: function () {
-        var link = this.$('.c-histogram-offset-stream'),
+        var link = this.$('.c-static-histogram-offset-stream'),
             other, state, config;
         if (link.attr('state') !== 'on') {
             state = 'on';
             link.attr('state', state);
             state = 'off';
-            other = this.$('.c-histogram-offset-stacked');
+            other = this.$('.c-static-histogram-offset-stacked');
             other.attr('state', state);
-            other = this.$('.c-histogram-offset-percent');
+            other = this.$('.c-static-histogram-offset-percent');
             other.attr('state', state);
-            other = this.$('.c-histogram-offset-value');
+            other = this.$('.c-static-histogram-offset-value');
             other.attr('state', state);
             this.offset = 'wiggle';
             this.unstacked = false;
@@ -421,17 +443,17 @@ cinema.views.HistogramWidget = Backbone.View.extend({
     },
 
     toggleHistogramPercent: function () {
-        var link = this.$('.c-histogram-offset-percent'),
+        var link = this.$('.c-static-histogram-offset-percent'),
             other, state, config;
         if (link.attr('state') !== 'on') {
             state = 'on';
             link.attr('state', state);
             state = 'off';
-            other = this.$('.c-histogram-offset-stacked');
+            other = this.$('.c-static-histogram-offset-stacked');
             other.attr('state', state);
-            other = this.$('.c-histogram-offset-stream');
+            other = this.$('.c-static-histogram-offset-stream');
             other.attr('state', state);
-            other = this.$('.c-histogram-offset-value');
+            other = this.$('.c-static-histogram-offset-value');
             other.attr('state', state);
             this.offset = 'expand';
             this.unstacked = false;
@@ -447,17 +469,17 @@ cinema.views.HistogramWidget = Backbone.View.extend({
     },
 
     toggleHistogramValue: function () {
-        var link = this.$('.c-histogram-offset-value'),
+        var link = this.$('.c-static-histogram-offset-value'),
             other, state, config;
         if (link.attr('state') !== 'on') {
             state = 'on';
             link.attr('state', state);
             state = 'off';
-            other = this.$('.c-histogram-offset-stacked');
+            other = this.$('.c-static-histogram-offset-stacked');
             other.attr('state', state);
-            other = this.$('.c-histogram-offset-stream');
+            other = this.$('.c-static-histogram-offset-stream');
             other.attr('state', state);
-            other = this.$('.c-histogram-offset-percent');
+            other = this.$('.c-static-histogram-offset-percent');
             other.attr('state', state);
             this.offset = 'value';
             this.unstacked = true;
@@ -473,15 +495,15 @@ cinema.views.HistogramWidget = Backbone.View.extend({
     },
 
     toggleHistogramCardinal: function () {
-        var link = this.$('.c-histogram-interpolation-cardinal'),
+        var link = this.$('.c-static-histogram-interpolation-cardinal'),
             other, state, config;
         if (link.attr('state') !== 'on') {
             state = 'on';
             link.attr('state', state);
             state = 'off';
-            other = this.$('.c-histogram-interpolation-linear');
+            other = this.$('.c-static-histogram-interpolation-linear');
             other.attr('state', state);
-            other = this.$('.c-histogram-interpolation-step');
+            other = this.$('.c-static-histogram-interpolation-step');
             other.attr('state', state);
             this.interpolation = 'cardinal';
             config = {
@@ -495,15 +517,15 @@ cinema.views.HistogramWidget = Backbone.View.extend({
     },
 
     toggleHistogramLinear: function () {
-        var link = this.$('.c-histogram-interpolation-linear'),
+        var link = this.$('.c-static-histogram-interpolation-linear'),
             other, state, config;
         if (link.attr('state') !== 'on') {
             state = 'on';
             link.attr('state', state);
             state = 'off';
-            other = this.$('.c-histogram-interpolation-cardinal');
+            other = this.$('.c-static-histogram-interpolation-cardinal');
             other.attr('state', state);
-            other = this.$('.c-histogram-interpolation-step');
+            other = this.$('.c-static-histogram-interpolation-step');
             other.attr('state', state);
             this.interpolation = 'linear';
             config = {
@@ -517,15 +539,15 @@ cinema.views.HistogramWidget = Backbone.View.extend({
     },
 
     toggleHistogramStep: function () {
-        var link = this.$('.c-histogram-interpolation-step'),
+        var link = this.$('.c-static-histogram-interpolation-step'),
             other, state, config;
         if (link.attr('state') !== 'on') {
             state = 'on';
             link.attr('state', state);
             state = 'off';
-            other = this.$('.c-histogram-interpolation-cardinal');
+            other = this.$('.c-static-histogram-interpolation-cardinal');
             other.attr('state', state);
-            other = this.$('.c-histogram-interpolation-linear');
+            other = this.$('.c-static-histogram-interpolation-linear');
             other.attr('state', state);
             this.interpolation = 'step';
             config = {
@@ -539,7 +561,17 @@ cinema.views.HistogramWidget = Backbone.View.extend({
     },
 
     updateHistogramModel: function () {
-        this.histogramModel.fetch();
+        var layerCodeElts = [];
+
+        for (var idx = 0; idx < this.layerComponents.length; idx += 1) {
+            var lName = this.layerComponents[idx];
+            var controlElement = this.controlModel.controlMap[lName];
+            var lValue = controlElement.values[parseInt(controlElement.activeIdx)];
+            layerCodeElts.push(this.layerEncodingMap[lName][lValue]);
+        }
+
+        var layerCodeString = layerCodeElts.join('-');
+        this.histogramModel.fetch({'layerCodeString': layerCodeString});
     }
 
 });

@@ -1,0 +1,39 @@
+.c-static-histogram-content
+  label.c-static-histogram-ylabel # of Images
+  .c-static-histogram-graph
+  label.c-static-histogram-xlabel Pixel Content Percentage
+  .c-static-histogram-range
+  .c-static-histogram-legend(state="on").rickshaw_legend
+  .c-static-histogram-tools-panel(state="on")
+    .c-control-panel-header
+      .c-panel-title
+        i.icon-tools.c-icon.c-static-histogram-tools-panel-close(title="Close")
+        |  Tools
+    .c-control-panel-body(class=".c-static-histogram-tools-panel")
+      label Representation
+
+      .c-static-histogram-representation-container
+         block buttons
+         a(title="Area")
+           i.icon-area.c-static-histogram-representation.c-static-histogram-representation-area(state="on")
+         a(title="Bar")
+           i.icon-bar.c-static-histogram-representation.c-static-histogram-representation-bar(state="off")
+         a(title="Lines")
+           i.icon-lines.c-static-histogram-representation.c-static-histogram-representation-lines(state="off")
+         a(title="Scatter")
+           i.icon-scatter.c-static-histogram-representation.c-static-histogram-representation-scatter(state="off")
+
+      label Data Offset
+
+      .c-static-histogram-offset-container
+         i.icon-stacked.c-static-histogram-offset.c-static-histogram-offset-stacked(state="on")
+         i.icon-stream.c-static-histogram-offset.c-static-histogram-offset-stream(state="off")
+         i.icon-percent.c-static-histogram-offset.c-static-histogram-offset-percent(state="off")
+         i.icon-value.c-static-histogram-offset.c-static-histogram-offset-value(state="off")
+
+      label Interpolation
+
+      .c-static-histogram-interpolation-container
+         i.icon-cardinal.c-static-histogram-interpolation.c-static-histogram-interpolation-cardinal(state="on")
+         i.icon-linear.c-static-histogram-interpolation.c-static-histogram-interpolation-linear(state="off")
+         i.icon-step.c-static-histogram-interpolation.c-static-histogram-interpolation-step(state="off")
