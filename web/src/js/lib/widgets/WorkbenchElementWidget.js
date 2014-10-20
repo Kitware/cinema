@@ -44,6 +44,7 @@ cinema.views.WorkbenchElementWidget = Backbone.View.extend({
 
         visModel.on('change', function () {
             cinema.viewFactory.render(this.$('.c-run-container'), 'view', visModel);
+            this.$('.c-side-panel-title').text(visModel.get('metadata').title);
         }, this).fetch();
     }
 });
