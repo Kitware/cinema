@@ -9,5 +9,11 @@
           a.c-run-option(run-id="#{run.path}")= run.title
 .c-run-container
   .c-body-container.c-workbench-body-container
-  .c-tools-panel
-    .c-control-panel-body
+  .c-side-panel
+    .c-side-panel-header
+      .c-side-panel-title Select a visualization
+      .c-side-panel-collapse.pull-right
+        a.c-side-panel-toggle.hide(title="Minimize controls", state="open")
+          i.icon-angle-circled-up
+    .c-tools-panel
+      .c-control-panel-body
