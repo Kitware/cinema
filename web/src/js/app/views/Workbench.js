@@ -53,7 +53,7 @@
 
             var selectCurrentRun = function () {
                 _.each($('.c-dv-layout-item'), function (el) {
-                    $(el).off();
+                    $(el).removeClass('empty').off();
                     new cinema.views.WorkbenchElementWidget({
                         el: el,
                         model: configuration.models[currentRun]
