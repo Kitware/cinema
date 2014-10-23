@@ -1,11 +1,4 @@
-mixin workbench-item
-  .c-dv-layout-item
-    .c-layout-item-empty
-      | Select a run from the
-      b  Run
-      |  menu in the header bar.
-    .c-layout-empty-image
-      i.icon-link-ext-alt
+include workbenchElementMixin
 
 .c-dv-layout-container.container-fluid
     - var irow = 0, icol = 0, item = 0, w = Math.floor(12/layout.cols), h = Math.floor( 12/layout.rows)
