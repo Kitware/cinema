@@ -1,0 +1,7 @@
+.c-control-info-section
+  each controlName in order
+    .c-information-element-header
+      if controlMap[controlName].type === 'range'
+        label.c-information-id #{controlMap[controlName].label}: [#{controlMap[controlName].values[0]},...,#{controlMap[controlName].values[controlMap[controlName].values.length-1]}]
+      else
+        label.c-information-id #{controlMap[controlName].label}: [#{controlMap[controlName].values}]
