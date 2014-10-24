@@ -11,8 +11,11 @@
             viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
             layerModel = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup(),
                                                      { info: model }),
-            histogramModel = new cinema.models.CompositeHistogramModel({ layerModel: layerModel,
-                                                                         basePath: model.get('basePath') }),
+            // creation of histogram model is conditional on there actually being analysis available
+            histogramModel = (_.has(model.attributes.metadata, 'analysis') === false ? null :
+                new cinema.models.CompositeHistogramModel({ layerModel: layerModel,
+                                                            basePath: model.get('basePath'),
+                                                            analysisInfo: model.attributes.metadata.analysis })),
             renderer = new cinema.views.VisualizationCanvasWidget({
                 el: container,
                 model: compositeModel,
@@ -34,14 +37,16 @@
                 keyModifiers: null
             }),
 
-           compositeHistogram = new cinema.views.CompositeHistogramWidget({
+           // creation of histogram widget is conditional on there actually being analysis available
+           compositeHistogram = (_.has(model.attributes.metadata, 'analysis') === false ? null :
+            new cinema.views.CompositeHistogramWidget({
                 el: $('.c-histogram-panel', container),
                 basePath: model.get('basePath'),
                 histogramModel: histogramModel,
                 viewpoint: viewpointModel,
                 layerModel: layerModel,
                 toolbarSelector: '.c-panel-toolbar'
-            }),
+            })),
 
             compositeTools = new cinema.views.CompositeToolsWidget({
                 el: $('.c-tools-panel', container),
@@ -52,28 +57,36 @@
                 toolbarSelector: '.c-panel-toolbar'
             }),
 
-            searchInformation = new cinema.views.SearchInformationWidget({
+            // creation of histogram widget is conditional on there actually being analysis available
+            searchInformation = (_.has(model.attributes.metadata, 'analysis') === false ? null :
+             new cinema.views.SearchInformationWidget({
                 el: $('.c-information-panel', container),
                 model: compositeModel,
                 controlModel: controlModel,
                 exclude: ['layer', 'filename'],
                 layers: layerModel,
                 toolbarSelector: '.c-panel-toolbar'
-            }),
+            })),
 
             controlList = [
-                { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' },
-                { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
-                { position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' }
+                { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
             ],
             firstRender = true;
+
+            // Addition of histogram and search info icons in header is conditional on existence of analysis information
+            if (_.has(model.attributes.metadata, 'analysis')) {
+                controlList.unshift({ position: 'left', key: 'information', icon: 'icon-help', title: 'Information' });
+                controlList.unshift({ position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' });
+            }
 
         function render () {
             var root = $(rootSelector);
             renderer.setElement($('.c-body-container', root)).render();
-            compositeHistogram.setElement($('.c-histogram-panel', root)).render();
             compositeTools.setElement($('.c-tools-panel', root)).render();
-            searchInformation.setElement($('.c-information-panel', root)).render();
+            if (_.has(model.attributes.metadata, 'analysis')) {
+                compositeHistogram.setElement($('.c-histogram-panel', root)).render();
+                searchInformation.setElement($('.c-information-panel', root)).render();
+            }
             renderer.showViewpoint(true);
             if (firstRender) {
                 firstRender = false;
