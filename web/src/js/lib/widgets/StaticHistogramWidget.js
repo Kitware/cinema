@@ -27,7 +27,7 @@ cinema.views.StaticHistogramWidget = Backbone.View.extend({
         this.unstacked = false;
         this.controlModel = settings.controlModel;
         this.visModel = settings.visModel;
-        this.b64 = cinema.utilities.Base64LookupTable();
+        this.analysisInfo = settings.analysisInfo;
 
         this.buildStaticHistogramMap();
 
@@ -49,13 +49,18 @@ cinema.views.StaticHistogramWidget = Backbone.View.extend({
         while (m) {
             if (!_.contains(ignoreComponents, m[1])) {
                 this.layerComponents.push(m[1]);
-                var values = this.visModel.attributes.arguments[m[1]].values;
-                this.layerEncodingMap[m[1]] = {}
-                for (var j = 0; j < values.length; j += 1) {
-                    this.layerEncodingMap[m[1]][values[j]] = this.b64.o2b(j);
-                }
             }
             m = regex.exec(namePattern);
+        }
+
+        for (var i = 0; i < this.analysisInfo.information.length; i+=1) {
+            var info = this.analysisInfo.information[i];
+            var name = info.name;
+            this.layerEncodingMap[name] = {};
+            for (var j = 0; j < info.mappings.length; j+=1) {
+                var mapping = info.mappings[j];
+                this.layerEncodingMap[name][mapping.value] = mapping.code;
+            }
         }
     },
 

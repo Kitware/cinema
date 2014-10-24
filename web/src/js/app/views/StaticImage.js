@@ -49,6 +49,7 @@
                     viewpoint: viewpointModel,
                     controlModel: controlModel,
                     visModel: model,
+                    analysisInfo: model.attributes.metadata.analysis,
                     toolbarSelector: '.c-panel-toolbar'
                 })),
             searchInformation = (_.has(model.attributes.metadata, 'analysis') === false ? null :
