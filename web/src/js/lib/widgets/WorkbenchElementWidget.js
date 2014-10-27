@@ -25,6 +25,20 @@ cinema.views.WorkbenchElementWidget = Backbone.View.extend({
                             .addClass('icon-angle-circled-up');
                 this.$('.c-control-panel-body').show();
             }
+        },
+
+        'click .c-control-modal': function (e) {
+            var key = $(e.currentTarget).attr('key');
+            if (key === this.controlMode) {
+                return;
+            }
+            this.$('a.c-'+this.controlMode+'-mode').attr('state', 'inactive');
+            this.$('a.c-'+key+'-mode').attr('state', 'active');
+
+            this.$('.c-'+this.controlMode+'-panel').addClass('hide');
+            this.$('.c-'+key+'-panel').removeClass('hide');
+
+            this.controlMode = key;
         }
     },
 
@@ -60,10 +74,26 @@ cinema.views.WorkbenchElementWidget = Backbone.View.extend({
         });
 
         visModel.on('change', function () {
-            cinema.viewFactory.render(this.$('.c-run-container'), 'view', visModel);
-            this.$('.c-side-panel-title').text(visModel.get('metadata').title);
+            var title = visModel.get('metadata').title;
+            var controls = cinema.viewFactory.render(this.$('.c-run-container'), 'view', visModel);
+            this.$('.c-side-panel-title').text(title).attr('title', title);
             this.$('.c-side-panel').removeClass('hide');
             this.$('.c-workbench-body-container').removeClass('empty');
+            this.$('.c-control-modal').hide().tooltip({
+                container: 'body',
+                placement: 'bottom'
+            });
+            this.$('.c-control-panel').addClass('hide');
+
+            var state = 'active';
+            _.each(controls, function (control) {
+                this.$('a.c-'+control.key+'-mode').show().attr('state', state);
+                if (state === 'active') {
+                    this.controlMode = control.key;
+                    this.$('.c-'+control.key+'-panel').removeClass('hide');
+                }
+                state = 'inactive';
+            }, this);
         }, this).fetch();
     }
 });

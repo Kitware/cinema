@@ -49,10 +49,23 @@
         line-height 22px
         max-width 250px
 
-      .c-side-panel-toggle
+      .c-modal-controls-container
+        margin-right 5px
+        display inline-block
+
+      .c-side-panel-controls a
         color white
         cursor pointer
         line-height 22px
+
+        &.c-control-modal[state="inactive"]
+          color #999
+
+          &:hover
+            color #ccc
+
+        &.c-control-modal[state="active"]
+          cursor default !important
 
     .c-control-panel-body
       background-color rgba(255, 255, 255, 0.4)
