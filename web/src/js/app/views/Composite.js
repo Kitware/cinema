@@ -62,9 +62,9 @@
             }),
 
             controlList = [
+                { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' },
                 { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
-                { position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' },
-                { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
+                { position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' }
             ],
             firstRender = true;
 
@@ -146,9 +146,9 @@
             }),
 
             controlList = [
+                { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' },
                 { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
-                { position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' },
-                { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
+                { position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' }
             ],
             firstRender = true;
 

@@ -11,8 +11,15 @@
   .c-side-panel.hide
     .c-side-panel-header
       .c-side-panel-title
-      .c-side-panel-collapse.pull-right
+      .c-side-panel-controls.pull-right
+        .c-modal-controls-container
+          a.c-tools-mode.c-control-modal(state="inactive", title="Tools", key="tools")
+            i.icon-tools
+          a.c-rendering-mode.c-control-modal(state="inactive", title="Rendering", key="rendering")
+            i.icon-sun
         a.c-side-panel-toggle(title="Minimize controls", state="open")
           i.icon-angle-circled-up
-    .c-tools-panel
+    .c-tools-panel.c-control-panel.hide
+      .c-control-panel-body
+    .c-rendering-panel.c-control-panel.hide
       .c-control-panel-body
