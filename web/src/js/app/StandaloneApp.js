@@ -50,37 +50,49 @@ cinema.StandaloneApp = Backbone.View.extend({
         }
 
         // Make sure we have a view type valid
-        if (cinema.viewType === null || cinema.viewType === undefined || cinema.viewType === '' || !_.contains(this.allowedViewType, cinema.viewType)) {
+        if (!cinema.viewType || !_.contains(this.allowedViewType, cinema.viewType)) {
             cinema.viewType = 'view';
         }
 
         // Find out what the view control list is for control panel container
-        var controlList = cinema.viewFactory.getViewControlList('body', cinema.viewType, cinema.model);
+        var viewInfo = cinema.viewMapper.getView(cinema.model.getDataType(), cinema.viewType);
 
         // Create container for control panels
-        this.$el.html(cinema.app.templates.layout({controlList:controlList, viewType:cinema.viewType}));
+        this.$el.html(cinema.app.templates.layout({
+            controlList: viewInfo.opts.controls,
+            viewType:cinema.viewType
+        }));
 
         // Handle header bar base on application type (workbench/cinema)
+        var title;
         if (cinema.model.getDataType() === 'workbench') {
-            // Workbench Cinema App
-            this.$('.header-left').html(cinema.app.templates.headerLeft({icon: 'icon-cinema', title: 'Workbench', active: cinema.viewType}));
+            title = 'Workbench';
             this.$('.header-right').html(cinema.app.templates.workbenchControl({
                 runs: cinema.model.get('runs')
             }));
         } else {
-            // Single Cinema App
-            this.$('.header-left').html(cinema.app.templates.headerLeft({icon: 'icon-cinema', title: 'Cinema', active: cinema.viewType}));
+            title = 'Cinema';
             this.$('.header-right').html(cinema.app.templates.cinemaControl({controlList:controlList}));
         }
 
-        // Fill the layout base on the type of the view and model.
-        cinema.viewFactory.render('body', cinema.viewType, cinema.model);
+        this.$('.header-left').html(cinema.app.templates.headerLeft({
+            icon: 'icon-cinema',
+            title: title,
+            active: cinema.viewType
+        }));
 
-        // Create nice tooltip for the full page
         this.$('[title]').tooltip({
             placement: 'bottom',
             delay: {show: 200}
         });
+
+        if (this._currentView) {
+            this._currentView.remove();
+        }
+        this._currentView = new viewInfo.view({
+            el: this.$('.c-body-container'),
+            model: this.model
+        }).render();
 
         return this;
     }
