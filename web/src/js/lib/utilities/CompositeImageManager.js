@@ -23,6 +23,7 @@
 
         this.visModel = params.visModel;
         this._cache = {};
+        this.globalCount = 0;
 
         this.supportedDataTypes = [
             'composite-image-stack',
@@ -83,6 +84,34 @@
     };
 
     /**
+     * Returns the composite info file name from the vis model.
+     */
+    prototype._garbageCollector = function () {
+        var cacheKeys = _.keys(this._cache),
+            cacheSize = cacheKeys.length
+            orderedCache = [],
+            count = cacheSize;
+
+        function sortFunction(a,b) {
+            return a.ts - b.ts;
+        }
+
+        if(cacheSize > 100) {
+            while(count--) {
+                this._cache[cacheKeys[count]].key = this._cache[cacheKeys[count]];
+                orderedCache.push(this._cache[cacheKeys[count]]);
+            }
+            orderedCache.sort(sortFunction);
+        }
+
+        while (cacheSize > 100) {
+            delete this._cache[orderedCache[0].key];
+            cacheSize--;
+            orderedCache.shift();
+        }
+    };
+
+    /**
      * Downloads the image data asynchronously and stores it in the cache for
      * the given key, storing it in the "image" key in the cache entry.
      */
@@ -93,6 +122,7 @@
 
         img.onload = _.bind(function () {
             this._cache[key].image = img;
+            this._cache[key].ts = this.globalCount++;
             if (_.has(this._cache[key], 'json')) {
                 this._cache[key].ready = true;
                 this.trigger('c:data.ready', this._cache[key], viewpoint);
@@ -143,6 +173,7 @@
 
         img.onload = _.bind(function () {
             this._cache[key].image = img;
+            this._cache[key].ts = this.globalCount++;
             if (_.has(this._cache[key], 'depthimage')) {
                 this._cache[key].ready = true;
                 this.trigger('c:data.ready', this._cache[key], viewpoint);

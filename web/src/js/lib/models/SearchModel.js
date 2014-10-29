@@ -7,11 +7,16 @@ cinema.models.SearchModel = Backbone.Model.extend({
         Backbone.Model.apply(this, arguments);
 
         this.basePath = settings.basePath;
+        this.histogramModel = settings.histogramModel;
         this.layerModel = settings.layerModel;
         this.visModel = settings.visModel;
         this.query = settings.query || {};
 
+        this.results = [];
+
         this.listenTo(this.visModel, 'change', this.readyToInitialize);
+        this.listenTo(this.histogramModel, 'change', this.updateDataMap);
+        this.listenTo(this.layerModel, 'change', this.updateHistogramModel);
         this.readyToInitialize();
     },
 
@@ -27,8 +32,16 @@ cinema.models.SearchModel = Backbone.Model.extend({
         var pattern = this.visModel.get('name_pattern') || "",
             args = this.visModel.get('arguments') || {},
             compList = pattern.split('/'),
+            i,
+            index,
             re = /{(.+)}/,
             self = this;
+
+        this._layers = args.layer.values;
+        index = this._layers.indexOf("_");
+        if (index > -1) {
+            this._layers.splice(index, 1);
+        }
 
         this._argArrays = [];
         this._argKeys = [];
@@ -46,19 +59,31 @@ cinema.models.SearchModel = Backbone.Model.extend({
         });
         this._maxOrdinal -= 1;
 
+
+        this._realKeys = [];
+        for (i = 0; i < this._argKeys.length; i += 1) {
+            this._realKeys.push(this._argKeys[i]);
+        }
+        for (i = 0; i < this._layers.length; i += 1) {
+            this._realKeys.push(this._layers[i]);
+        }
+
+
         var multiplier = 1;
-        for (var i = this._argArrays.length - 1; i >= 0; i-=1) {
+        for (i = this._argArrays.length - 1; i >= 0; i-=1) {
             this._multipliers.unshift(multiplier);
             multiplier *= this._argArrays[i].length;
         }
 
         this._dataMap = this.buildDataMap();
+        this.histogramModel.fetch();
 
         this.trigger('change');
     },
 
     buildDataMap: function() {
         var i,
+            j,
             obj,
             results = [],
             url;
@@ -66,7 +91,10 @@ cinema.models.SearchModel = Backbone.Model.extend({
         for (i = 0; i <= this._maxOrdinal; i += 1) {
             obj = this.ordinalToObject(i);
             url = this.basePath + '/' + this.objectToPath(obj);
-            results.push( { "index": i, "obj": obj, "url": url, "keep": true } );
+            for (j = 0; j < this._layers.length; j += 1) {
+                obj[this._layers[j]] = 0;
+            }
+            results.push( {"index": i, "obj": obj, "url": url, "keep": false} );
         }
         return results;
     },
@@ -86,82 +114,67 @@ cinema.models.SearchModel = Backbone.Model.extend({
     },
 
     filterBy: function (queryExpression) {
+        this.clearResults();
         var functionTemplate = 'var LOCAL_VARS; return (EXP);',
             variableTemplate = 'ARG = obj["ARG"]',
-            count = this._maxOrdinal + 1,
+            count,
             localVariables = [],
             numberOfValidResults = 0;
 
         // Generate filter function
-        for(var i = 0; i < this._argKeys.length; i += 1) {
-            localVariables.push(variableTemplate.replace(/ARG/g, this._argKeys[i]));
+        for(var i = 0; i < this._realKeys.length; i += 1) {
+            localVariables.push(variableTemplate.replace(/ARG/g, this._realKeys[i]));
         }
         functionTemplate = functionTemplate.replace(/LOCAL_VARS/g, localVariables.join(',')).replace(/EXP/g, queryExpression);
+        /*jshint -W054 */
         var validator = new Function('obj', functionTemplate);
 
         // Filter by the query
-        while(count--) {
-            this._dataMap[count]['keep'] = validator(this._dataMap[count]["obj"]);
-            if(this._dataMap[count]['keep']) {
-                numberOfValidResults++;
+        for (count = 0; count <= this._maxOrdinal; count += 1) {
+            this._dataMap[count].keep = validator(this._dataMap[count].obj);
+            if(this._dataMap[count].keep) {
+                numberOfValidResults += 1;
             }
         }
 
         return numberOfValidResults;
     },
 
-    sortBy: function showResults(sortExpression) {
+    clearResults: function (queryExpression) {
+        for (var count = 0; count <= this._maxOrdinal; count += 1) {
+            this._dataMap[count].keep = false;
+        }
+    },
+
+    sortBy: function (sortExpression) {
         var functionTemplate = 'function extractValue(obj) { var LOCAL_VARS; return (EXP);}; return extractValue(a) - extractValue(b);',
-            variableTemplate = 'ARG = obj["ARG"]',
-            count = this._maxOrdinal + 1,
+            variableTemplate = 'ARG = obj.obj["ARG"]',
             localVariables = [];
 
-        for(var i = 0; i < this._argKeys.length; i += 1) {
-            localVariables.push(variableTemplate.replace(/ARG/g, this._argKeys[i]));
+        for(var i = 0; i < this._realKeys.length; i += 1) {
+            localVariables.push(variableTemplate.replace(/ARG/g, this._realKeys[i]));
         }
 
         functionTemplate = functionTemplate.replace(/LOCAL_VARS/g, localVariables.join(',')).replace(/EXP/g, sortExpression);
+        /*jshint -W054 */
         var sortFunction = new Function(["a","b"], functionTemplate);
         this._dataMap.sort(sortFunction);
-
-        while(count--) {
-            if(this._dataMap[count]['keep']) {
-                console.log(this._dataMap[count].url);
-            }
-        }
     },
 
     /**
-     * This method computes all matching search results, and triggers
-     * a 'c:done' event when it has finished.
+     * This method sets the search results, and triggers a 'c:done' event when it has finished.
      */
-    compute: function () {
+    setResultsList: function () {
         this.results = [];
-
         var i;
-        for (i = 0; i <= this._maxOrdinal; i += 1) {
-            var viewpoint = this.ordinalToObject(i);
 
-            if (this._filter(viewpoint)) {
+        for (i = 0; i <= this._maxOrdinal; i += 1) {
+            if (this._dataMap[i].keep) {
+                var viewpoint = this.ordinalToObject(this._dataMap[i].index);
                 this.results.push(viewpoint);
             }
         }
-        // TODO sort results
-
         this.trigger('c:done');
-    },
-
-    /**
-     * Filter a single result based on the current query. Return true if it is a
-     * match, false if not.
-     */
-    _filter: function (viewpoint) {
-        return _.every(this._argKeys, function (field) {
-            if (!_.has(this.query, field)) {
-                return true;
-            }
-            return this.query[field].toString() === viewpoint[field];
-        }, this);
     },
 
     /**
@@ -254,5 +267,31 @@ cinema.models.SearchModel = Backbone.Model.extend({
 
     imageCount: function () {
         return this.visModel.lengthPhi() * this.visModel.lengthTime() * this.visModel.lengthTheta();
+    },
+
+    updateDataMap: function() {
+        if (!this.histogramModel.loaded()) {
+            return;
+        }
+        var i,
+            images = this.histogramModel.getData('images'),
+            j,
+            k,
+            key;
+
+        for (i = 0; i < images.length; i += 1) {
+            for (j = 0; j < this._layers.length; j += 1) {
+                if (this._layers[j] in images[i]) {
+                    key = this._layers[j];
+                    for (k = 0; k < images[i][key].length; k += 1) {
+                        this._dataMap[images[i][key][k]].obj[key] = i;
+                    }
+                }
+            }
+        }
+    },
+
+    updateHistogramModel: function () {
+        this.histogramModel.fetch();
     }
 });

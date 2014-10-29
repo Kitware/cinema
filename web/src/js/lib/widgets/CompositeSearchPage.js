@@ -8,10 +8,20 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
 
     initialize: function (settings) {
         this.basePath = settings.basePath;
+        this.histogramModel = settings.histogramModel;
         this.visModel = settings.visModel;
         this.layerModel = settings.layerModel;
+        this.zoomWidth = $(window).width() * 0.25;
+
+        this.firstRender = true;
+        this.resultIndex = 0;
+
+        this.offscreenLayerModel = new cinema.models.LayerModel(this.visModel.getDefaultPipelineSetup(), { info: this.visModel }),
+        this.offscreenControlModel = new cinema.models.ControlModel({ info: this.visModel });
+        this.offscreenViewpointModel = new cinema.models.ViewPointModel({ controlModel: this.offscreenControlModel });
 
         this.listenTo(cinema.events, 'c:handlesearchquery', this.handleSearchQuery);
+        this.listenTo(cinema.events, 'c:handlesearchzoom', this.handleSearchZoom);
     },
 
     render: function () {
@@ -24,46 +34,63 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
 
         this.searchModel = new cinema.models.SearchModel({
             basePath: this.basePath,
+            histogramModel: this.histogramModel,
             visModel: this.visModel,
             layerModel: this.layerModel
         });
 
         this.searchModel.off('c:done').on('c:done', this._showResults, this);
 
-        if (this.visModel.loaded()) {
-            this.searchModel.compute();
-        }
+        var viewpoint = this.offscreenControlModel.getControls();
+        this.compositeSearchResultContainer = $(cinema.templates.compositeSearchResultContainer({
+            viewpoint: viewpoint
+        }));
+        this.compositeSearchResultContainer.appendTo(this.$('.c-search-results-list-area'));
 
-        /*TODO listen to main toolsthis.listenTo(pipelineView.layers, 'change', function () {
-            this.searchModel.compute();
-        }, this);*/
+        this.offscreenVisualizationCanvasWidget = new cinema.views.VisualizationCanvasWidget({
+            el: this.compositeSearchResultContainer,
+            model: this.visModel,
+            viewpoint: this.offscreenViewpointModel,
+            layers: this.offscreenLayerModel
+        }).render().showViewpoint();
+        this.compositeSearchResultContainer.hide();
+    },
+
+    handleSearchZoom:  function (event) {
+        this.zoomWidth = Number(event.zoomWidth);
+        this.$('.c-search-result-wrapper').css('width', this.zoomWidth).css('height', this.zoomWidth);
     },
 
     handleSearchQuery:  function (event) {
+        this.clearResults();
         var expressions = event.searchQuery.split(' Sort By '),
-            numberOfSearchResults = 0;
-        if (expressions.length == 2) {
-            var filterExpression = this.searchModel.validateQuery(expressions[0]);
-            var sortExpression = this.searchModel.validateQuery(expressions[1]);
-            if (filterExpression != null && filterExpression != '') {
+            filterExpression,
+            numberOfSearchResults = 0,
+            sortExpression;
+
+        if (expressions.length === 2) {
+            filterExpression = this.searchModel.validateQuery(expressions[0]);
+            sortExpression = this.searchModel.validateQuery(expressions[1]);
+            if (filterExpression !== null && filterExpression !== '') {
                 numberOfSearchResults = this.searchModel.filterBy(filterExpression);
-                console.log('# ', numberOfSearchResults);
             }
-            if (numberOfSearchResults > 0 && sortExpression != null && sortExpression != '') {
+            if (numberOfSearchResults > 0 && sortExpression !== null && sortExpression !== '') {
                 this.searchModel.sortBy(sortExpression);
             }
+            this.searchModel.setResultsList();
         }
-        else if (expressions.length == 1) {
-            var filterExpression = this.searchModel.validateQuery(expressions[0]);
-            if (filterExpression != null && filterExpression != '') {
+        else if (expressions.length === 1) {
+            filterExpression = this.searchModel.validateQuery(expressions[0]);
+            if (filterExpression !== null && filterExpression !== '') {
                 numberOfSearchResults = this.searchModel.filterBy(filterExpression);
-                console.log('# ', numberOfSearchResults);
             }
+            this.searchModel.setResultsList();
         }
     },
 
     clearResults: function () {
         // TODO do we need to remove all the widgets manually?
+        this.$('.c-search-result-wrapper').remove();
         this.$('.c-search-results-list-area').empty();
     },
 
@@ -94,35 +121,30 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
     },
 
     _showNextResult: function () {
+        var self = this;
+
         if (this.searchModel.results.length <= this.resultIndex) {
             return;
         }
 
         var viewpoint = this.searchModel.results[this.resultIndex];
-        var el = $(cinema.templates.compositeSearchResultContainer({
-            viewpoint: viewpoint
-        }));
-
-        el.appendTo(this.$('.c-search-results-list-area'));
-
-        var controlModel = new cinema.models.ControlModel({ info: this.visModel }),
-            viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel });
-
-        controlModel.setControls(viewpoint);
-
-        new cinema.views.VisualizationCanvasWidget({
-            el: el,
-            model: this.visModel,
-            viewpoint: viewpointModel,
-            layers: this.layerModel
-        }).once('c:drawn', function () {
-            this.resultIndex += 1;
-
-            if (this._canScroll()) {
-                this._showNextResult();
-            } else {
-                this._setScrollWaypoint();
+        this.offscreenControlModel.setControls(viewpoint);
+        var query = this.layerModel.serialize();
+        this.offscreenVisualizationCanvasWidget.once('c:drawn', function () {
+            self.resultIndex += 1;
+            var image = self.offscreenVisualizationCanvasWidget.getImage();
+            image.onload = function() {
+                $('<img src="' + image.src + '" class = "c-search-result-wrapper"/>').
+                    css('width', self.zoomWidth).
+                    css('height', self.zoomWidth).
+                    appendTo(self.$('.c-search-results-list-area'));
             }
-        }, this).render().showViewpoint();
+
+            if (self._canScroll()) {
+                self._showNextResult();
+            } else {
+                self._setScrollWaypoint();
+            }
+        }, this).updateTheQuery(query);
     }
 });

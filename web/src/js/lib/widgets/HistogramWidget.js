@@ -26,11 +26,6 @@ cinema.views.HistogramWidget = Backbone.View.extend({
         this.offset = 'zero';
         this.unstacked = false;
 
-        this.histogramModel = new cinema.models.HistogramModel({
-            layerModel: this.layers,
-            basePath: this.basePath
-        });
-
         this.listenTo(cinema.events, 'toggle-control-panel', this.toggleControlPanel);
         this.listenTo(cinema.events, 'c:edithistogram', this.toggleHistogramTools);
         this.listenTo(cinema.events, 'c:showhistogramlegend', this.toggleHistogramLegend);
