@@ -47,8 +47,8 @@
                 renderingModel: renderingModel
             }),
             controlList = [
-                { position: 'left',  key: 'rendering', icon: 'icon-picture',   title: 'Rendering'},
-                { position: 'right', key: 'tools',     icon: 'icon-tools', title: 'Tools' }
+                { position: 'right', key: 'tools',     icon: 'icon-tools', title: 'Tools' },
+                { position: 'left',  key: 'rendering', icon: 'icon-picture',   title: 'Rendering'}
             ];
 
             function render () {

@@ -5,6 +5,7 @@
   top 0
   left 0
   z-index 1
+  display inline-block
 
   .c-run-select
     border-radius 0 0 2px 0
@@ -12,7 +13,7 @@
     border-top none
 
   .dropdown-menu
-    max-height 290px
+    max-height 260px
     overflow-y scroll
     position relative
     top -3px
@@ -22,7 +23,11 @@
   width 100%
   height 100%
 
-  .c-tools-panel
+  .c-body-container.empty
+    box-shadow inset 0 0 12px 1px rgba(0, 0, 0, 0.2)
+    background-color #f0f0f0
+
+  .c-side-panel
     position absolute
     z-index 1
     top 0
@@ -30,6 +35,37 @@
     width 300px
     max-height 100%
     overflow-y scroll
+
+    .c-side-panel-header
+      background-color #626262
+      color white
+      font-size 12px
+      height 22px
+      padding 0 10px
+
+      .c-side-panel-title
+        overflow ellipsis
+        display inline-block
+        line-height 22px
+        max-width 250px
+
+      .c-modal-controls-container
+        margin-right 5px
+        display inline-block
+
+      .c-side-panel-controls a
+        color white
+        cursor pointer
+        line-height 22px
+
+        &.c-control-modal[state="inactive"]
+          color #999
+
+          &:hover
+            color #ccc
+
+        &.c-control-modal[state="active"]
+          cursor default !important
 
     .c-control-panel-body
       background-color rgba(255, 255, 255, 0.4)
