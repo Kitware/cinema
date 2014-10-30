@@ -318,11 +318,36 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         return this;
     },
 
-    updateQuery: function (query) {
+    getImage: function () {
+        var image = new Image(),
+            compositeCanvas = this.$('.c-vis-composite-buffer')[0];
+        image.src = compositeCanvas.toDataURL("image/png");
+        return image;
+    },
+
+    updateQuery: function () {
         this.orderMapping = {};
         this.compositeCache = {};
         this._computeLayerOffset();
         this._controls = {}; // force redraw
+        this.showViewpoint();
+    },
+
+    updateTheQuery: function (query) {
+        this.orderMapping = {};
+        this.compositeCache = {};
+        this.layerOffset = {};
+
+        for (var i = 0; i < query.length; i += 2) {
+            var layer = query[i];
+
+            if (query[i + 1] === '_') {
+                this.layerOffset[layer] = -1;
+            } else {
+                this.layerOffset[layer] = this.compositeModel.getSpriteSize() -
+                    this.compositeModel.getOffset()[query.substr(i, 2)];
+            }
+        }
         this.showViewpoint();
     },
 

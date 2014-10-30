@@ -11,7 +11,7 @@
             viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
             layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup(),
                                                   { info: model }),
-            histogramModel = new cinema.models.HistogramModel({ layers: layers,
+            histogramModel = new cinema.models.HistogramModel({ layerModel: layers,
                                                                 basePath: model.get('basePath') }),
             renderer = new cinema.views.VisualizationCanvasWidget({
                 el: container,
@@ -110,10 +110,12 @@
             controlModel = new cinema.models.ControlModel({ info: model }),
             viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
             layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup(), { info: model }),
-            histogramModel = new cinema.models.HistogramModel({ layers: layers,
+            histogramModel = new cinema.models.HistogramModel({ layerModel: layers,
                 basePath: model.get('basePath') }),
 
-            page = new cinema.views.CompositeSearchPage({
+            searchPage = new cinema.views.CompositeSearchPage({
+                basePath: model.get('basePath'),
+                histogramModel: histogramModel,
                 visModel: compositeModel,
                 layerModel: layers
             }),
@@ -127,11 +129,9 @@
                 toolbarSelector: '.c-panel-toolbar'
             }),
 
-            compositeTools = new cinema.views.CompositeToolsWidget({
+            searchTools = new cinema.views.SearchToolsWidget({
                 el: $('.c-tools-panel', container),
                 model: compositeModel,
-                controlModel: controlModel,
-                viewpoint: viewpointModel,
                 layers: layers,
                 toolbarSelector: '.c-panel-toolbar'
             }),
@@ -154,8 +154,8 @@
 
         function render () {
             var root = $(rootSelector);
-            page.setElement($('.c-body-container', root)).render();
-            compositeTools.setElement($('.c-tools-panel', root)).render();
+            searchPage.setElement($('.c-body-container', root)).render();
+            searchTools.setElement($('.c-tools-panel', root)).render();
             compositeHistogram.setElement($('.c-histogram-panel', root)).render();
             searchInformation.setElement($('.c-information-panel', root)).render();
             if (firstRender) {

@@ -26,11 +26,6 @@ cinema.views.HistogramWidget = Backbone.View.extend({
         this.offset = 'zero';
         this.unstacked = false;
 
-        this.histogramModel = new cinema.models.HistogramModel({
-            layerModel: this.layers,
-            basePath: this.basePath
-        });
-
         this.listenTo(cinema.events, 'toggle-control-panel', this.toggleControlPanel);
         this.listenTo(cinema.events, 'c:edithistogram', this.toggleHistogramTools);
         this.listenTo(cinema.events, 'c:showhistogramlegend', this.toggleHistogramLegend);
@@ -79,7 +74,7 @@ cinema.views.HistogramWidget = Backbone.View.extend({
         if (histogramGraph.width() > 0 && histogramGraph.height() > 0) {
             this.graph = new Rickshaw.Graph({
                 element: histogramGraph[0],
-                width: histogramGraph.width() - 40,
+                width: histogramGraph.width(),
                 height: histogramGraph.height() - 0.01 * histogramGraph.height(),
                 renderer: this.representation,
                 stroke: true,
