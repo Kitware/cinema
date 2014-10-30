@@ -123,54 +123,65 @@
             controlModel = new cinema.models.ControlModel({ info: model }),
             viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
             layerModel = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup(), { info: model }),
-            histogramModel = new cinema.models.HistogramModel({ layers: layerModel,
-                basePath: model.get('basePath') }),
+            histogramModel = (_.has(model.attributes.metadata, 'analysis') === false ? null :
+                new cinema.models.CompositeHistogramModel({ layerModel: layerModel,
+                                                            basePath: model.get('basePath'),
+                                                            analysisInfo: model.attributes.metadata.analysis })),
 
-            page = new cinema.views.CompositeSearchPage({
-                visModel: compositeModel,
-                layerModel: layerModel
-            }),
+            searchPage = (_.has(model.attributes.metadata, 'analysis') === false ? null :
+                new cinema.views.CompositeSearchPage({
+                    basePath: model.get('basePath'),
+                    histogramModel: histogramModel,
+                    visModel: compositeModel,
+                    layerModel: layerModel
+            })),
 
-            compositeHistogram = new cinema.views.HistogramWidget({
-                el: $('.c-histogram-panel', container),
-                basePath: model.get('basePath'),
-                histogramModel: histogramModel,
-                viewpoint: viewpointModel,
-                layers: layerModel,
-                toolbarSelector: '.c-panel-toolbar'
-            }),
+            compositeHistogram = (_.has(model.attributes.metadata, 'analysis') === false ? null :
+                new cinema.views.CompositeHistogramWidget({
+                    el: $('.c-histogram-panel', container),
+                    basePath: model.get('basePath'),
+                    histogramModel: histogramModel,
+                    viewpoint: viewpointModel,
+                    layerModel: layerModel,
+                    toolbarSelector: '.c-panel-toolbar'
+            })),
 
-            compositeTools = new cinema.views.CompositeToolsWidget({
+            searchTools = new cinema.views.SearchToolsWidget({
                 el: $('.c-tools-panel', container),
                 model: compositeModel,
-                controlModel: controlModel,
-                viewpoint: viewpointModel,
                 layers: layerModel,
                 toolbarSelector: '.c-panel-toolbar'
             }),
 
-            searchInformation = new cinema.views.SearchInformationWidget({
-                el: $('.c-information-panel', container),
-                model: compositeModel,
-                controlModel: controlModel,
-                exclude: ['layer', 'filename'],
-                layers: layerModel,
-                toolbarSelector: '.c-panel-toolbar'
-            }),
+            searchInformation = (_.has(model.attributes.metadata, 'analysis') === false ? null :
+                new cinema.views.SearchInformationWidget({
+                    el: $('.c-information-panel', container),
+                    model: compositeModel,
+                    controlModel: controlModel,
+                    exclude: ['layer', 'filename'],
+                    layers: layerModel,
+                    toolbarSelector: '.c-panel-toolbar'
+            })),
 
             controlList = [
-                { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' },
-                { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
-                { position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' }
+                { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
             ],
             firstRender = true;
 
+            // Addition of histogram and search info icons in header is conditional on existence of analysis information
+            if (_.has(model.attributes.metadata, 'analysis')) {
+                controlList.unshift({ position: 'left', key: 'information', icon: 'icon-help', title: 'Information' });
+                controlList.unshift({ position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' });
+            }
+
         function render () {
             var root = $(rootSelector);
-            page.setElement($('.c-body-container', root)).render();
-            compositeTools.setElement($('.c-tools-panel', root)).render();
-            compositeHistogram.setElement($('.c-histogram-panel', root)).render();
-            searchInformation.setElement($('.c-information-panel', root)).render();
+            searchTools.setElement($('.c-tools-panel', root)).render();
+            if (_.has(model.attributes.metadata, 'analysis')) {
+                searchPage.setElement($('.c-body-container', root)).render();
+                compositeHistogram.setElement($('.c-histogram-panel', root)).render();
+                searchInformation.setElement($('.c-information-panel', root)).render();
+            }
             if (firstRender) {
                 firstRender = false;
                 $('.c-histogram-panel', root).hide();
