@@ -88,7 +88,7 @@
      */
     prototype._garbageCollector = function () {
         var cacheKeys = _.keys(this._cache),
-            cacheSize = cacheKeys.length
+            cacheSize = cacheKeys.length,
             orderedCache = [],
             count = cacheSize;
 
@@ -97,16 +97,17 @@
         }
 
         if(cacheSize > 100) {
-            while(count--) {
+            while(count) {
                 this._cache[cacheKeys[count]].key = this._cache[cacheKeys[count]];
                 orderedCache.push(this._cache[cacheKeys[count]]);
+                count -= 1;
             }
             orderedCache.sort(sortFunction);
         }
 
         while (cacheSize > 100) {
             delete this._cache[orderedCache[0].key];
-            cacheSize--;
+            cacheSize -= 1;
             orderedCache.shift();
         }
     };
@@ -122,7 +123,8 @@
 
         img.onload = _.bind(function () {
             this._cache[key].image = img;
-            this._cache[key].ts = this.globalCount++;
+            this._cache[key].ts = this.globalCount;
+            this.globalCount += 1;
             if (_.has(this._cache[key], 'json')) {
                 this._cache[key].ready = true;
                 this.trigger('c:data.ready', this._cache[key], viewpoint);
@@ -173,7 +175,8 @@
 
         img.onload = _.bind(function () {
             this._cache[key].image = img;
-            this._cache[key].ts = this.globalCount++;
+            this._cache[key].ts = this.globalCount;
+            this.globalCount += 1;
             if (_.has(this._cache[key], 'depthimage')) {
                 this._cache[key].ready = true;
                 this.trigger('c:data.ready', this._cache[key], viewpoint);

@@ -16,7 +16,7 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
         this.firstRender = true;
         this.resultIndex = 0;
 
-        this.offscreenLayerModel = new cinema.models.LayerModel(this.visModel.getDefaultPipelineSetup(), { info: this.visModel }),
+        this.offscreenLayerModel = new cinema.models.LayerModel(this.visModel.getDefaultPipelineSetup(), { info: this.visModel });
         this.offscreenControlModel = new cinema.models.ControlModel({ info: this.visModel });
         this.offscreenViewpointModel = new cinema.models.ViewPointModel({ controlModel: this.offscreenControlModel });
 
@@ -138,7 +138,7 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
                     css('width', self.zoomWidth).
                     css('height', self.zoomWidth).
                     appendTo(self.$('.c-search-results-list-area'));
-            }
+            };
 
             if (self._canScroll()) {
                 self._showNextResult();

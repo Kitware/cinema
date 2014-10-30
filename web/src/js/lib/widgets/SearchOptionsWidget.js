@@ -93,7 +93,7 @@ cinema.views.SearchOptionsWidget = Backbone.View.extend({
             }
             else {
                 this.optionMap[optionName].value = Number(this.optionMap[optionName].value) + 1;
-                this.zoomLevel = this.optionMap['zoom'].value / 100.0;
+                this.zoomLevel = this.optionMap[optionName].value / 100.0;
                 this.zoomWidth = $(window).width() * this.zoomLevel;
                 this._refresh();
                 cinema.events.trigger('c:handlesearchzoom', {zoomWidth: this.zoomWidth});
