@@ -1,0 +1,18 @@
+$textColor = #666
+$highlightTextColor = #333
+$disabledColor = #aaa
+$disabledHighlightTextColor = #666
+
+.c-static-histogram-icon
+  color $textColor
+  cursor pointer
+  border-radius 3px
+
+  &:hover
+    background-color $disabledColor
+
+.c-static-histogram-icon-disabled
+  color $disabledColor
+
+  &:hover
+    color $disabledHighlightTextColor

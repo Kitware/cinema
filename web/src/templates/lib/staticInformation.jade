@@ -1,0 +1,11 @@
+.c-main-info-section
+  .c-naming-convention Naming Convention: #{namingPattern}
+  ol.c-codes-to-names
+    each info in analysis.information
+      li.c-info-name= info.name
+      ul.c-code-to-name-map
+        each mapping in info.mappings
+          li.c-code-to-name
+            span.c-info-mapping-code= mapping.code
+            span.c-mapper-char =
+            span.c-info-mapping-value= mapping.value
