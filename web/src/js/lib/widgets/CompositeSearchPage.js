@@ -90,8 +90,7 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
 
     clearResults: function () {
         // TODO do we need to remove all the widgets manually?
-        this.$('.c-search-result-wrapper').remove();
-        this.$('.c-search-results-list-area').empty();
+        $('.c-search-results-list-area').empty();
     },
 
     /** Returns whether we are at the bottom of the page */
