@@ -11,40 +11,7 @@
 ###
 
 # -----------------------------------------------------------------------------
-# ParaView Python - Path setup
-# -----------------------------------------------------------------------------
-
-
-# -----------------------------------------------------------------------------
-# Programmable Filter
-# -----------------------------------------------------------------------------
-
-ppf = """
-layer = %d
-inputDs = self.GetUnstructuredGridInput()
-outputDs = self.GetUnstructuredGridOutput()
-outputDs.ShallowCopy(inputDs)
-
-inputCellData = inputDs.GetCellData()
-outputCellData = outputDs.GetCellData()
-
-nbArrays = inputCellData.GetNumberOfArrays()
-
-for i in range(nbArrays):
-    array = inputCellData.GetArray(i)
-    newArray = array.NewInstance()
-    newArray.SetName(array.GetName())
-    newArray.SetNumberOfComponents(1)
-    newArray.SetNumberOfTuples(array.GetNumberOfTuples())
-    tupleSize = array.GetNumberOfComponents()
-    outputCellData.AddArray(newArray)
-
-    for idx in range(array.GetNumberOfTuples()):
-        newArray.SetValue(idx, array.GetValue(idx*tupleSize + layer))
-"""
-
-# -----------------------------------------------------------------------------
-#
+# ParaView Python - Module imports
 # -----------------------------------------------------------------------------
 
 import sys, os
@@ -84,6 +51,34 @@ flat_file_pattern = 'flat_1_primal/LON_LAT_1LAYER-primal_%d_0.vtu'
 flat_file_times = range(50, 351, 50)
 #flat_file_times = [ 50 ]
 flat_filenames = [ os.path.join(data_base_path, (flat_file_pattern % time)) for time in flat_file_times]
+
+# -----------------------------------------------------------------------------
+# Programmable Filter
+# -----------------------------------------------------------------------------
+
+ppf = """
+layer = %d
+inputDs = self.GetUnstructuredGridInput()
+outputDs = self.GetUnstructuredGridOutput()
+outputDs.ShallowCopy(inputDs)
+
+inputCellData = inputDs.GetCellData()
+outputCellData = outputDs.GetCellData()
+
+nbArrays = inputCellData.GetNumberOfArrays()
+
+for i in range(nbArrays):
+    array = inputCellData.GetArray(i)
+    newArray = array.NewInstance()
+    newArray.SetName(array.GetName())
+    newArray.SetNumberOfComponents(1)
+    newArray.SetNumberOfTuples(array.GetNumberOfTuples())
+    tupleSize = array.GetNumberOfComponents()
+    outputCellData.AddArray(newArray)
+
+    for idx in range(array.GetNumberOfTuples()):
+        newArray.SetValue(idx, array.GetValue(idx*tupleSize + layer))
+"""
 
 # -----------------------------------------------------------------------------
 # Output configuration
@@ -132,21 +127,14 @@ function_pattern = '%s_%d'
 flat_reader = XMLUnstructuredGridReader(FileName = flat_filenames) #
 flat_reader.CellArrayStatus = [ "salinity", "temperature", "density", "pressure" ]
 
-tFunc = function_pattern % ('temperature', 0)
-print 'tFunc: ' + tFunc
-scalar_temp_extract = Calculator(Input = flat_reader, ResultArrayName = 'scalartemp', AttributeMode = 'Cell Data', Function = tFunc)
+prog_filter = ProgrammableFilter( Input = flat_reader )
+prog_filter.RequestInformationScript = ''
+prog_filter.RequestUpdateExtentScript = ''
+prog_filter.PythonPath = ''
 
-sFunc = function_pattern % ('salinity', 0)
-print 'sFunc: ' + sFunc
-scalar_sali_extract = Calculator(Input = scalar_temp_extract, ResultArrayName = 'scalarsalinity', AttributeMode = 'Cell Data', Function = sFunc)
-
-dFunc = function_pattern % ('density', 0)
-print 'dFunc: ' + dFunc
-scalar_dens_extract = Calculator(Input = scalar_sali_extract, ResultArrayName = 'scalardensity', AttributeMode = 'Cell Data', Function = dFunc)
-
-pFunc = function_pattern % ('pressure', 0)
-print 'pFunc: ' + pFunc
-scalar_pres_extract = Calculator(Input = scalar_dens_extract, ResultArrayName = 'scalarpressure', AttributeMode = 'Cell Data', Function = pFunc)
+nan_threshold = Threshold( Input = prog_filter )
+nan_threshold.Scalars = ['CELLS', 'temperature']
+nan_threshold.ThresholdRange = [-500.0, 500.0]
 
 globalRanges = {
     'temperature': [ 10000000, -10000000 ],
@@ -155,63 +143,53 @@ globalRanges = {
     'pressure': [ 10000000, -10000000 ]
 }
 
-print 'Precalculating ranges...'
+print 'Precalculating data ranges...'
 for t in range(len(flat_file_times)):
     print '  timestep ',t
     for l in range(nb_slices):
-        print '    slice ',l
-        scalar_temp_extract.Function = function_pattern % ('temperature', l)
-        scalar_sali_extract.Function = function_pattern % ('salinity', l)
-        scalar_dens_extract.Function = function_pattern % ('density', l)
-        scalar_pres_extract.Function = function_pattern % ('pressure', l)
+        prog_filter.Script = ppf % l
+        nan_threshold.UpdatePipeline(t)
+        cdi = nan_threshold.GetCellDataInformation()
 
-        scalar_pres_extract.UpdatePipeline(t)
-
-        cdi = scalar_pres_extract.GetCellDataInformation()
-
-        globalRanges['temperature'] = updateGlobalRange(cdi.GetArray("scalartemp").GetRange(), globalRanges['temperature'])
-        globalRanges['salinity'] = updateGlobalRange(cdi.GetArray("scalarsalinity").GetRange(), globalRanges['salinity'])
-        globalRanges['pressure'] = updateGlobalRange(cdi.GetArray("scalarpressure").GetRange(), globalRanges['pressure'])
-        globalRanges['density'] = updateGlobalRange(cdi.GetArray("scalardensity").GetRange(), globalRanges['density'])
+        for key in globalRanges.keys():
+            globalRanges[key] = updateGlobalRange(cdi.GetArray(key).GetRange(), globalRanges[key])
 
 print 'Global array ranges:'
 print globalRanges
-
-# Rendering pipeline
-#flat_rep = Show(flat_reader)
-#flat_rep.EdgeColor = [0.0, 0.0, 0.0]
-#flat_rep.Representation = 'Surface With Edges'
+print
 
 filters = []
 filters_description = []
 color_by = []
 
 color_type = [
-    ('VALUE', "scalartemp"),
-    ('VALUE', "scalarsalinity"),
-    ('VALUE', "scalarpressure"),
-    ('VALUE', "scalardensity")
+    ('VALUE', "temperature"),
+    ('VALUE', "salinity"),
+    ('VALUE', "pressure"),
+    ('VALUE', "density")
 ]
 
-#cdi = scalar_pres_extract.GetCellDataInformation()
-
 luts = {
-    "scalartemp": ["cell", "scalartemp", 0, globalRanges['temperature']],
-    "scalarsalinity": ["cell", "scalarsalinity", 0, globalRanges['salinity']],
-    "scalarpressure": ["cell", "scalarpressure", 0, globalRanges['pressure']],
-    "scalardensity": ["cell", "scalardensity", 0, globalRanges['density']]
+    "temperature": ["cell", "temperature", 0, globalRanges['temperature']],
+    "salinity": ["cell", "salinity", 0, globalRanges['salinity']],
+    "pressure": ["cell", "pressure", 0, globalRanges['pressure']],
+    "density": ["cell", "density", 0, globalRanges['density']]
 }
 
-filters.append( scalar_pres_extract )
-color_by.append( color_type )
-filters_description.append( {'name': 'Grid'} )
+filters.append(flat_reader)
+color_by.append( [ ('SOLID_COLOR', [0.5,0.5,0.5]) ] )
+filters_description.append( { 'name': 'Cells Mask'})
+
+filters.append(nan_threshold)
+color_by.append(color_type)
+filters_description.append( {'name': 'Computation Grid'} )
 
 
 # -----------------------------------------------------------------------------
 # Rendering configuration
 # -----------------------------------------------------------------------------
 
-view_size = [1000, 1000]
+view_size = [1500, 750]
 center_of_rotation = [0.0, 0.0, 0.0]
 
 camera_handler = wx.ThreeSixtyCameraHandler(
@@ -221,7 +199,7 @@ camera_handler = wx.ThreeSixtyCameraHandler(
     [ 0 ],
     center_of_rotation,
     [ 0, 1, 0 ],
-    6.8)
+    6)
 
 exporter = wx.CompositeImageExporter(
     fng,
@@ -233,20 +211,18 @@ exporter = wx.CompositeImageExporter(
     filters_description,
     0, 0, 'png')
 
-#exporter.view.ViewSize = view_size
 exporter.view.Background = [1.0, 1.0, 1.0]
 exporter.view.OrientationAxesVisibility = 0
 exporter.view.CenterAxesVisibility = 0
 
-#exporter.view.CameraParallelScale = 1.55
+# Customize the look of the cells mask
+readerRepr = Show(flat_reader, exporter.view)
+readerRepr.Representation = 'Wireframe'
+readerRepr.AmbientColor = [0.0, 0.0, 0.0]
+readerRepr.ColorArrayName = [None, '']
+readerRepr.ScalarOpacityUnitDistance = 0.30336485436433686
 
-#exporter.view.CameraParallelProjection = 1
-#exporter.view.InteractionMode = '2D'
-#exporter.view.CenterOfRotation = [-0.540230751037598, 0.09185272455215454, 0.0]
-#exporter.view.CameraPosition = [0.0, 0.1, 10.0]
-#exporter.view.CameraFocalPoint = [0.0, 0.1, 0.0]
-
-print "CRAM IT!"
+print "Begin processing"
 
 exporter.set_analysis(analysis)
 
@@ -254,26 +230,18 @@ exporter.set_analysis(analysis)
 # Batch processing
 # -----------------------------------------------------------------------------
 
-scalar_temp_extract.Function = function_pattern % ('temperature', 0)
-scalar_sali_extract.Function = function_pattern % ('salinity', 0)
-scalar_dens_extract.Function = function_pattern % ('density', 0)
-scalar_pres_extract.Function = function_pattern % ('pressure', 0)
-
-UpdatePipeline(0)
-
 analysis.begin()
 
 for time in range(len(flat_file_times)):
+    print "Processing slices for timestep, ",time
+
     fng.update_active_arguments(time=time)
     GetAnimationScene().TimeKeeper.Time = float(time)
 
     for layer in range(nb_slices):
         fng.update_active_arguments(slice=layer)
 
-        scalar_temp_extract.Function = function_pattern % ('temperature', layer)
-        scalar_sali_extract.Function = function_pattern % ('salinity', layer)
-        scalar_dens_extract.Function = function_pattern % ('density', layer)
-        scalar_pres_extract.Function = function_pattern % ('pressure', layer)
+        prog_filter.Script = ppf % layer
 
         exporter.UpdatePipeline(time)
 
