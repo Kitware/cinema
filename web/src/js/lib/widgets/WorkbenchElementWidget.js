@@ -81,6 +81,7 @@ cinema.views.WorkbenchElementWidget = Backbone.View.extend({
 
             if (this._visWidget) {
                 this._visWidget.remove();
+                this.render();
             }
             this._visWidget = new viewInfo.view({
                 el: this.$('.c-run-container'),

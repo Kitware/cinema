@@ -11,6 +11,9 @@ cinema.views.ChartView = Backbone.View.extend({
     },
 
     render: function () {
+        if (this.renderView) {
+            this.renderView.remove();
+        }
         this.renderView = new cinema.views.ChartVisualizationCanvasWidget({
             el: this.$('.c-body-container'),
             model: this.model,
