@@ -1,10 +1,10 @@
 cinema.views.CompositeLightView = Backbone.View.extend({
     initialize: function () {
-        this.compositeModel = new cinema.decorators.Composite(this.model),
-        this.controlModel = new cinema.models.ControlModel({ info: this.model }),
-        this.viewpointModel = new cinema.models.ViewPointModel({ controlModel: this.controlModel }),
+        this.compositeModel = new cinema.decorators.Composite(this.model);
+        this.controlModel = new cinema.models.ControlModel({ info: this.model });
+        this.viewpointModel = new cinema.models.ViewPointModel({ controlModel: this.controlModel });
         this.layers = new cinema.models.LayerModel(this.compositeModel.getDefaultPipelineSetup(),
-            { info: this.model }),
+            { info: this.model });
         this.renderingModel = new cinema.models.RenderingModel({
             // TODO absolute path...
             url: '/rendering/rendering.json',
