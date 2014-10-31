@@ -71,15 +71,17 @@ cinema.StandaloneApp = Backbone.View.extend({
         }));
 
         // Handle header bar base on application type (workbench/cinema)
-        var title;
+        var title, container;
         if (cinema.model.getDataType() === 'workbench') {
             title = 'Workbench';
+            container = this.$('.c-body-container');
             this.$('.header-right').html(cinema.app.templates.workbenchControl({
                 runs: cinema.model.get('runs')
             }));
         } else {
             title = 'Cinema';
-            this.$('.header-right').html(cinema.app.templates.cinemaControl({controlList:controlList}));
+            container = this.$el;
+            this.$('.header-right').html(cinema.app.templates.cinemaControl({controlList: viewInfo.opts.controls}));
         }
 
         this.$('.header-left').html(cinema.app.templates.headerLeft({
@@ -97,7 +99,7 @@ cinema.StandaloneApp = Backbone.View.extend({
             this._currentView.remove();
         }
         this._currentView = new viewInfo.view({
-            el: this.$('.c-body-container'),
+            el: container,
             model: this.model
         }).render();
 
