@@ -39,8 +39,6 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
             layerModel: this.layerModel
         });
 
-        this.searchModel.off('c:done').on('c:done', this._showResults, this);
-
         var viewpoint = this.offscreenControlModel.getControls();
         this.compositeSearchResultContainer = $(cinema.templates.compositeSearchResultContainer({
             viewpoint: viewpoint
@@ -63,33 +61,41 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
 
     handleSearchQuery:  function (event) {
         this.clearResults();
+        var that = this;
+        setTimeout(function(){
         var expressions = event.searchQuery.split(' Sort By '),
             filterExpression,
             numberOfSearchResults = 0,
             sortExpression;
 
         if (expressions.length === 2) {
-            filterExpression = this.searchModel.validateQuery(expressions[0]);
-            sortExpression = this.searchModel.validateQuery(expressions[1]);
+            filterExpression = that.searchModel.validateQuery(expressions[0]);
+            sortExpression = that.searchModel.validateQuery(expressions[1]);
             if (filterExpression !== null && filterExpression !== '') {
-                numberOfSearchResults = this.searchModel.filterBy(filterExpression);
+                numberOfSearchResults = that.searchModel.filterBy(filterExpression);
             }
             if (numberOfSearchResults > 0 && sortExpression !== null && sortExpression !== '') {
-                this.searchModel.sortBy(sortExpression);
+                that.searchModel.sortBy(sortExpression);
             }
-            this.searchModel.setResultsList();
+            that.searchModel.setResultsList();
+            if (numberOfSearchResults > 0) {
+                that._showResults();
+            }
         }
         else if (expressions.length === 1) {
-            filterExpression = this.searchModel.validateQuery(expressions[0]);
+            filterExpression = that.searchModel.validateQuery(expressions[0]);
             if (filterExpression !== null && filterExpression !== '') {
-                numberOfSearchResults = this.searchModel.filterBy(filterExpression);
+                numberOfSearchResults = that.searchModel.filterBy(filterExpression);
             }
-            this.searchModel.setResultsList();
+            that.searchModel.setResultsList();
+            if (numberOfSearchResults > 0) {
+                that._showResults();
+            }
         }
+        }, 100);
     },
 
     clearResults: function () {
-        // TODO do we need to remove all the widgets manually?
         $('.c-search-results-list-area').empty();
     },
 
@@ -109,9 +115,6 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
 
     _showResults: function () {
         this.resultIndex = 0;
-        this.clearResults();
-        // The issue is that the this.$el is detached and needs
-        // to be re-assign with the setElement method.
 
         this.$('.c-search-result-message').text(
              this.searchModel.results.length + ' results');
