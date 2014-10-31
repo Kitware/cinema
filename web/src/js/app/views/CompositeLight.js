@@ -1,4 +1,4 @@
-(function () {
+/*(function () {
     // Create Composite data type view assembly
 
     cinema.viewFactory.registerView('composite-image-stack-light', 'view', function (rootSelector, viewType, model) {
@@ -78,4 +78,4 @@
             render: render
         };
     });
-}());
+}());*/

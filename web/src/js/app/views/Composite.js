@@ -1,4 +1,4 @@
-(function () {
+/*(function () {
 
     // --------- Add 'view' page for composite-image-stack dataset ----------
 
@@ -171,4 +171,4 @@
         };
     });
 
-}());
+}());*/

@@ -1,4 +1,4 @@
-(function () {
+/*(function () {
     // Create Composite data type view assembly
 
     cinema.viewFactory.registerView('parametric-image-stack', 'view', function (rootSelector, viewType, model) {
@@ -67,4 +67,4 @@
             render: render
         };
     });
-}());
+}());*/

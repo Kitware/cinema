@@ -1,59 +1,45 @@
-(function () {
-    // Create Chart data type view assembly
+cinema.views.ChartView = Backbone.View.extend({
+    initialize: function () {
+        this.controlModel = new cinema.models.ControlModel({info: this.model});
+        this.viewpointModel = new cinema.models.ViewPointModel({
+            controlModel: this.controlModel
+        });
 
-    cinema.viewFactory.registerView('parametric-chart-stack', 'view', function (rootSelector, viewType, model) {
-        var container = $(rootSelector),
-            fakeToolbarRootView = {
-                update: function(root) {
-                    this.$el = $('.c-view-panel', root);
-                },
-                '$el': $('.c-view-panel', container)
-            },
-            dataType = model.getDataType(),
-            controlModel = new cinema.models.ControlModel({ info: model }),
-            viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
-            renderer = new cinema.views.ChartVisualizationCanvasWidget({
-                el: $('.c-body-container', container),
-                model: model,
-                controlModel: controlModel,
-                viewpoint: viewpointModel
-            }),
+        this.controlModel.on('change', this.refreshCamera, this);
+        this.viewpointModel.on('change', this.refreshCamera, this);
+        this.listenTo(cinema.events, 'c:resetCamera', this.resetCamera);
+    },
 
-            chartTools = new cinema.views.ChartToolsWidget({
-                el: $('.c-tools-panel', container),
-                model: model,
-                controlModel: controlModel,
-                viewport: renderer,
-                toolbarSelector: '.c-panel-toolbar',
-                toolbarRootView: fakeToolbarRootView
-            }),
-            controlList = [
-                { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
-            ];
+    render: function () {
+        this.renderView = new cinema.views.ChartVisualizationCanvasWidget({
+            el: this.$('.c-body-container'),
+            model: this.model,
+            controlModel: this.controlModel,
+            viewpoint: this.viewpointModel
+        });
 
-        function render () {
-            var root = $(rootSelector);
-            fakeToolbarRootView.update(root);
-            renderer.setElement($('.c-body-container', root)).render();
-            chartTools.setElement($('.c-tools-panel', root)).render();
-            refreshCamera(true);
-        }
+        this.chartTools = new cinema.views.ChartToolsWidget({
+            el: this.$('.c-tools-panel'),
+            model: this.model,
+            controlModel: this.controlModel,
+            viewport: this.renderView,
+            toolbarSelector: '.c-panel-toolbar'
+        });
 
-        function refreshCamera () {
-            renderer.showViewpoint();
-        }
+        return this;
+    },
 
-        function resetCamera () {
-            renderer.resetCamera();
-        }
+    refreshCamera: function () {
+        this.renderView.showViewpoint();
+    },
 
-        controlModel.on('change', refreshCamera);
-        viewpointModel.on('change', refreshCamera);
-        cinema.events.on('c:resetCamera', resetCamera);
+    resetCamera: function () {
+        this.renderView.resetCamera();
+    }
+});
 
-        return {
-            controlList: controlList,
-            render: render
-        };
-    });
-}());
+cinema.viewMapper.registerView('parametric-chart-stack', 'view', cinema.views.ChartView, {
+    controls: [
+        { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
+    ]
+});
