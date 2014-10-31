@@ -1,74 +1,83 @@
-/*(function () {
+// TODO this view is barely different from CompositeWebGl, we should combine them
+cinema.views.CompositeCompCalcWebGlView = Backbone.View.extend({
+    initialize: function () {
+        this.compositeModel = new cinema.decorators.Composite(this.model);
+        this.compositeManager = new cinema.utilities.CompositeImageManager({ visModel: this.model });
+        this.controlsModel = new cinema.models.ControlModel({ info: this.model });
+        this.viewpointModel = new cinema.models.ViewPointModel({ controlModel: this.controlsModel });
+        this.layers = new cinema.models.LayerModel(this.compositeModel.getDefaultPipelineSetup(),
+            { info: this.model });
+        this.compositor = new cinema.utilities.CreateWebGlCompositor();
 
-    // --------- Add 'view' page for composite-image-stack-depth dataset ----------
+        this.controlsModel.on('change', this.refreshCamera, this);
+        this.viewpointModel.on('change', this.refreshCamera, this);
+        this.listenTo(cinema.events, 'c:resetCamera', this.resetCamera);
+    },
 
-    cinema.viewFactory.registerView('composite-image-stack-compcalc', 'view', function (rootSelector, viewType, model) {
-        var container = $(rootSelector),
-            dataType = model.getDataType(),
-            compositeModel = new cinema.decorators.Composite(model),
-            compositeManager = new cinema.utilities.CompositeImageManager({ visModel: model }),
-            controlsModel = new cinema.models.ControlModel({ info: model }),
-            viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlsModel }),
-            layers = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup(),
-                                                  { info: model }),
-            compositor = new cinema.utilities.CreateWebGlCompositor(),
-            renderer = new cinema.views.VisualizationCompCalcWebGlCanvasWidget({
-                el: $('.c-body-container', container),
-                model: compositeModel,
-                layers: layers,
-                controls: controlsModel,
-                viewpoint: viewpointModel,
-                compositeManager: compositeManager,
-                webglCompositor: compositor
-            }),
-            mouseInteractor = new cinema.utilities.RenderViewMouseInteractor({
-                renderView: renderer,
-                camera: viewpointModel
-            }).enableMouseWheelZoom({
-                maxZoomLevel: 10,
-                zoomIncrement: 0.05,
-                invertControl: false
-            }).enableDragPan({
-                keyModifiers: cinema.keyModifiers.SHIFT
-            }).enableDragRotation({
-                keyModifiers: null
-            }),
-            compositeTools = new cinema.views.CompositeToolsWidget({
-                el: $('.c-tools-panel', container),
-                model: compositeModel,
-                controlModel: controlsModel,
-                viewpoint: viewpointModel,
-                layers: layers,
-                toolbarSelector: '.c-panel-toolbar'
-            }),
-            controlList = [
-                { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
-            ];
-
-        function render () {
-            var root = $(rootSelector);
-            renderer.setElement($('.c-body-container', root)).render();
-            compositeTools.setElement($('.c-tools-panel', root)).render();
-            renderer.showViewpoint(true);
+    render: function () {
+        if (this.renderView) {
+            this.renderView.remove();
         }
 
-        function refreshCamera () {
-            renderer.showViewpoint();
+        this.renderView = new cinema.views.VisualizationCompCalcWebGlCanvasWidget({
+            el: this.$('.c-body-container'),
+            model: this.compositeModel,
+            layers: this.layers,
+            controls: this.controlsModel,
+            viewpoint: this.viewpointModel,
+            compositeManager: this.compositeManager,
+            webglCompositor: this.compositor
+        });
+
+        new cinema.utilities.RenderViewMouseInteractor({
+            renderView: this.renderView,
+            camera: this.viewpointModel
+        }).enableMouseWheelZoom({
+            maxZoomLevel: 10,
+            zoomIncrement: 0.05,
+            invertControl: false
+        }).enableDragPan({
+            keyModifiers: cinema.keyModifiers.SHIFT
+        }).enableDragRotation({
+            keyModifiers: null
+        });
+
+        this.renderView.render().showViewpoint();
+
+        if (this.toolsWidget) {
+            this.toolsWidget.remove();
         }
 
-        function resetCamera () {
-            renderer.showViewpoint();
-            renderer.resetCamera();
+        this.toolsWidget = new cinema.views.CompositeToolsWidget({
+            el: this.$('.c-tools-panel'),
+            model: this.compositeModel,
+            controlModel: this.controlsModel,
+            viewpoint: this.viewpointModel,
+            layers: this.layers,
+            toolbarSelector: '.c-panel-toolbar'
+        });
+
+        this.toolsWidget.render();
+
+        return this;
+    },
+
+    refreshCamera: function () {
+        if (this.renderView) {
+            this.renderView.showViewpoint();
         }
+    },
 
-        controlsModel.on('change', refreshCamera);
-        viewpointModel.on('change', refreshCamera);
-        cinema.events.on('c:resetCamera', resetCamera);
+    resetCamera: function () {
+        if (this.renderView) {
+            this.renderView.showViewpoint();
+            this.renderView.resetCamera();
+        }
+    }
+});
 
-        return {
-            controlList: controlList,
-            render: render
-        };
-    });
-
-}());*/
+cinema.viewMapper.registerView('composite-image-stack-compcalc', 'view', cinema.views.CompositeCompCalcWebGlView, {
+    controls: [
+        { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
+    ]
+});
