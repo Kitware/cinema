@@ -77,6 +77,7 @@ cinema.StandaloneApp = Backbone.View.extend({
         } else {
             // Single Cinema App
             this.$('.header-left').html(cinema.app.templates.headerLeft({icon: 'icon-cinema', title: 'Cinema', active: cinema.viewType}));
+            this.$('.header-center').html(cinema.app.templates.cinemaSearch());
             this.$('.header-right').html(cinema.app.templates.cinemaControl({controlList:controlList}));
         }
 
