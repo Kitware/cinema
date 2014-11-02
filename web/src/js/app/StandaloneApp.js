@@ -15,6 +15,7 @@ cinema.StandaloneApp = Backbone.View.extend({
 
         // Handle search navigation
         'click .c-search-filter-apply': function (e) {
+            // TODO routing is broken.
             cinema.router.navigate('#search', { trigger: true });
         },
 
@@ -96,7 +97,7 @@ cinema.StandaloneApp = Backbone.View.extend({
         });
 
         if (this._currentView) {
-            this._currentView.remove();
+            //this._currentView.remove();
         }
         this._currentView = new viewInfo.view({
             el: container,
