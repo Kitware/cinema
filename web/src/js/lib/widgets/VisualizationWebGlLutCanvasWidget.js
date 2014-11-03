@@ -260,7 +260,7 @@ cinema.views.VisualizationWebGlLutCanvasWidget = Backbone.View.extend({
                 var fieldDependencies = this.model.attributes.metadata.color_by_dependencies[layerField];
                 var lutOffsets = {};
 
-                if (fieldDependencies && _.has(fieldDependencies, 'lutfield') && fieldDependencies.lutfield == "true") {
+                if (fieldDependencies && _.has(fieldDependencies, 'lutfield') && fieldDependencies.lutfield === "true") {
                     lutOffsets.scalar = this.layerOffset[layerName];
                     lutOffsets.colorBy = this.layers.attributes.state[layerName];
                     idxList.push(lutOffsets);
