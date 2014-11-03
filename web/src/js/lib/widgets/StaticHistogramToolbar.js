@@ -1,4 +1,4 @@
-cinema.views.HistogramToolbar = Backbone.View.extend({
+cinema.views.StaticHistogramToolbar = Backbone.View.extend({
     events: {
         'click .c-edit-histogram': function () {
             cinema.events.trigger('c:edithistogram');
@@ -9,7 +9,7 @@ cinema.views.HistogramToolbar = Backbone.View.extend({
     },
 
     initialize: function () {
-        this._template = cinema.templates.histogramToolbar;
+        this._template = cinema.templates.staticHistogramToolbar;
     },
 
     render: function () {

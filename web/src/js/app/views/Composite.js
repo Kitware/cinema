@@ -1,15 +1,25 @@
 cinema.views.CompositeView = Backbone.View.extend({
-    initialize: function () {
+    initialize: function (opts) {
         this.compositeModel = new cinema.decorators.Composite(this.model);
         this.compositeManager = new cinema.utilities.CompositeImageManager({ visModel: this.model });
         this.controlModel = new cinema.models.ControlModel({ info: this.model });
         this.viewpointModel = new cinema.models.ViewPointModel({ controlModel: this.controlModel });
         this.layers = new cinema.models.LayerModel(this.compositeModel.getDefaultPipelineSetup(),
             { info: this.model });
-        this.histogramModel = new cinema.models.HistogramModel({
-            layerModel: this.layers,
-            basePath: this.model.get('basePath')
-        });
+        this._hasAnalysis = _.has(this.model.get('metadata'), 'analysis');
+
+        if (this._hasAnalysis) {
+            this.histogramModel = new cinema.models.CompositeHistogramModel({
+                layerModel: this.layers,
+                basePath: this.model.get('basePath'),
+                analysisInfo: this.model.get('metadata').analysis
+            });
+            this.controlList = opts.defaultControls.slice(0); // copy
+            this.controlList.push(
+                { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
+                { position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' }
+            );
+        }
 
         this.controlModel.on('change', this.refreshCamera, this);
         this.viewpointModel.on('change', this.refreshCamera, this);
@@ -50,12 +60,6 @@ cinema.views.CompositeView = Backbone.View.extend({
         if (this.toolsWidget) {
             this.toolsWidget.remove();
         }
-        if (this.histogramWidget) {
-            this.histogramWidget.remove();
-        }
-        if (this.infoWidget) {
-            this.infoWidget.remove();
-        }
 
         this.toolsWidget = new cinema.views.CompositeToolsWidget({
             el: this.$('.c-tools-panel'),
@@ -65,28 +69,36 @@ cinema.views.CompositeView = Backbone.View.extend({
             layers: this.layers,
             toolbarSelector: '.c-panel-toolbar'
         });
-
-        this.histogramWidget = new cinema.views.HistogramWidget({
-            el: this.$('.c-histogram-panel'),
-            basePath: this.model.get('basePath'),
-            histogramModel: this.histogramModel,
-            viewpoint: this.viewpointModel,
-            layers: this.layers,
-            toolbarSelector: '.c-panel-toolbar'
-        });
-
-        this.infoWidget = new cinema.views.SearchInformationWidget({
-            el: this.$('.c-information-panel'),
-            model: this.compositeModel,
-            controlModel: this.controlModel,
-            exclude: ['layer', 'filename'],
-            layers: this.layers,
-            toolbarSelector: '.c-panel-toolbar'
-        });
-
         this.toolsWidget.render();
-        this.histogramWidget.render();
-        this.infoWidget.render();
+
+        if (this._hasAnalysis) {
+            if (this.histogramWidget) {
+                this.histogramWidget.remove();
+            }
+            if (this.infoWidget) {
+                this.infoWidget.remove();
+            }
+            this.histogramWidget = new cinema.views.CompositeHistogramWidget({
+                el: this.$('.c-histogram-panel'),
+                basePath: this.model.get('basePath'),
+                histogramModel: this.histogramModel,
+                viewpoint: this.viewpointModel,
+                layers: this.layers,
+                toolbarSelector: '.c-panel-toolbar'
+            });
+
+            this.infoWidget = new cinema.views.SearchInformationWidget({
+                el: this.$('.c-information-panel'),
+                model: this.compositeModel,
+                controlModel: this.controlModel,
+                exclude: ['layer', 'filename'],
+                layers: this.layers,
+                toolbarSelector: '.c-panel-toolbar'
+            });
+
+            this.histogramWidget.render();
+            this.infoWidget.render();
+        }
 
         if (this.firstRender) {
             this.firstRender = false;
@@ -119,61 +131,84 @@ cinema.views.CompositeSearchView = Backbone.View.extend({
         this.layers = new cinema.models.LayerModel(this.compositeModel.getDefaultPipelineSetup(), {
             info: this.model
         });
-        this.histogramModel = new cinema.models.HistogramModel({
-            layerModel: this.layers,
-            basePath: this.model.get('basePath')
-        });
+        this._hasAnalysis = _.has(this.model.get('metadata'), 'analysis');
+
+        if (this._hasAnalysis) {
+            this.histogramModel = new cinema.models.CompositeHistogramModel({
+                layerModel: this.layers,
+                basePath: this.model.get('basePath'),
+                analysisInfo: this.model.get('metadata').analysis
+            });
+
+            this.controlList = opts.defaultControls.slice(0); // copy
+            this.controlList.push(
+                { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
+                { position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' }
+            );
+        }
+
+        this.controlModel.on('change', this.refreshCamera, this);
+        this.viewpointModel.on('change', this.refreshCamera, this);
+        this.listenTo(cinema.events, 'c:resetCamera', this.resetCamera);
 
         this.firstRender = true;
     },
 
     render: function () {
-        if (this.searchView) {
-            this.searchView.remove();
+        if (this._hasAnalysis) {
+            if (this.searchView) {
+                this.searchView.remove();
+            }
+
+            this.searchView = new cinema.views.CompositeSearchPage({
+                el: this.$('.c-body-container'),
+                basePath: this.model.get('basePath'),
+                histogramModel: this.histogramModel,
+                visModel: this.compositeModel,
+                layerModel: this.layers
+            });
+
+            this.searchView.render();
+
+            if (this.compositeHistogram) {
+                this.compositeHistogram.remove();
+            }
+            if (this.searchInformation) {
+                this.searchInformation.remove();
+            }
+
+            this.searchInformation = new cinema.views.SearchInformationWidget({
+                el: this.$('.c-information-panel'),
+                model: this.compositeModel,
+                controlModel: this.controlModel,
+                exclude: ['layer', 'filename'],
+                layers: this.layers,
+                toolbarSelector: '.c-panel-toolbar'
+            });
+
+            this.compositeHistogram = new cinema.views.HistogramWidget({
+                el: this.$('.c-histogram-panel'),
+                basePath: this.model.get('basePath'),
+                histogramModel: this.histogramModel,
+                viewpoint: this.viewpointModel,
+                layers: this.layers,
+                toolbarSelector: '.c-panel-toolbar'
+            });
+
+            this.searchInformation.render();
+            this.compositeHistogram.render();
         }
 
-        this.searchView = new cinema.views.CompositeSearchPage({
-            el: this.$('.c-body-container'),
-            basePath: this.model.get('basePath'),
-            histogramModel: this.histogramModel,
-            visModel: this.compositeModel,
-            layerModel: this.layers
-        });
-
-        if (this.compositeHistogram) {
-            this.compositeHistogram.remove();
-        }
         if (this.searchTools) {
             this.searchTools.remove();
         }
-        if (this.searchInformation) {
-            this.searchInformation.remove();
-        }
-
-        this.compositeHistogram = new cinema.views.HistogramWidget({
-            el: this.$('.c-histogram-panel'),
-            basePath: this.model.get('basePath'),
-            histogramModel: this.histogramModel,
-            viewpoint: this.viewpointModel,
-            layers: this.layers,
-            toolbarSelector: '.c-panel-toolbar'
-        });
-
         this.searchTools = new cinema.views.SearchToolsWidget({
             el: this.$('.c-tools-panel'),
             model: this.compositeModel,
             layers: this.layers,
             toolbarSelector: '.c-panel-toolbar'
         });
-
-        this.searchInformation = new cinema.views.SearchInformationWidget({
-            el: this.$('.c-information-panel'),
-            model: this.compositeModel,
-            controlModel: this.controlModel,
-            exclude: ['layer', 'filename'],
-            layers: this.layers,
-            toolbarSelector: '.c-panel-toolbar'
-        });
+        this.searchTools.render();
 
         if (this.firstRender) {
             this.firstRender = false;
@@ -187,16 +222,12 @@ cinema.views.CompositeSearchView = Backbone.View.extend({
 
 cinema.viewMapper.registerView('composite-image-stack', 'view', cinema.views.CompositeView, {
     controls: [
-        { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' },
-        { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
-        { position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' }
+        { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
     ]
 });
 
 cinema.viewMapper.registerView('composite-image-stack', 'search', cinema.views.CompositeSearchView, {
     controls: [
         { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' },
-        { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
-        { position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' }
     ]
 });

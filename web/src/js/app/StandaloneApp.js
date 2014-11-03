@@ -65,24 +65,31 @@ cinema.StandaloneApp = Backbone.View.extend({
         // Find out what the view control list is for control panel container
         var viewInfo = cinema.viewMapper.getView(cinema.model.getDataType(), cinema.viewType);
 
+        if (this._currentView) {
+            //this._currentView.remove();
+        }
+        this._currentView = new viewInfo.view({
+            defaultControls: viewInfo.opts.controls,
+            model: this.model
+        });
+
         // Create container for control panels
         this.$el.html(cinema.app.templates.layout({
-            controlList: viewInfo.opts.controls,
+            controlList: this._currentView.controlList || viewInfo.opts.controls,
             viewType: cinema.viewType
         }));
 
         // Handle header bar base on application type (workbench/cinema)
-        var title, container;
+        var title;
         if (cinema.model.getDataType() === 'workbench') {
             title = 'Workbench';
-            container = this.$('.c-body-container');
             this.$('.header-right').html(cinema.app.templates.workbenchControl({
                 runs: cinema.model.get('runs')
             }));
         } else {
             title = 'Cinema';
-            container = this.$el;
             this.$('.header-right').html(cinema.app.templates.cinemaControl({controlList: viewInfo.opts.controls}));
+            this.$('.header-center').html(cinema.app.templates.cinemaSearch());
         }
 
         this.$('.header-left').html(cinema.app.templates.headerLeft({
@@ -96,13 +103,8 @@ cinema.StandaloneApp = Backbone.View.extend({
             delay: {show: 200}
         });
 
-        if (this._currentView) {
-            //this._currentView.remove();
-        }
-        this._currentView = new viewInfo.view({
-            el: container,
-            model: this.model
-        }).render();
+        var container = this.model.getDataType() === 'workbench' ? this.$('.c-body-container') : this.$el;
+        this._currentView.setElement(container).render();
 
         return this;
     }

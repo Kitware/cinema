@@ -4,6 +4,20 @@ cinema.views.StaticImageView = Backbone.View.extend({
         this.viewpointModel = new cinema.models.ViewPointModel({
             controlModel: this.controlModel
         });
+        this._hasAnalysis = _.has(this.model.get('metadata'), 'analysis');
+
+        if (this._hasAnalysis) {
+            this.histogramModel = new cinema.models.CompositeHistogramModel({
+                layerModel: this.layers,
+                basePath: this.model.get('basePath'),
+                analysisInfo: this.model.get('metadata').analysis
+            });
+            this.controlList = opts.defaultControls.slice(0); // copy
+            this.controlList.push(
+                { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
+                { position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' }
+            );
+        }
 
         this.controlModel.on('change', this.refreshCamera, this);
         this.viewpointModel.on('change', this.refreshCamera, this);
@@ -48,6 +62,30 @@ cinema.views.StaticImageView = Backbone.View.extend({
             toolbarSelector: '.c-panel-toolbar'
         });
         this.toolsWidget.render();
+
+        if (this._hasAnalysis) {
+            this.staticHistogram = new cinema.views.StaticHistogramWidget({
+                el: this.$('.c-static-histogram-panel'),
+                basePath: this.model.get('basePath'),
+                histogramModel: this.histogramModel,
+                viewpoint: this.viewpointModel,
+                controlModel: this.controlModel,
+                visModel: this.model,
+                analysisInfo: this.model.get('metadata').analysis,
+                toolbarSelector: '.c-panel-toolbar'
+            });
+            this.searchInformation = new cinema.views.ComposableInformationWidget({
+                el: this.$('.c-information-panel'),
+                model: this.model,
+                controlModel: this.controlModel,
+                exclude: ['layer', 'filename'],
+                // layers: layerModel,
+                analysisInfo: this.model.get('metadata').analysis,
+                toolbarSelector: '.c-panel-toolbar'
+            });
+            this.staticHistogram.render();
+            this.searchInformation.render();
+        }
 
         return this;
     },

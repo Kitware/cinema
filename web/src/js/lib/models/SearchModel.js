@@ -77,8 +77,6 @@ cinema.models.SearchModel = Backbone.Model.extend({
 
         this._dataMap = this.buildDataMap();
         this.histogramModel.fetch();
-
-        this.trigger('change');
     },
 
     buildDataMap: function() {
@@ -162,7 +160,7 @@ cinema.models.SearchModel = Backbone.Model.extend({
     },
 
     /**
-     * This method sets the search results, and triggers a 'c:done' event when it has finished.
+     * This method sets the search results.
      */
     setResultsList: function () {
         this.results = [];
@@ -174,7 +172,6 @@ cinema.models.SearchModel = Backbone.Model.extend({
                 this.results.push(viewpoint);
             }
         }
-        this.trigger('c:done');
     },
 
     /**
