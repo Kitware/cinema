@@ -74,8 +74,9 @@ cinema.StandaloneApp = Backbone.View.extend({
         });
 
         // Create container for control panels
+        var controlList = this._currentView.controlList || viewInfo.opts.controls;
         this.$el.html(cinema.app.templates.layout({
-            controlList: this._currentView.controlList || viewInfo.opts.controls,
+            controlList: controlList,
             viewType: cinema.viewType
         }));
 
@@ -88,7 +89,7 @@ cinema.StandaloneApp = Backbone.View.extend({
             }));
         } else {
             title = 'Cinema';
-            this.$('.header-right').html(cinema.app.templates.cinemaControl({controlList: viewInfo.opts.controls}));
+            this.$('.header-right').html(cinema.app.templates.cinemaControl({controlList: controlList}));
             this.$('.header-center').html(cinema.app.templates.cinemaSearch());
         }
 

@@ -83,7 +83,7 @@ cinema.views.CompositeView = Backbone.View.extend({
                 basePath: this.model.get('basePath'),
                 histogramModel: this.histogramModel,
                 viewpoint: this.viewpointModel,
-                layers: this.layers,
+                layerModel: this.layers,
                 toolbarSelector: '.c-panel-toolbar'
             });
 
@@ -186,12 +186,12 @@ cinema.views.CompositeSearchView = Backbone.View.extend({
                 toolbarSelector: '.c-panel-toolbar'
             });
 
-            this.compositeHistogram = new cinema.views.HistogramWidget({
+            this.compositeHistogram = new cinema.views.CompositeHistogramWidget({
                 el: this.$('.c-histogram-panel'),
                 basePath: this.model.get('basePath'),
                 histogramModel: this.histogramModel,
                 viewpoint: this.viewpointModel,
-                layers: this.layers,
+                layerModel: this.layers,
                 toolbarSelector: '.c-panel-toolbar'
             });
 
