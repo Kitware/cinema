@@ -13,13 +13,17 @@ cinema.views.RenderingToolbar = Backbone.View.extend({
         }
     },
 
-    initialize: function () {
-        //this._template = cinema.templates.renderingToolbar;
-        //this.luts = ["rainbow"];
+    initialize: function (settings) {
+        this.disabledList = settings.disabled;
     },
 
     render: function () {
         this.$el.html(cinema.templates.renderingToolbar({luts: []}));
+
+        _.each(this.disabledList, function(elt, idx, l) {
+            $('.' + elt).click();
+            $('.' + elt).hide();
+        });
 
         this.$('a[title]').tooltip({
             placement: 'bottom',
