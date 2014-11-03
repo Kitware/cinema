@@ -31,7 +31,8 @@
             'composite-image-stack-jpgdepth',
             'composite-image-stack-compcalc',
             'composite-image-stack-light',
-            'composite-image-stack-litdepth'
+            'composite-image-stack-litdepth',
+            'composite-image-stack-lutdepth'
         ];
 
         if (!_.contains(this.supportedDataTypes, this.visModel.get('metadata').type)) {
