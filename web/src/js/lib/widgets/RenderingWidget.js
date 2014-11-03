@@ -99,7 +99,9 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         this.viewpoint = settings.viewport.viewpoint;
         this.viewport = settings.viewport;
         this.toolbarSelector = settings.toolbarSelector;
-        this.toolbarRendering = new cinema.views.RenderingToolbar({el: settings.toolbarSelector});
+        this.disabledList = settings.disabledList || [];
+        this.toolbarRendering = new cinema.views.RenderingToolbar({ el: settings.toolbarSelector,
+                                                                    disabled: this.disabledList });
         this.editLookupTable = true;
         this.xMinimum = 0.0;
         this.xMaximum = 1.0;

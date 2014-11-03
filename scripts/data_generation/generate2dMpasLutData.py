@@ -47,8 +47,8 @@ data_base_path = os.path.join(path_root, 'Data/MPAS/data')
 output_working_dir = '/home/scott/Documents/cinemaDemo/simpleCinemaWebGL/mpas-data/2d_data_primal'
 
 flat_file_pattern = 'flat_1_primal/LON_LAT_1LAYER-primal_%d_0.vtu'
-#flat_file_times = range(50, 5151, 50) # range(50, 5901, 50)
-flat_file_times = range(50, 351, 50)
+flat_file_times = range(50, 5151, 50) # range(50, 5901, 50)
+#flat_file_times = range(50, 351, 50)
 #flat_file_times = [ 50 ]
 flat_filenames = [ os.path.join(data_base_path, (flat_file_pattern % time)) for time in flat_file_times]
 
@@ -112,14 +112,14 @@ description = '''
 ### to set the label each time the argument changes.
 
 #analysis.register_analysis(id, title, description, '{time}/{field}/{layer}.jpg', 'parametric-image-stack')
-analysis.register_analysis(id, title, description, '{time}/{slice}/{theta}/{phi}/{filename}', 'composite-image-stack-light')
+analysis.register_analysis(id, title, description, '{time}/{slice}/{filename}', 'composite-image-stack-light')
 fng = analysis.get_file_name_generator(id)
 
 # -----------------------------------------------------------------------------
 # Pipeline configuration
 # -----------------------------------------------------------------------------
 
-nb_slices = 10
+nb_slices = 40
 
 function_pattern = '%s_%d'
 
@@ -135,6 +135,8 @@ prog_filter.PythonPath = ''
 nan_threshold = Threshold( Input = prog_filter )
 nan_threshold.Scalars = ['CELLS', 'temperature']
 nan_threshold.ThresholdRange = [-500.0, 500.0]
+
+cellToPoint = CellDatatoPointData( Input = nan_threshold )
 
 globalRanges = {
     'temperature': [ 10000000, -10000000 ],
@@ -154,9 +156,29 @@ for t in range(len(flat_file_times)):
         for key in globalRanges.keys():
             globalRanges[key] = updateGlobalRange(cdi.GetArray(key).GetRange(), globalRanges[key])
 
+"""
+prog_filter.Script = ppf % 0
+nan_threshold.UpdatePipeline(0)
+cdi = nan_threshold.GetCellDataInformation()
+
+globalRanges = {
+    'temperature': cdi.GetArray('temperature').GetRange(),
+    'salinity': cdi.GetArray('salinity').GetRange(),
+    'density': cdi.GetArray('pressure').GetRange(),
+    'pressure': cdi.GetArray('density').GetRange()
+}
+"""
+
 print 'Global array ranges:'
 print globalRanges
 print
+
+luts = {
+    "temperature": ["point", "temperature", 0, globalRanges['temperature']],
+    "salinity": ["point", "salinity", 0, globalRanges['salinity']],
+    "pressure": ["point", "pressure", 0, globalRanges['pressure']],
+    "density": ["point", "density", 0, globalRanges['density']]
+}
 
 filters = []
 filters_description = []
@@ -169,18 +191,11 @@ color_type = [
     ('VALUE', "density")
 ]
 
-luts = {
-    "temperature": ["cell", "temperature", 0, globalRanges['temperature']],
-    "salinity": ["cell", "salinity", 0, globalRanges['salinity']],
-    "pressure": ["cell", "pressure", 0, globalRanges['pressure']],
-    "density": ["cell", "density", 0, globalRanges['density']]
-}
-
 filters.append(flat_reader)
 color_by.append( [ ('SOLID_COLOR', [0.5,0.5,0.5]) ] )
 filters_description.append( { 'name': 'Cells Mask'})
 
-filters.append(nan_threshold)
+filters.append(cellToPoint)
 color_by.append(color_type)
 filters_description.append( {'name': 'Computation Grid'} )
 
