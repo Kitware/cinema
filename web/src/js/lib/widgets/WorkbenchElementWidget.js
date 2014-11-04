@@ -85,6 +85,7 @@ cinema.views.WorkbenchElementWidget = Backbone.View.extend({
             }
             this._visWidget = new viewInfo.view({
                 el: this.$('.c-run-container'),
+                defaultControls: viewInfo.opts.controls,
                 model: visModel
             });
             this._visWidget.render();
