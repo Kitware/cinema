@@ -17,8 +17,9 @@ cinema.StandaloneApp = Backbone.View.extend({
 
         // Handle search navigation
         'click .c-search-filter-apply': function (e) {
-            if(cinema.viewType !== 'search') {
-                cinema.router.navigate('#search', {trigger: true});
+            if (cinema.viewType !== 'search') {
+                cinema.viewType = 'search';
+                this.render();
             }
             var searchQuery = $('.c-search-filter').val();
             cinema.searchQuery = searchQuery;
@@ -26,13 +27,15 @@ cinema.StandaloneApp = Backbone.View.extend({
         },
 
         'click .c-app-icon': function (e) {
-            cinema.router.navigate('#view', { trigger: true });
+            cinema.viewType = 'view';
+            this.render();
         },
 
         'keyup .c-search-filter': function (e) {
             if (e.keyCode === 13) {
-                if(cinema.viewType !== 'search') {
-                    cinema.router.navigate('#search', {trigger: true});
+                if (cinema.viewType !== 'search') {
+                    cinema.viewType = 'search';
+                    this.render();
                 }
                 var searchQuery = $(e.currentTarget).val();
                 cinema.searchQuery = searchQuery;
@@ -54,10 +57,6 @@ cinema.StandaloneApp = Backbone.View.extend({
         });
         cinema.model = this.model;
 
-        Backbone.history.start({
-            pushState: false
-        });
-
         this.listenTo(this.model, 'change', this.render);
         this.model.fetch();
     },
@@ -68,38 +67,56 @@ cinema.StandaloneApp = Backbone.View.extend({
         }
 
         // Make sure we have a view type valid
-        if (cinema.viewType === null || cinema.viewType === undefined || cinema.viewType === '' || !_.contains(this.allowedViewType, cinema.viewType)) {
+        if (!cinema.viewType || !_.contains(this.allowedViewType, cinema.viewType)) {
             cinema.viewType = 'view';
         }
 
         // Find out what the view control list is for control panel container
-        var controlList = cinema.viewFactory.getViewControlList('body', cinema.viewType, cinema.model);
+        var viewInfo = cinema.viewMapper.getView(cinema.model.getDataType(), cinema.viewType);
+
+        /*
+        TODO make sure this doesn't blow away this view's container
+        if (this._currentView) {
+            this._currentView.remove();
+        }*/
+        this._currentView = new viewInfo.view({
+            defaultControls: viewInfo.opts.controls,
+            model: this.model
+        });
 
         // Create container for control panels
-        this.$el.html(cinema.app.templates.layout({controlList:controlList, viewType:cinema.viewType}));
+        var controlList = this._currentView.controlList || viewInfo.opts.controls;
+        this.$el.html(cinema.app.templates.layout({
+            controlList: controlList,
+            viewType: cinema.viewType
+        }));
 
         // Handle header bar base on application type (workbench/cinema)
+        var title;
         if (cinema.model.getDataType() === 'workbench') {
-            // Workbench Cinema App
-            this.$('.header-left').html(cinema.app.templates.headerLeft({icon: 'icon-cinema', title: 'Workbench', active: cinema.viewType}));
+            title = 'Workbench';
             this.$('.header-right').html(cinema.app.templates.workbenchControl({
                 runs: cinema.model.get('runs')
             }));
         } else {
-            // Single Cinema App
-            this.$('.header-left').html(cinema.app.templates.headerLeft({icon: 'icon-cinema', title: 'Cinema', active: cinema.viewType}));
+            title = 'Cinema';
+            this.$('.header-right').html(cinema.app.templates.cinemaControl({controlList: controlList}));
             this.$('.header-center').html(cinema.app.templates.cinemaSearch({query: cinema.searchQuery}));
-            this.$('.header-right').html(cinema.app.templates.cinemaControl({controlList:controlList}));
         }
 
-        // Fill the layout base on the type of the view and model.
-        cinema.viewFactory.render('body', cinema.viewType, cinema.model);
+        this.$('.header-left').html(cinema.app.templates.headerLeft({
+            icon: 'icon-cinema',
+            title: title,
+            active: cinema.viewType
+        }));
 
-        // Create nice tooltip for the full page
         this.$('[title]').tooltip({
             placement: 'bottom',
             delay: {show: 200}
         });
+
+        var container = this.model.getDataType() === 'workbench' ? this.$('.c-body-container') : this.$el;
+        this._currentView.setElement(container).render();
 
         return this;
     }
