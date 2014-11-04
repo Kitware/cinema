@@ -1,74 +1,75 @@
-(function () {
-    cinema.viewFactory.registerView('workbench', 'view', function (rootSelector, viewType, model) {
-        var container = $(rootSelector),
-            currentRun = null,
-            configuration = {
-                // 1x1, 2x2, 2x3, 1x3
-                layout: { rows: 1, cols: 1 },
-                active: 0,
-                template: 'workbenchGridLayout',
-                models: {}
-            };
+cinema.views.WorkbenchView = Backbone.View.extend({
+    initialize: function () {
+        this.configuration = {
+            layout: { rows: 1, cols: 1 },
+            template: 'workbenchGridLayout',
+            models: {}
+        };
 
-        // Load internal models
-        _.each(model.get('runs'), function (run) {
+        // Fetch the models for each run in the list
+        _.each(this.model.get('runs'), function (run) {
             var internalModel = new cinema.models.VisualizationModel({
-                basePath: model.get('basePath') + '/' + run.path,
+                basePath: this.model.get('basePath') + '/' + run.path,
                 infoFile: 'info.json'
             });
-            configuration.models[run.path] = internalModel;
+            this.configuration.models[run.path] = internalModel;
             internalModel.fetch();
+        }, this);
+
+        this.currentRun = null;
+        this._elementWidgets = [];
+    },
+
+    render: function () {
+        this.$el.html(cinema.templates[this.configuration.template]({
+            layout: this.configuration.layout
+        }));
+
+        // TODO we need to fix all this at some point, it's the wrong way
+        // to do this.
+        var view = this;
+        $('.header-right .c-wb-layout').off().on('click', function (e) {
+            var me = $(e.target),
+                rows = Number(me.attr('data-rows')),
+                cols = Number(me.attr('data-cols')),
+                templateName = me.attr('data-template');
+            if (templateName) {
+                view.configuration.layout = { rows: rows, cols: cols };
+                view.configuration.template = templateName;
+                view.render();
+            }
         });
 
-        var render = function () {
-            var root = $('.c-body-container', rootSelector);
-
-            // Apply current layout inside model
-            root.html(cinema.templates[configuration.template]({
-                layout: configuration.layout
-            }));
-
-            // TODO we need to fix all this at some point, it's the wrong way
-            // to do this.
-            $('.header-right .c-wb-layout').off().on('click', function (e) {
-                var me = $(e.target),
-                    rows = Number(me.attr('data-rows')),
-                    cols = Number(me.attr('data-cols')),
-                    templateName = me.attr('data-template');
-                if (templateName) {
-                    configuration.layout = { rows: rows, cols: cols };
-                    configuration.active = 0;
-                    configuration.template = templateName;
-                    render();
-                }
-            });
-
-            $('.header-right .c-vis-option').off().on('click', function (e) {
-                var path = $(e.currentTarget).attr('path');
-                if (!currentRun || currentRun !== path) {
-                    currentRun = path;
-                    selectCurrentRun();
-                }
-            });
-
-            var selectCurrentRun = function () {
-                _.each($('.c-dv-layout-item'), function (el) {
-                    $(el).removeClass('empty').off();
-                    new cinema.views.WorkbenchElementWidget({
-                        el: el,
-                        model: configuration.models[currentRun]
-                    }).render();
-                });
-            };
-
-            if (currentRun) {
-                selectCurrentRun();
+        $('.header-right .c-vis-option').off().on('click', function (e) {
+            var path = $(e.currentTarget).attr('path');
+            if (!view.currentRun || view.currentRun !== path) {
+                view.currentRun = path;
+                view.setCurrentRun();
             }
-        };
+        });
 
-        return {
-            controlList: [],
-            render: render
-        };
-    });
-}());
+        if (this.currentRun) {
+            this.setCurrentRun();
+        }
+    },
+
+    setCurrentRun: function () {
+        // Call remove on all previously created sub-widgets to propagate cleanup
+        _.each(this._elementWidgets, function (widget) {
+            widget.remove();
+        });
+        this._elementWidgets = [];
+
+        _.each(this.$('.c-dv-layout-item'), function (el) {
+            $(el).removeClass('empty').off();
+            this._elementWidgets.push(new cinema.views.WorkbenchElementWidget({
+                el: el,
+                model: this.configuration.models[this.currentRun]
+            }).render());
+        }, this);
+    }
+});
+
+cinema.viewMapper.registerView('workbench', 'view', cinema.views.WorkbenchView, {
+    controls: []
+});

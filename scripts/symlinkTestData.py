@@ -25,8 +25,10 @@ if __name__ == "__main__":
         'test-runs/data-image',
         'test-runs/data-webgl-2jpg',
         'test-runs/data-webgl-png',
+        'test-runs/data-webgl-js',
         'test-runs/medicare-charts',
-        'test-runs/wavelet-webgl-light'
+        'test-runs/wavelet-webgl-light',
+        'test-runs/data-webgl-lut'
     )
 
     for dataset in datasets:

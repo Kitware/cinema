@@ -7,7 +7,7 @@ cinema.views.WorkbenchElementWidget = Backbone.View.extend({
     events: {
         'click .c-run-option': function (e) {
             var id = $(e.currentTarget).attr('run-id');
-            this._showRun(this.runOptions[id]);
+            this.showRun(this.runOptions[id]);
         },
 
         'click .c-side-panel-toggle': function (e) {
@@ -65,9 +65,11 @@ cinema.views.WorkbenchElementWidget = Backbone.View.extend({
             placement: 'right',
             container: this.el
         });
+
+        return this;
     },
 
-    _showRun: function (run) {
+    showRun: function (run) {
         var visModel = new cinema.models.VisualizationModel({
             basePath: this.model.basePath + '/' + run.path,
             infoFile: 'info.json'
@@ -75,7 +77,19 @@ cinema.views.WorkbenchElementWidget = Backbone.View.extend({
 
         visModel.on('change', function () {
             var title = visModel.get('metadata').title;
-            var controls = cinema.viewFactory.render(this.$('.c-run-container'), 'view', visModel);
+            var viewInfo = cinema.viewMapper.getView(visModel.getDataType(), 'view');
+
+            if (this._visWidget) {
+                this._visWidget.remove();
+                this.render();
+            }
+            this._visWidget = new viewInfo.view({
+                el: this.$('.c-run-container'),
+                defaultControls: viewInfo.opts.controls,
+                model: visModel
+            });
+            this._visWidget.render();
+
             this.$('.c-side-panel-title').text(title).attr('title', title);
             this.$('.c-side-panel').removeClass('hide');
             this.$('.c-workbench-body-container').removeClass('empty');
@@ -86,7 +100,7 @@ cinema.views.WorkbenchElementWidget = Backbone.View.extend({
             this.$('.c-control-panel').addClass('hide');
 
             var state = 'active';
-            _.each(controls, function (control) {
+            _.each(viewInfo.opts.controls, function (control) {
                 this.$('a.c-'+control.key+'-mode').show().attr('state', state);
                 if (state === 'active') {
                     this.controlMode = control.key;
