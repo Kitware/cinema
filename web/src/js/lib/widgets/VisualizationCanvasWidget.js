@@ -295,9 +295,9 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
      * do not pass this, simply renders the current this.viewpoint value.
      * @return this, for chainability
      */
-    showViewpoint: function (forced) {
+    showViewpoint: function (forced, controlModel) {
         var changed = false,
-            controls = this.controlModel.getControls();
+            controls = controlModel || this.controlModel.getControls();
 
         // Search for change
         for (var key in controls) {
@@ -333,7 +333,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         this.showViewpoint();
     },
 
-    updateTheQuery: function (query) {
+    updateTheQuery: function (query, viewpoint) {
         this.orderMapping = {};
         this.compositeCache = {};
         this.layerOffset = {};
@@ -348,7 +348,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
                     this.compositeModel.getOffset()[query.substr(i, 2)];
             }
         }
-        this.showViewpoint();
+        this.showViewpoint(true, viewpoint);
     },
 
     /**

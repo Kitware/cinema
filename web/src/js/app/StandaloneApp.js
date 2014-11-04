@@ -2,21 +2,27 @@ cinema.StandaloneApp = Backbone.View.extend({
     events: {
         // Handle control panel close action
         'click .c-control-panel-header .panel-close': function (e) {
-            $(e.currentTarget).parents('.c-control-panel').fadeOut();
+            var panel = $(e.currentTarget).parents('.c-control-panel');
+            cinema.events.trigger('toggle-control-panel', { panel: panel, key: panel.attr('key'), visible: false });
+            panel.fadeOut();
         },
 
         // Handle control panel toggle visibility action
         'click .c-visibility-button': function (e) {
             var origin = $(e.target),
                 panel = $('.' + origin.attr('container-class'));
+            cinema.events.trigger('toggle-control-panel', { panel: panel, key: panel.attr('key'), visible: !panel.is(':visible') });
             panel.fadeToggle();
-            cinema.events.trigger('toggle-control-panel', { panel: panel, key: panel.attr('key') });
         },
 
         // Handle search navigation
         'click .c-search-filter-apply': function (e) {
-            // TODO routing is broken.
-            cinema.router.navigate('#search', { trigger: true });
+            if(cinema.viewType !== 'search') {
+                cinema.router.navigate('#search', {trigger: true});
+            }
+            var searchQuery = $('.c-search-filter').val();
+            cinema.searchQuery = searchQuery;
+            cinema.events.trigger('c:handlesearchquery', {searchQuery: searchQuery});
         },
 
         'click .c-app-icon': function (e) {
@@ -25,7 +31,11 @@ cinema.StandaloneApp = Backbone.View.extend({
 
         'keyup .c-search-filter': function (e) {
             if (e.keyCode === 13) {
+                if(cinema.viewType !== 'search') {
+                    cinema.router.navigate('#search', {trigger: true});
+                }
                 var searchQuery = $(e.currentTarget).val();
+                cinema.searchQuery = searchQuery;
                 cinema.events.trigger('c:handlesearchquery', {searchQuery: searchQuery});
             }
         }
@@ -92,7 +102,7 @@ cinema.StandaloneApp = Backbone.View.extend({
         } else {
             title = 'Cinema';
             this.$('.header-right').html(cinema.app.templates.cinemaControl({controlList: controlList}));
-            this.$('.header-center').html(cinema.app.templates.cinemaSearch());
+            this.$('.header-center').html(cinema.app.templates.cinemaSearch({query: cinema.searchQuery}));
         }
 
         this.$('.header-left').html(cinema.app.templates.headerLeft({

@@ -76,7 +76,7 @@ cinema.models.SearchModel = Backbone.Model.extend({
         }
 
         this._dataMap = this.buildDataMap();
-        this.histogramModel.fetch();
+        //this.histogramModel.fetch();
     },
 
     buildDataMap: function() {
@@ -136,6 +136,13 @@ cinema.models.SearchModel = Backbone.Model.extend({
         }
 
         return numberOfValidResults;
+    },
+
+    allResults: function () {
+        for (var count = 0; count <= this._maxOrdinal; count += 1) {
+            this._dataMap[count].keep = true;
+        }
+        return this._maxOrdinal;
     },
 
     clearResults: function (queryExpression) {

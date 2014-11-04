@@ -48,6 +48,10 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
         return result;
     },
 
+    getHash: function() {
+      return this.url;
+    },
+
     lengthPhi: function () {
         if (!_.has(this, '_lengthPhi')) {
             var args = this.get('arguments') || {};

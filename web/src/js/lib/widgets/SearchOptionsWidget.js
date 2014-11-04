@@ -23,7 +23,7 @@ cinema.views.SearchOptionsWidget = Backbone.View.extend({
     },
 
     initialize: function (settings) {
-        this.zoomLevel = 0.25;
+        this.zoomLevel = 0.23;
         this.zoomWidth = $(window).width() * this.zoomLevel;
 
         this.toolbarSelector = settings.toolbarSelector;
@@ -44,7 +44,7 @@ cinema.views.SearchOptionsWidget = Backbone.View.extend({
                 iconlabel: 'nbsp',
                 label: '0.25',
                 type: 'range',
-                value: 25,
+                value: 23,
                 min: 1,
                 max: 100,
                 step: 1
