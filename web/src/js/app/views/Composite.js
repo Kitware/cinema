@@ -2,7 +2,7 @@
     var sharedDataMap = {},
         visibilityMap = { 'histogram': false, 'information': false };
 
-    function getSharedData(model) {
+    function getSharedData(model, container) {
         if(sharedDataMap.hasOwnProperty(model.getHash())) {
             return sharedDataMap[model.getHash()];
         } else {
@@ -13,11 +13,45 @@
                     basePath: model.get('basePath'),
                     analysisInfo: model.attributes.metadata.analysis }),
                 viewpoint = new cinema.models.ViewPointModel({ controlModel: control }),
+                informationWidget = new cinema.views.SearchInformationWidget({
+                        el: $('.c-information-panel', container),
+                        model: model,
+                        controlModel: control,
+                        exclude: ['layer', 'filename'],
+                        layers: layer,
+                        toolbarSelector: '.c-panel-toolbar'
+                    }),
+                histogramWidget = new cinema.views.CompositeHistogramWidget({
+                        el: $('.c-histogram-panel', container),
+                        basePath: model.get('basePath'),
+                        histogramModel: histogram,
+                        viewpoint: viewpoint,
+                        layerModel: layer,
+                        toolbarSelector: '.c-panel-toolbar'
+                    }),
+                compositeToolsWidget = new cinema.views.CompositeToolsWidget({
+                    el: $('.c-tools-panel', container),
+                    model: model,
+                    controlModel: control,
+                    viewpoint: viewpoint,
+                    layers: layer,
+                    toolbarSelector: '.c-panel-toolbar'
+                }),
+                searchToolsWidget = new cinema.views.SearchToolsWidget({
+                    el: $('.c-tools-panel', container),
+                    model: model,
+                    layers: layer,
+                    toolbarSelector: '.c-panel-toolbar'
+                }),
                 shared = {
                     control: control,
                     histogram: histogram,
                     layer: layer,
-                    viewpoint: viewpoint
+                    viewpoint: viewpoint,
+                    informationWidget: informationWidget,
+                    histogramWidget: histogramWidget,
+                    compositeToolsWidget: compositeToolsWidget,
+                    searchToolsWidget: searchToolsWidget
                 };
             sharedDataMap[model.getHash()] = shared;
             return shared;
@@ -43,7 +77,7 @@
             dataType = model.getDataType(),
             compositeModel = new cinema.decorators.Composite(model),
             compositeManager = new cinema.utilities.CompositeImageManager({ visModel: model }),
-            sharedData = getSharedData(compositeModel),
+            sharedData = getSharedData(compositeModel, container),
             controlModel = sharedData.control,
             viewpointModel = sharedData.viewpoint,
             layerModel = sharedData.layer,
@@ -70,36 +104,11 @@
                 keyModifiers: null
             }),
 
-           // creation of histogram widget is conditional on there actually being analysis available
-           compositeHistogram = (_.has(model.attributes.metadata, 'analysis') === false ? null :
-            new cinema.views.CompositeHistogramWidget({
-                el: $('.c-histogram-panel', container),
-                basePath: model.get('basePath'),
-                histogramModel: histogramModel,
-                viewpoint: viewpointModel,
-                layerModel: layerModel,
-                toolbarSelector: '.c-panel-toolbar'
-            })),
+            compositeTools = sharedData.compositeToolsWidget,
 
-            compositeTools = new cinema.views.CompositeToolsWidget({
-                el: $('.c-tools-panel', container),
-                model: compositeModel,
-                controlModel: controlModel,
-                viewpoint: viewpointModel,
-                layers: layerModel,
-                toolbarSelector: '.c-panel-toolbar'
-            }),
+            compositeHistogram = (_.has(model.attributes.metadata, 'analysis') === false ? null : sharedData.histogramWidget),
 
-            // creation of histogram widget is conditional on there actually being analysis available
-            searchInformation = (_.has(model.attributes.metadata, 'analysis') === false ? null :
-             new cinema.views.SearchInformationWidget({
-                el: $('.c-information-panel', container),
-                model: compositeModel,
-                controlModel: controlModel,
-                exclude: ['layer', 'filename'],
-                layers: layerModel,
-                toolbarSelector: '.c-panel-toolbar'
-            })),
+            searchInformation = (_.has(model.attributes.metadata, 'analysis') === false ? null : sharedData.informationWidget),
 
             controlList = [
                 { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
@@ -122,7 +131,7 @@
             renderer.showViewpoint(true);
 
             $('.c-histogram-panel', root).toggle(visibility('histogram'));
-            $('.c-information-panel', root).toggle(visibility('information')); $('.c-information-panel', root).hide();
+            $('.c-information-panel', root).toggle(visibility('information'));
         }
 
         function getInfo () {
@@ -168,32 +177,11 @@
                     layerModel: layerModel
             })),
 
-            compositeHistogram = (_.has(model.attributes.metadata, 'analysis') === false ? null :
-                new cinema.views.CompositeHistogramWidget({
-                    el: $('.c-histogram-panel', container),
-                    basePath: model.get('basePath'),
-                    histogramModel: histogramModel,
-                    viewpoint: viewpointModel,
-                    layerModel: layerModel,
-                    toolbarSelector: '.c-panel-toolbar'
-            })),
+            searchTools = sharedData.searchToolsWidget,
 
-            searchTools = new cinema.views.SearchToolsWidget({
-                el: $('.c-tools-panel', container),
-                model: compositeModel,
-                layers: layerModel,
-                toolbarSelector: '.c-panel-toolbar'
-            }),
+            compositeHistogram = (_.has(model.attributes.metadata, 'analysis') === false ? null : sharedData.histogramWidget),
 
-            searchInformation = (_.has(model.attributes.metadata, 'analysis') === false ? null :
-                new cinema.views.SearchInformationWidget({
-                    el: $('.c-information-panel', container),
-                    model: compositeModel,
-                    controlModel: controlModel,
-                    exclude: ['layer', 'filename'],
-                    layers: layerModel,
-                    toolbarSelector: '.c-panel-toolbar'
-            })),
+            searchInformation = (_.has(model.attributes.metadata, 'analysis') === false ? null : sharedData.informationWidget),
 
             controlList = [
                 { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
