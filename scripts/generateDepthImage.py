@@ -41,9 +41,8 @@ class DepthImageGenerator(object):
     # =========================================================================
     #
     # =========================================================================
-    def generateDepthImage(self):
-        #rgb_img_path = os.path.join(self.base_path, "rgb.jpg")
-        rgb_img_path = os.path.join(self.base_path, "rgb.png")
+    def generateDepthImage(self, filename):
+        rgb_img_path = os.path.join(self.base_path, filename)
         self.spriteImg = Image.open(rgb_img_path)
 
         depth_img_path = os.path.join(self.base_path, "rgbd.png")
@@ -174,7 +173,7 @@ class DepthImageGenerator(object):
 # =========================================================================
 #
 # =========================================================================
-def recurse(infoJsonPath, directory):
+def recurse(infoJsonPath, directory, filename):
     # regular expression to allow removing base path for Girder storage
     rpRegex = re.compile('composite\.json')
 
@@ -192,7 +191,7 @@ def recurse(infoJsonPath, directory):
                 if matcher:
                     print 'Going to process ',nextPath
                     imageGenerator = DepthImageGenerator(infoJsonPath, nextPath)
-                    imageGenerator.generateDepthImage()
+                    imageGenerator.generateDepthImage(filename)
                     #imageGenerator.generateDepthJpeg()
 
                 continue
@@ -211,9 +210,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=description)
 
     parser.add_argument("--rootdir", type=str, default="", help="Path to root of data set (where info.json lives)")
+    parser.add_argument("--imgfiles", type=str, default="rbg.jpg", help="Names of files to open (e.g. 'rgb.png', 'rgb.jpg', 'image.jpg')")
 
     args = parser.parse_args()
 
     infojson = os.path.join(args.rootdir, 'info.json')
-    recurse(infojson, args.rootdir)
+    recurse(infojson, args.rootdir, args.imgfiles)
 
