@@ -1,5 +1,5 @@
 cinema.views.StaticImageView = Backbone.View.extend({
-    initialize: function () {
+    initialize: function (opts) {
         this.controlModel = new cinema.models.ControlModel({info: this.model});
         this.viewpointModel = new cinema.models.ViewPointModel({
             controlModel: this.controlModel

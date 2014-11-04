@@ -65,9 +65,11 @@ cinema.StandaloneApp = Backbone.View.extend({
         // Find out what the view control list is for control panel container
         var viewInfo = cinema.viewMapper.getView(cinema.model.getDataType(), cinema.viewType);
 
+        /*
+        TODO make sure this doesn't blow away this view's container
         if (this._currentView) {
-            //this._currentView.remove();
-        }
+            this._currentView.remove();
+        }*/
         this._currentView = new viewInfo.view({
             defaultControls: viewInfo.opts.controls,
             model: this.model

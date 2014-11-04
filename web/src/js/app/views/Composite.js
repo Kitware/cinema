@@ -124,7 +124,7 @@ cinema.views.CompositeView = Backbone.View.extend({
 });
 
 cinema.views.CompositeSearchView = Backbone.View.extend({
-    initialize: function () {
+    initialize: function (opts) {
         this.compositeModel = new cinema.decorators.Composite(this.model);
         this.controlModel = new cinema.models.ControlModel({ info: this.model });
         this.viewpointModel = new cinema.models.ViewPointModel({ controlModel: this.controlModel });
