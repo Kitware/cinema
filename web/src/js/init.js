@@ -19,5 +19,6 @@ var cinema = {
     decorators: {},
     views: {},
     events: _.clone(Backbone.Events),
-    router: new Backbone.Router()
+    router: new Backbone.Router(),
+    searchQuery: null
 };

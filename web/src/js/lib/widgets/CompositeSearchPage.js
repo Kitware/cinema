@@ -3,7 +3,7 @@
  */
 cinema.views.CompositeSearchPage = Backbone.View.extend({
     events: {
-
+        'click .c-search-page-next-results': 'handlePageNextResults'
     },
 
     initialize: function (settings) {
@@ -11,9 +11,8 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
         this.histogramModel = settings.histogramModel;
         this.visModel = settings.visModel;
         this.layerModel = settings.layerModel;
-        this.zoomWidth = $(window).width() * 0.25;
+        this.zoomWidth = $(window).width() * 0.23;
 
-        this.firstRender = true;
         this.resultIndex = 0;
 
         this.offscreenLayerModel = new cinema.models.LayerModel(this.visModel.getDefaultPipelineSetup(), { info: this.visModel });
@@ -54,6 +53,17 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
         this.compositeSearchResultContainer.hide();
     },
 
+    handlePageNextResults:  function () {
+        $('.c-search-page-next-results').hide();
+        if ((this.searchModel.results.length - this.resultIndex) > 12) {
+            this.nextPageCount = 12;
+            this._showNextResult();
+        } else {
+            this.nextPageCount = this.searchModel.results.length - this.resultIndex;
+            this._showNextResult();
+        }
+    },
+
     handleSearchZoom:  function (event) {
         this.zoomWidth = Number(event.zoomWidth);
         this.$('.c-search-result-wrapper').css('width', this.zoomWidth).css('height', this.zoomWidth);
@@ -62,17 +72,23 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
     handleSearchQuery:  function (event) {
         this.clearResults();
         var that = this;
+        $('.c-search-page-next-results').hide();
+        $('.c-search-filter').val(event.searchQuery);
+
         setTimeout(function(){
-        var expressions = event.searchQuery.split(' Sort By '),
+            var expressions = event.searchQuery.split(' Sort By '),
             filterExpression,
             numberOfSearchResults = 0,
             sortExpression;
 
         if (expressions.length === 2) {
+            console.log("if");
             filterExpression = that.searchModel.validateQuery(expressions[0]);
             sortExpression = that.searchModel.validateQuery(expressions[1]);
             if (filterExpression !== null && filterExpression !== '') {
                 numberOfSearchResults = that.searchModel.filterBy(filterExpression);
+            } else {
+                numberOfSearchResults = that.searchModel.allResults();
             }
             if (numberOfSearchResults > 0 && sortExpression !== null && sortExpression !== '') {
                 that.searchModel.sortBy(sortExpression);
@@ -86,6 +102,8 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
             filterExpression = that.searchModel.validateQuery(expressions[0]);
             if (filterExpression !== null && filterExpression !== '') {
                 numberOfSearchResults = that.searchModel.filterBy(filterExpression);
+            } else {
+                numberOfSearchResults = that.searchModel.allResults();
             }
             that.searchModel.setResultsList();
             if (numberOfSearchResults > 0) {
@@ -115,6 +133,7 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
 
     _showResults: function () {
         this.resultIndex = 0;
+        this.nextPageCount = 12;
 
         this.$('.c-search-result-message').text(
              this.searchModel.results.length + ' results');
@@ -130,23 +149,28 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
         }
 
         var viewpoint = this.searchModel.results[this.resultIndex];
-        this.offscreenControlModel.setControls(viewpoint);
         var query = this.layerModel.serialize();
         this.offscreenVisualizationCanvasWidget.once('c:drawn', function () {
             self.resultIndex += 1;
+            self.nextPageCount -= 1;
             var image = self.offscreenVisualizationCanvasWidget.getImage();
             image.onload = function() {
                 $('<img src="' + image.src + '" class = "c-search-result-wrapper"/>').
+                    attr('image-key', self.searchModel.objectToOrdinal(viewpoint)).
                     css('width', self.zoomWidth).
                     css('height', self.zoomWidth).
                     appendTo(self.$('.c-search-results-list-area'));
+                $('html, body').scrollTop($('.c-search-result-wrapper').last().offset().top);
             };
 
-            if (self._canScroll()) {
+            if (self.nextPageCount !== 0) {
                 self._showNextResult();
+            } else if (this.resultIndex < this.searchModel.results.length) {
+                $('.c-search-page-next-results').show();
             } else {
-                self._setScrollWaypoint();
+                /*jshint -W035 */
             }
-        }, this).updateTheQuery(query);
+
+        }, this).updateTheQuery(query, viewpoint);
     }
 });

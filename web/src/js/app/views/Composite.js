@@ -1,4 +1,40 @@
 (function () {
+    var sharedDataMap = {},
+        visibilityMap = { 'histogram': false, 'information': false };
+
+    function getSharedData(model) {
+        if(sharedDataMap.hasOwnProperty(model.getHash())) {
+            return sharedDataMap[model.getHash()];
+        } else {
+            var layer = new cinema.models.LayerModel(model.getDefaultPipelineSetup(), { info: model }),
+                control = new cinema.models.ControlModel({ info: model }),
+                histogram = new cinema.models.CompositeHistogramModel({
+                    layerModel: layer,
+                    basePath: model.get('basePath'),
+                    analysisInfo: model.attributes.metadata.analysis }),
+                viewpoint = new cinema.models.ViewPointModel({ controlModel: control }),
+                shared = {
+                    control: control,
+                    histogram: histogram,
+                    layer: layer,
+                    viewpoint: viewpoint
+                };
+            sharedDataMap[model.getHash()] = shared;
+            return shared;
+        }
+    }
+
+    function visibility(name, value) {
+        if(value === undefined) {
+            return visibilityMap[name];
+        } else {
+            visibilityMap[name] = value;
+        }
+    }
+
+    cinema.events.on('toggle-control-panel', function(event) {
+        visibility(event.key, event.visible);
+    });
 
     // --------- Add 'view' page for composite-image-stack dataset ----------
 
@@ -7,15 +43,12 @@
             dataType = model.getDataType(),
             compositeModel = new cinema.decorators.Composite(model),
             compositeManager = new cinema.utilities.CompositeImageManager({ visModel: model }),
-            controlModel = new cinema.models.ControlModel({ info: model }),
-            viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
-            layerModel = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup(),
-                                                     { info: model }),
+            sharedData = getSharedData(compositeModel),
+            controlModel = sharedData.control,
+            viewpointModel = sharedData.viewpoint,
+            layerModel = sharedData.layer,
             // creation of histogram model is conditional on there actually being analysis available
-            histogramModel = (_.has(model.attributes.metadata, 'analysis') === false ? null :
-                new cinema.models.CompositeHistogramModel({ layerModel: layerModel,
-                                                            basePath: model.get('basePath'),
-                                                            analysisInfo: model.attributes.metadata.analysis })),
+            histogramModel = (_.has(model.attributes.metadata, 'analysis') === false ? null : sharedData.histogram),
             renderer = new cinema.views.VisualizationCanvasWidget({
                 el: container,
                 model: compositeModel,
@@ -70,8 +103,7 @@
 
             controlList = [
                 { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
-            ],
-            firstRender = true;
+            ];
 
             // Addition of histogram and search info icons in header is conditional on existence of analysis information
             if (_.has(model.attributes.metadata, 'analysis')) {
@@ -88,11 +120,13 @@
                 searchInformation.setElement($('.c-information-panel', root)).render();
             }
             renderer.showViewpoint(true);
-            if (firstRender) {
-                firstRender = false;
-                $('.c-histogram-panel', root).hide();
-                $('.c-information-panel', root).hide();
-            }
+
+            $('.c-histogram-panel', root).toggle(visibility('histogram'));
+            $('.c-information-panel', root).toggle(visibility('information')); $('.c-information-panel', root).hide();
+        }
+
+        function getInfo () {
+            return "tester";
         }
 
         function refreshCamera () {
@@ -120,13 +154,11 @@
         var container = $(rootSelector),
             dataType = model.getDataType(),
             compositeModel = new cinema.decorators.Composite(model),
-            controlModel = new cinema.models.ControlModel({ info: model }),
-            viewpointModel = new cinema.models.ViewPointModel({ controlModel: controlModel }),
-            layerModel = new cinema.models.LayerModel(compositeModel.getDefaultPipelineSetup(), { info: model }),
-            histogramModel = (_.has(model.attributes.metadata, 'analysis') === false ? null :
-                new cinema.models.CompositeHistogramModel({ layerModel: layerModel,
-                                                            basePath: model.get('basePath'),
-                                                            analysisInfo: model.attributes.metadata.analysis })),
+            sharedData = getSharedData(compositeModel),
+            controlModel = sharedData.control,
+            viewpointModel = sharedData.viewpoint,
+            layerModel = sharedData.layer,
+            histogramModel = (_.has(model.attributes.metadata, 'analysis') === false ? null : sharedData.histogram),
 
             searchPage = (_.has(model.attributes.metadata, 'analysis') === false ? null :
                 new cinema.views.CompositeSearchPage({
@@ -165,8 +197,7 @@
 
             controlList = [
                 { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
-            ],
-            firstRender = true;
+            ];
 
             // Addition of histogram and search info icons in header is conditional on existence of analysis information
             if (_.has(model.attributes.metadata, 'analysis')) {
@@ -177,16 +208,14 @@
         function render () {
             var root = $(rootSelector);
             searchTools.setElement($('.c-tools-panel', root)).render();
+            searchPage.setElement($('.c-body-container', root)).render();
             if (_.has(model.attributes.metadata, 'analysis')) {
-                searchPage.setElement($('.c-body-container', root)).render();
                 compositeHistogram.setElement($('.c-histogram-panel', root)).render();
                 searchInformation.setElement($('.c-information-panel', root)).render();
             }
-            if (firstRender) {
-                firstRender = false;
-                $('.c-histogram-panel', root).hide();
-                $('.c-information-panel', root).hide();
-            }
+
+            $('.c-histogram-panel', root).toggle(visibility('histogram'));
+            $('.c-information-panel', root).toggle(visibility('information'));
         }
 
         return {
