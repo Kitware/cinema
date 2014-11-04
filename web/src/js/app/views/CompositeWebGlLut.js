@@ -69,6 +69,7 @@ cinema.views.CompositeWebGlLutView = Backbone.View.extend({
             el: this.$('.c-rendering-panel'),
             model: this.compositeModel,
             toolbarSelector: '.c-panel-toolbar',
+            disabledList: [ 'c-edit-lighting' ],
             viewport: this.renderView,
             renderingModel: this.renderingModel
         });
