@@ -17,8 +17,9 @@ cinema.StandaloneApp = Backbone.View.extend({
 
         // Handle search navigation
         'click .c-search-filter-apply': function (e) {
-            if(cinema.viewType !== 'search') {
-                cinema.router.navigate('#search', {trigger: true});
+            if (cinema.viewType !== 'search') {
+                cinema.viewType = 'search';
+                this.render();
             }
             var searchQuery = $('.c-search-filter').val();
             cinema.searchQuery = searchQuery;
@@ -26,13 +27,15 @@ cinema.StandaloneApp = Backbone.View.extend({
         },
 
         'click .c-app-icon': function (e) {
-            cinema.router.navigate('#view', { trigger: true });
+            cinema.viewType = 'view';
+            this.render();
         },
 
         'keyup .c-search-filter': function (e) {
             if (e.keyCode === 13) {
-                if(cinema.viewType !== 'search') {
-                    cinema.router.navigate('#search', {trigger: true});
+                if (cinema.viewType !== 'search') {
+                    cinema.viewType = 'search';
+                    this.render();
                 }
                 var searchQuery = $(e.currentTarget).val();
                 cinema.searchQuery = searchQuery;
@@ -53,10 +56,6 @@ cinema.StandaloneApp = Backbone.View.extend({
             infoFile: 'info.json'
         });
         cinema.model = this.model;
-
-        Backbone.history.start({
-            pushState: false
-        });
 
         this.listenTo(this.model, 'change', this.render);
         this.model.fetch();

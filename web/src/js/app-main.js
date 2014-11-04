@@ -7,15 +7,4 @@ $(function () {
         dataRoot: $('#c-data-root').text(),
         staticRoot: $('#c-static-root').text()
     });
-
-    // Make empty route redirect to #view
-    cinema.router.route('', 'index_redirect', function (viewType) {
-         cinema.viewType = 'view';
-         cinema.view.render();
-    });
-
-    cinema.router.route(':viewType', '', function (viewType) {
-        cinema.viewType = viewType;
-        cinema.view.render();
-    });
 });
