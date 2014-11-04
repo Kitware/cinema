@@ -24,6 +24,7 @@
         this.visModel = params.visModel;
         this._cache = {};
         this.globalCount = 0;
+        this.maxCacheSize = 15; //2 * this.visModel.args.phi.values.length;
 
         this.supportedDataTypes = [
             'composite-image-stack',
@@ -43,6 +44,12 @@
         } else {
             this.files = params.files;
         }
+
+        this.on('c:data.ready', function(){
+            if(this.globalCount % this.maxCacheSize === 0) {
+                this._garbageCollector();
+            }
+        });
 
         return this;
     };
@@ -90,22 +97,31 @@
         var cacheKeys = _.keys(this._cache),
             cacheSize = cacheKeys.length,
             orderedCache = [],
-            count = cacheSize;
+            count = cacheSize,
+            before = count;
 
         function sortFunction(a,b) {
+            if(a.ts === b.ts) {
+                return 0;
+            }
+            if(a.ts === undefined) {
+                return 1;
+            }
+            if(b.ts === undefined) {
+                return -1;
+            }
             return a.ts - b.ts;
         }
 
-        if(cacheSize > 100) {
-            while(count) {
-                this._cache[cacheKeys[count]].key = this._cache[cacheKeys[count]];
+        if(cacheSize > this.maxCacheSize) {
+            /*jshint -W016 */
+            while(count--) {
                 orderedCache.push(this._cache[cacheKeys[count]]);
-                count -= 1;
             }
             orderedCache.sort(sortFunction);
         }
 
-        while (cacheSize > 100) {
+        while (cacheSize > this.maxCacheSize) {
             delete this._cache[orderedCache[0].key];
             cacheSize -= 1;
             orderedCache.shift();
@@ -124,6 +140,7 @@
         img.onload = _.bind(function () {
             this._cache[key].image = img;
             this._cache[key].ts = this.globalCount;
+            this._cache[key].key = key;
             this.globalCount += 1;
             if (_.has(this._cache[key], 'json')) {
                 this._cache[key].ready = true;
