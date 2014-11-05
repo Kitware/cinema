@@ -102,10 +102,8 @@ var sharedDataMap = {},
             this.compositeModel = new cinema.decorators.Composite(this.model);
             var sharedData = getSharedData(this.compositeModel, this.$el);
 
-            this.compositeManager = sharedData.imageManager;
             this.controlModel = sharedData.control;
             this.viewpointModel = sharedData.viewpoint;
-            this.layers = sharedData.layer;
             this.renderView = sharedData.renderView;
 
             new cinema.utilities.RenderViewMouseInteractor({
@@ -125,7 +123,6 @@ var sharedDataMap = {},
 
             this._hasAnalysis = _.has(this.model.get('metadata'), 'analysis');
             if (this._hasAnalysis) {
-                this.histogramModel = sharedData.histogram;
                 this.controlList = opts.defaultControls.slice(0);
                 this.compositeHistogram = sharedData.histogramWidget;
                 this.searchInformation = sharedData.informationWidget;
@@ -174,13 +171,11 @@ var sharedDataMap = {},
 
             this.controlModel = sharedData.control;
             this.viewpointModel = sharedData.viewpoint;
-            this.layers = sharedData.layer;
             this.searchView = sharedData.searchView;
             this.searchTools = sharedData.searchToolsWidget;
 
             this._hasAnalysis = _.has(this.model.get('metadata'), 'analysis');
             if (this._hasAnalysis) {
-                this.histogramModel = sharedData.histogram;
                 this.compositeHistogram = sharedData.histogramWidget;
                 this.searchInformation = sharedData.informationWidget;
                 this.controlList = opts.defaultControls.slice(0);
