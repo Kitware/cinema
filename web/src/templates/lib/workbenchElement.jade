@@ -6,7 +6,7 @@
     ul.dropdown-menu(role="menu")
       each run in runs
         li: a.c-run-option(run-id="#{run.path}")= run.title
-.c-run-container
+.c-run-container(container-uid="#{containerUid}")
   .c-body-container.c-workbench-body-container.empty
   .c-side-panel.hide
     .c-side-panel-header

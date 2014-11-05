@@ -47,6 +47,7 @@ cinema.views.WorkbenchElementWidget = Backbone.View.extend({
      * and optionally a pre-existing CompositeImageManager.
      */
     initialize: function (settings) {
+        this.containerUid = settings.containerUid;
         // TODO handle the case where this model is not loaded yet.
 
         // Map IDs to run info
@@ -58,7 +59,8 @@ cinema.views.WorkbenchElementWidget = Backbone.View.extend({
 
     render: function (settings) {
         this.$el.html(cinema.templates.workbenchElement({
-            runs: this.model.get('runs')
+            runs: this.model.get('runs'),
+            containerUid: this.containerUid
         }));
 
         this.$('.c-run-select').tooltip({
