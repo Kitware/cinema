@@ -5,8 +5,8 @@ cinema.views.ChartView = Backbone.View.extend({
             controlModel: this.controlModel
         });
 
-        this.controlModel.on('change', this.refreshCamera, this);
-        this.viewpointModel.on('change', this.refreshCamera, this);
+        this.listenTo(this.controlModel, 'change', this.refreshCamera);
+        this.listenTo(this.viewpointModel, 'change', this.refreshCamera);
         this.listenTo(cinema.events, 'c:resetCamera', this.resetCamera);
     },
 

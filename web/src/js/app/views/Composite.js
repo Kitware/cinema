@@ -1,7 +1,6 @@
 (function () {
-var sharedDataMap = {},
+    var sharedDataMap = {},
     visibilityMap = { 'histogram': false, 'information': false };
-
 
     var getSharedData = function (model, container, analysis) {
         var key = model.getHash() + '::' + ($(container).attr('container-uid') || 'main');
@@ -162,8 +161,8 @@ var sharedDataMap = {},
                 this.searchInformation = sharedData.metaDataInformationWidget;
             }
 
-            this.listenTo(this.controlModel, 'change', this.refreshCamera, this);
-            this.listenTo(this.viewpointModel, 'change', this.refreshCamera, this);
+            this.listenTo(this.controlModel, 'change', this.refreshCamera);
+            this.listenTo(this.viewpointModel, 'change', this.refreshCamera);
             this.listenTo(cinema.events, 'c:resetCamera', this.resetCamera);
         },
 
@@ -193,7 +192,7 @@ var sharedDataMap = {},
         },
 
         remove: function () {
-
+            getSharedData(this.compositeModel, this.$el, this._hasAnalysis).remove();
         }
     });
 
@@ -220,8 +219,8 @@ var sharedDataMap = {},
                 this.searchInformation = sharedData.metaDataInformationWidget;
             }
 
-            this.listenTo(this.controlModel, 'change', this.refreshCamera, this);
-            this.listenTo(this.viewpointModel, 'change', this.refreshCamera, this);
+            this.listenTo(this.controlModel, 'change', this.refreshCamera);
+            this.listenTo(this.viewpointModel, 'change', this.refreshCamera);
             this.listenTo(cinema.events, 'c:resetCamera', this.resetCamera);
         },
 
@@ -238,7 +237,7 @@ var sharedDataMap = {},
         },
 
         remove: function () {
-            getSharedData(this.compositeModel, this.$el).remove();
+            getSharedData(this.compositeModel, this.$el, this._hasAnalysis).remove();
         }
     });
 }());
