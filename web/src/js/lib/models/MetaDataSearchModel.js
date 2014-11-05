@@ -2,21 +2,16 @@
  * This model is used to store the state of a search query, and implements the
  * search filtering logic.
  */
-cinema.models.SearchModel = Backbone.Model.extend({
+cinema.models.MetaDataSearchModel = Backbone.Model.extend({
     constructor: function (settings) {
         Backbone.Model.apply(this, arguments);
 
-        this.basePath = settings.basePath;
-        this.histogramModel = settings.histogramModel;
-        this.layerModel = settings.layerModel;
         this.visModel = settings.visModel;
         this.query = settings.query || {};
 
         this.results = [];
 
         this.listenTo(this.visModel, 'change', this.readyToInitialize);
-        this.listenTo(this.histogramModel, 'change', this.updateDataMap);
-        this.listenTo(this.layerModel, 'change', this.updateHistogramModel);
         this.readyToInitialize();
     },
 
@@ -33,15 +28,8 @@ cinema.models.SearchModel = Backbone.Model.extend({
             args = this.visModel.get('arguments') || {},
             compList = pattern.split('/'),
             i,
-            index,
             re = /{(.+)}/,
             self = this;
-
-        this._layers = args.layer.values;
-        index = this._layers.indexOf("_");
-        if (index > -1) {
-            this._layers.splice(index, 1);
-        }
 
         this._argArrays = [];
         this._argKeys = [];
@@ -64,10 +52,6 @@ cinema.models.SearchModel = Backbone.Model.extend({
         for (i = 0; i < this._argKeys.length; i += 1) {
             this._realKeys.push(this._argKeys[i]);
         }
-        for (i = 0; i < this._layers.length; i += 1) {
-            this._realKeys.push(this._layers[i]);
-        }
-
 
         var multiplier = 1;
         for (i = this._argArrays.length - 1; i >= 0; i-=1) {
@@ -88,9 +72,6 @@ cinema.models.SearchModel = Backbone.Model.extend({
         for (i = 0; i <= this._maxOrdinal; i += 1) {
             obj = this.ordinalToObject(i);
             url = this.basePath + '/' + this.objectToPath(obj);
-            for (j = 0; j < this._layers.length; j += 1) {
-                obj[this._layers[j]] = 0;
-            }
             results.push( {"index": i, "obj": obj, "url": url, "keep": false} );
         }
         return results;
@@ -266,35 +247,5 @@ cinema.models.SearchModel = Backbone.Model.extend({
         });
 
         return result.join('/');
-    },
-
-    imageCount: function () {
-        return this.visModel.lengthPhi() * this.visModel.lengthTime() * this.visModel.lengthTheta();
-    },
-
-    updateDataMap: function() {
-        if (!this.histogramModel.loaded()) {
-            return;
-        }
-        var i,
-            images = this.histogramModel.getData('images'),
-            j,
-            k,
-            key;
-
-        for (i = 0; i < images.length; i += 1) {
-            for (j = 0; j < this._layers.length; j += 1) {
-                if (this._layers[j] in images[i]) {
-                    key = this._layers[j];
-                    for (k = 0; k < images[i][key].length; k += 1) {
-                        this._dataMap[images[i][key][k]].obj[key] = i;
-                    }
-                }
-            }
-        }
-    },
-
-    updateHistogramModel: function () {
-        this.histogramModel.fetch();
     }
 });
