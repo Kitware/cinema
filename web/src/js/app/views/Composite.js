@@ -4,8 +4,9 @@ var sharedDataMap = {},
 
 
     var getSharedData = function (model, container) {
-        if (sharedDataMap.hasOwnProperty(model.getHash())) {
-            return sharedDataMap[model.getHash()];
+        var key = model.getHash() + '::' + ($(container).attr('container-uid') || 'main');
+        if (_.has(sharedDataMap, key)) {
+            return sharedDataMap[key];
         } else {
             var layer = new cinema.models.LayerModel(model.getDefaultPipelineSetup(), { info: model }),
                 control = new cinema.models.ControlModel({ info: model }),
@@ -54,7 +55,7 @@ var sharedDataMap = {},
                     compositeToolsWidget: compositeToolsWidget,
                     searchToolsWidget: searchToolsWidget
                 };
-            sharedDataMap[model.getHash()] = shared;
+            sharedDataMap[key] = shared;
             return shared;
         }
     };
@@ -95,8 +96,8 @@ var sharedDataMap = {},
                 );
             }
 
-            this.controlModel.on('change', this.refreshCamera, this);
-            this.viewpointModel.on('change', this.refreshCamera, this);
+            this.listenTo(this.controlModel, 'change', this.refreshCamera);
+            this.listenTo(this.viewpointModel, 'change', this.refreshCamera);
             this.listenTo(cinema.events, 'c:resetCamera', this.resetCamera);
         },
 
@@ -181,8 +182,8 @@ var sharedDataMap = {},
                 );
             }
 
-            this.controlModel.on('change', this.refreshCamera, this);
-            this.viewpointModel.on('change', this.refreshCamera, this);
+            this.listenTo(this.controlModel, 'change', this.refreshCamera);
+            this.listenTo(this.viewpointModel, 'change', this.refreshCamera);
             this.listenTo(cinema.events, 'c:resetCamera', this.resetCamera);
         },
 
