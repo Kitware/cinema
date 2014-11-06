@@ -7,7 +7,9 @@
         if (_.has(sharedDataMap, key)) {
             return sharedDataMap[key];
         } else {
-            var layer = new cinema.models.LayerModel(model.getDefaultPipelineSetup(), { info: model }),
+            var layer = new cinema.models.LayerModel(model.getDefaultPipelineSetup(), {
+                    info: model
+                }),
                 control = new cinema.models.ControlModel({
                     info: model
                 }),
@@ -38,6 +40,21 @@
                     controls: control,
                     viewpoint: viewpoint,
                     compositeManager: imageManager
+                }),
+                offScreenLayer = new cinema.models.LayerModel(model.getDefaultPipelineSetup(), {
+                    info: model
+                }),
+                offScreenControl = new cinema.models.ControlModel({
+                    info: model
+                }),
+                offScreenViewpoint = new cinema.models.ViewPointModel({
+                    controlModel: offScreenControl
+                }),
+                offScreenRenderView = new cinema.views.VisualizationCanvasWidget({
+                    el: this.$('.c-body-container', container),
+                    model: model,
+                    viewpoint: offScreenViewpoint,
+                    layers: offScreenLayer
                 }),
                 histogram = null,
                 informationWidget = null,
@@ -74,14 +91,18 @@
                     histogramModel: histogram,
                     visModel: model,
                     controlModel: control,
-                    layerModel: layer
+                    layerModel: layer,
+                    offScreenControl: offScreenControl,
+                    offScreenRenderView: offScreenRenderView
                 });
             } else {
                 metaDataSearchView = new cinema.views.MetaDataCompositeSearchPage({
                     el: $('.c-body-container', container),
                     visModel: model,
                     controlModel: control,
-                    layerModel: layer
+                    layerModel: layer,
+                    offScreenControl: offScreenControl,
+                    offScreenRenderView: offScreenRenderView
                 });
                 metaDataInformationWidget = new cinema.views.MetaDataSearchInformationWidget({
                     el: $('.c-information-panel', container),
@@ -103,6 +124,10 @@
                 searchToolsWidget: searchToolsWidget,
                 imageManager: imageManager,
                 renderView: renderView,
+                offScreenLayer: offScreenLayer,
+                offScreenControl: offScreenControl,
+                offScreenViewpoint: offScreenViewpoint,
+                offScreenRenderView: offScreenRenderView,
                 searchView: searchView,
                 metaDataSearchView: metaDataSearchView,
                 metaDataInformationWidget: metaDataInformationWidget,
@@ -131,6 +156,7 @@
         initialize: function (opts) {
             this.compositeModel = new cinema.decorators.Composite(this.model);
             this._hasAnalysis = _.has(this.model.get('metadata'), 'analysis');
+            this._hasAnalysis = false;
             var sharedData = getSharedData(this.compositeModel, this.$el, this._hasAnalysis);
 
             this.controlModel = sharedData.control;
@@ -202,6 +228,7 @@
         initialize: function (opts) {
             this.compositeModel = new cinema.decorators.Composite(this.model);
             this._hasAnalysis = _.has(this.model.get('metadata'), 'analysis');
+            this._hasAnalysis = false;
             var sharedData = getSharedData(this.compositeModel, this.$el, this._hasAnalysis);
 
             this.controlModel = sharedData.control;
