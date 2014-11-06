@@ -73,12 +73,14 @@
                     basePath: model.get('basePath'),
                     histogramModel: histogram,
                     visModel: model,
+                    controlModel: control,
                     layerModel: layer
                 });
             } else {
                 metaDataSearchView = new cinema.views.MetaDataCompositeSearchPage({
                     el: $('.c-body-container', container),
                     visModel: model,
+                    controlModel: control,
                     layerModel: layer
                 });
                 metaDataInformationWidget = new cinema.views.MetaDataSearchInformationWidget({
