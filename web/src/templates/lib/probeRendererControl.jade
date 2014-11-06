@@ -59,7 +59,7 @@
    br
    select.form-control
       each field in fields
-         option. #{field}
+         option(selected=(activeField === field) ? 'selected' : undefined). #{field}
 
    br
    b. Chart

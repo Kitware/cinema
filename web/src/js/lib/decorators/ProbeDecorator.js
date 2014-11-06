@@ -51,6 +51,7 @@
    };
 
    prototype.setActiveField = function (fieldName) {
+      this.loadFieldImages(fieldName);
       this.set('active_field', fieldName);
    };
 
@@ -100,8 +101,6 @@
       var range = this.get('ranges')[this.getActiveField()],
          delta = (range[1] - range[0]) / (16777216), // 256*256*256
          value = buffer[pixOffset] + (buffer[pixOffset+1]*256) + (buffer[pixOffset+2]*256*256);
-
-      // console.log('pixOffset: ' + pixOffset + ' | ' + delta + ' | ' + value + ' => ' + (value*delta + range[0]) + ' | ' + range.join(', '));
 
       return value*delta + range[0];
    };

@@ -24,13 +24,26 @@
                 { position: 'left', key: 'rendering', icon: 'icon-sun', title: 'Rendering' }
             ],
             probeModel = new cinema.decorators.Probe(model),
+            renderingModel = new cinema.models.RenderingModel({
+               url: '/rendering/rendering.json',
+               ranges: probeModel.get('ranges'),
+               fields: probeModel.get('fields') }),
             renderer = new cinema.views.ProbeRendererWidget({ model: probeModel }),
             tools = new cinema.views.ProbeRendererControlWidget({ model: probeModel });
+            renderingView = new cinema.views.RenderingWidget({
+                el: $('.c-rendering-panel', container),
+                model: probeModel,
+                viewport: renderer,
+                renderingModel: renderingModel,
+                toolbarSelector: '.c-panel-toolbar',
+                disabledList: [ 'c-edit-lighting', 'c-view-fps-info']
+            });
 
         function render () {
             var root = $(rootSelector);
             renderer.setElement($('.c-body-container', root)).render();
             tools.setElement($('.c-tools-panel', root)).render();
+            renderingView.setElement($('.c-rendering-panel', root)).render();
 
             $('.c-tools-panel', root).toggle(visibility('tools'));
             $('.c-rendering-panel', root).toggle(visibility('rendering'));

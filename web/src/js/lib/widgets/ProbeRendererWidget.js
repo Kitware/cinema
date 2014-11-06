@@ -24,7 +24,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
       cinema.bindWindowResizeHandler(this, this.render, 200);
 
       cinema.events.on('progress', function() {
-         self.drawProgress();
+         self.render();
       });
 
       this.model.on('change', function() {
@@ -220,6 +220,10 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
    },
 
    attachMouseListener: function(container) {
+      function capValue(value, max) {
+         return (value < 0) ? 0 : (value >= max) ? max - 1 : value;
+      }
+
       var viewports = this.layout.viewports,
          mouseDown = false,
          dimensions = this.model.getDimensions(),
@@ -233,43 +237,43 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
                var workArea = xyViewport[2].workArea,
                   xy = xyViewport;
 
-               probe[0] = Math.floor(dimensions[0] * (xy[0] - workArea[0]) / workArea[2]);
-               probe[1] = Math.floor(dimensions[1] * (xy[1] - workArea[1]) / workArea[3]);
+               probe[0] = capValue(Math.floor(dimensions[0] * (xy[0] - workArea[0]) / workArea[2]), dimensions[0]);
+               probe[1] = capValue(Math.floor(dimensions[1] * (xy[1] - workArea[1]) / workArea[3]), dimensions[1]);
             },
             'ZY' : function (xyViewport) {
                var workArea = xyViewport[2].workArea,
                   xy = xyViewport;
 
-               probe[2] = Math.floor(dimensions[2] * (xy[0] - workArea[0]) / workArea[2]);
-               probe[1] = Math.floor(dimensions[1] * (xy[1] - workArea[1]) / workArea[3]);
+               probe[2] = capValue(Math.floor(dimensions[2] * (xy[0] - workArea[0]) / workArea[2]), dimensions[2]);
+               probe[1] = capValue(Math.floor(dimensions[1] * (xy[1] - workArea[1]) / workArea[3]), dimensions[1]);
             },
             'XZ' : function (xyViewport) {
                var workArea = xyViewport[2].workArea,
                   xy = xyViewport;
 
-               probe[0] = Math.floor(dimensions[0] * (xy[0] - workArea[0]) / workArea[2]);
-               probe[2] = Math.floor(dimensions[2] * (xy[1] - workArea[1]) / workArea[3]);
+               probe[0] = capValue(Math.floor(dimensions[0] * (xy[0] - workArea[0]) / workArea[2]), dimensions[0]);
+               probe[2] = capValue(Math.floor(dimensions[2] * (xy[1] - workArea[1]) / workArea[3]), dimensions[2]);
             },
             'ChartX' : function (xyViewport) {
                var width = xyViewport[2].area[2],
                   xOffset = xyViewport[2].area[0],
                   xy = xyViewport;
 
-               probe[0] = Math.floor(dimensions[0] * (xy[0] - xOffset) / width);
+               probe[0] = capValue(Math.floor(dimensions[0] * (xy[0] - xOffset) / width), dimensions[0]);
             },
             'ChartY' : function (xyViewport) {
                var width = xyViewport[2].area[2],
                   xOffset = xyViewport[2].area[0],
                   xy = xyViewport;
 
-               probe[1] = Math.floor(dimensions[1] * (xy[0] - xOffset) / width);
+               probe[1] = capValue(Math.floor(dimensions[1] * (xy[0] - xOffset) / width), dimensions[1]);
             },
             'ChartZ' : function (xyViewport) {
                var width = xyViewport[2].area[2],
                   xOffset = xyViewport[2].area[0],
                   xy = xyViewport;
 
-               probe[2] = Math.floor(dimensions[2] * (xy[0] - xOffset) / width);
+               probe[2] = capValue(Math.floor(dimensions[2] * (xy[0] - xOffset) / width), dimensions[2]);
             }
          };
 
@@ -343,7 +347,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
 
             if(viewport && viewport.view === 'XY') {
                probe[2] += (scrollValue > 0 ? 1 : -1);
-               probe[2] = (probe[2] < 0) ? 0 : (probe[2] - 1 >= dimensions[2]) ? (dimensions[2] - 1) : probe[2];
+               probe[2] = (probe[2] < 0) ? 0 : (probe[2] >= dimensions[2]) ? dimensions[2] - 1 : probe[2];
                that.drawLayout();
 
                if (event.preventDefault) event.preventDefault();
@@ -381,10 +385,12 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
          that = this;
 
       this.$el.html(cinema.templates.probeRenderer( { maxSize: this.maxSize, width: width, height: height }));
-      this.drawLayout();
-
-      // Auto attach and remove
-      this.attachMouseListener(this.$('.fg-renderer'));
+      if(this.drawLayout()) {
+         // Auto attach and remove
+         this.attachMouseListener(this.$('.fg-renderer'));
+      } else {
+         this.drawProgress();
+      }
    },
 
    drawProgress: function() {
@@ -423,7 +429,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
          drawPriority = [ 'renderXY', 'renderZY', 'renderXZ' ];
 
       if(progress < 100) {
-         return;
+         return false;
       }
 
       // Make sure the size Match
@@ -486,6 +492,8 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
             }
          }
       }
+
+      return true;
    },
 
    pushImageToForeground: function(viewport, xIdx, yIdx) {
@@ -592,6 +600,10 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
    },
 
    renderXY: function() {
+      if(this.model.getProgress() < 100) {
+         return;
+      }
+
       var xyz = this.slicePosition,
          dimensions = this.model.getDimensions(),
          image = this.model.getImage(xyz[2]),
@@ -615,6 +627,10 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
    },
 
    renderZY: function() {
+      if(this.model.getProgress() < 100) {
+         return;
+      }
+
       var xyz = this.slicePosition,
          dimensions = this.model.getDimensions(),
          bgCanvas = this.$('.bg-renderer'),
@@ -645,6 +661,10 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
    },
 
    renderXZ: function() {
+      if(this.model.getProgress() < 100) {
+         return;
+      }
+
       var xyz = this.slicePosition,
          dimensions = this.model.getDimensions(),
          bgCanvas = this.$('.bg-renderer'),
@@ -731,6 +751,14 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
       while(lines.length) {
          ctx.fillText(lines.shift(), viewport.area[0] + 10, viewport.area[1] + (lineOffset++ * lineHeight * 1.2));
       }
+   },
+
+   setLUT: function(fieldName, lutFunction) {
+      // console.log('update LUT for ' + fieldCode);
+   },
+
+   forceRedraw: function () {
+      this.drawLayout();
    }
 });
 
@@ -746,6 +774,7 @@ cinema.views.ProbeRendererControlWidget = Backbone.View.extend({
       var model = this.model;
       this.$('.c-control-panel-body').html(cinema.templates.probeRendererControl( {
          fields: this.model.getFields(),
+         activeField: this.model.getActiveField(),
          checked: model.getGlobalRangeForChart()
       }));
 
