@@ -28,7 +28,7 @@ cinema.views.SearchOptionsWidget = Backbone.View.extend({
 
         this.toolbarSelector = settings.toolbarSelector;
         this.toolbarRootView = settings.toolbarRootView || this;
-        this.toolbarView = new cinema.views.ToolsToolbar({el: $(this.toolbarSelector, this.toolbarRootView) });
+        this.toolbarView = new cinema.views.SearchToolsToolbar({el: $(this.toolbarSelector, this.toolbarRootView) });
 
         this._annotateOptions();
     },

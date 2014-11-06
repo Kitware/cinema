@@ -58,6 +58,8 @@ cinema.StandaloneApp = Backbone.View.extend({
         cinema.model = this.model;
 
         this.listenTo(this.model, 'change', this.render);
+        this.listenTo(cinema.events, 'c:switchtorenderview', this.switchToRenderView);
+
         this.model.fetch();
     },
 
@@ -119,5 +121,10 @@ cinema.StandaloneApp = Backbone.View.extend({
         this._currentView.setElement(container).render();
 
         return this;
+    },
+
+    switchToRenderView: function () {
+        cinema.viewType = 'view';
+        this.render();
     }
 });

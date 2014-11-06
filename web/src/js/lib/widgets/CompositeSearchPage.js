@@ -3,13 +3,15 @@
  */
 cinema.views.CompositeSearchPage = Backbone.View.extend({
     events: {
-        'click .c-search-page-next-results': 'handlePageNextResults'
+        'click .c-search-page-next-results': 'handlePageNextResults',
+        'dblclick .c-search-result-wrapper': 'handlePageMigration'
     },
 
     initialize: function (settings) {
         this.basePath = settings.basePath;
         this.histogramModel = settings.histogramModel;
         this.visModel = settings.visModel;
+        this.controlModel = settings.controlModel;
         this.layerModel = settings.layerModel;
         this.zoomWidth = $(window).width() * 0.23;
 
@@ -64,6 +66,11 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
         }
     },
 
+    handlePageMigration:  function (event) {
+        this.controlModel.setControls(this.searchModel.ordinalToObject($(event.currentTarget).attr('image-key')));
+        cinema.events.trigger('c:switchtorenderview');
+    },
+
     handleSearchZoom:  function (event) {
         this.zoomWidth = Number(event.zoomWidth);
         this.$('.c-search-result-wrapper').css('width', this.zoomWidth).css('height', this.zoomWidth);
@@ -115,20 +122,6 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
 
     clearResults: function () {
         $('.c-search-results-list-area').empty();
-    },
-
-    /** Returns whether we are at the bottom of the page */
-    _canScroll: function () {
-        return this.$('.c-search-page-bottom').visible(true);
-    },
-
-    _setScrollWaypoint: function () {
-        var view = this;
-        Scrollpoints.add(this.$('.c-search-page-bottom')[0], function () {
-            if (view.searchModel.results) {
-                view._showNextResult();
-            }
-        });
     },
 
     _showResults: function () {
