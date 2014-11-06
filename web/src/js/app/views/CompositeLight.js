@@ -6,7 +6,6 @@ cinema.views.CompositeLightView = Backbone.View.extend({
         this.layers = new cinema.models.LayerModel(this.compositeModel.getDefaultPipelineSetup(),
             { info: this.model });
         this.renderingModel = new cinema.models.RenderingModel({
-            // TODO absolute path...
             url: 'rendering/rendering.json',
             visModel: this.model
         });

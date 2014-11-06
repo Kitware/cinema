@@ -8,7 +8,6 @@ cinema.views.CompositeWebGlLutView = Backbone.View.extend({
             { info: this.model });
         this.compositor = new cinema.utilities.CreateWebGlLutCompositor();
         this.renderingModel = new cinema.models.RenderingModel({
-              // TODO absolute path
               url: 'rendering/rendering.json',
               visModel: this.model
         });
