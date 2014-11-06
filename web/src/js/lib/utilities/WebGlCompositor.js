@@ -65,7 +65,7 @@
       initAttribBuffers();
 
       // Initialize the display program shaders
-      displayProgram = createShaderProgram(loadShaderFiles('/shaders/vertex/displayVertex.c', '/shaders/fragment/displayFragment.c'));
+      displayProgram = createShaderProgram(loadShaderFiles('shaders/vertex/displayVertex.c', 'shaders/fragment/displayFragment.c'));
 
       // look up where the vertex position coords need to go when using the display program
       gl.bindBuffer(gl.ARRAY_BUFFER, posCoordBuffer);
@@ -80,7 +80,7 @@
       gl.vertexAttribPointer(displayProgram.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
       // Initialize the compositing program shaders
-      compositeProgram = createShaderProgram(loadShaderFiles('/shaders/vertex/compositeVertex.c', '/shaders/fragment/compositeFragment.c'));
+      compositeProgram = createShaderProgram(loadShaderFiles('shaders/vertex/compositeVertex.c', 'shaders/fragment/compositeFragment.c'));
 
       // look up where the vertex position coords need to go when using the compositing program
       gl.bindBuffer(gl.ARRAY_BUFFER, posCoordBuffer);
