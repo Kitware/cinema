@@ -9,7 +9,7 @@ cinema.views.CompositeWebGlLightView = Backbone.View.extend({
         this.compositor = new cinema.utilities.CreateWebGlLightCompositor();
         this.renderingModel = new cinema.models.RenderingModel({
               // TODO absolute path
-              url: '/rendering/rendering.json',
+              url: 'rendering/rendering.json',
               visModel: this.model
         });
 
