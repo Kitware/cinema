@@ -13,13 +13,18 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
         this.visModel = settings.visModel;
         this.controlModel = settings.controlModel;
         this.layerModel = settings.layerModel;
+        this.offScreenControlModel = settings.offScreenControl;
+        this.offScreenRenderView = settings.offScreenRenderView;
         this.zoomWidth = $(window).width() * 0.23;
 
-        this.resultIndex = 0;
+        this.searchModel = new cinema.models.SearchModel({
+            basePath: this.basePath,
+            histogramModel: this.histogramModel,
+            visModel: this.visModel,
+            layerModel: this.layerModel
+        });
 
-        this.offscreenLayerModel = new cinema.models.LayerModel(this.visModel.getDefaultPipelineSetup(), { info: this.visModel });
-        this.offscreenControlModel = new cinema.models.ControlModel({ info: this.visModel });
-        this.offscreenViewpointModel = new cinema.models.ViewPointModel({ controlModel: this.offscreenControlModel });
+        this.resultIndex = 0;
 
         this.listenTo(cinema.events, 'c:handlesearchquery', this.handleSearchQuery);
         this.listenTo(cinema.events, 'c:handlesearchzoom', this.handleSearchZoom);
@@ -33,25 +38,11 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
             delay: {show: 100}
         });
 
-        this.searchModel = new cinema.models.SearchModel({
-            basePath: this.basePath,
-            histogramModel: this.histogramModel,
-            visModel: this.visModel,
-            layerModel: this.layerModel
-        });
-
-        var viewpoint = this.offscreenControlModel.getControls();
         this.compositeSearchResultContainer = $(cinema.templates.compositeSearchResultContainer({
-            viewpoint: viewpoint
+            viewpoint: this.offScreenControlModel.getControls()
         }));
         this.compositeSearchResultContainer.appendTo(this.$('.c-search-results-list-area'));
-
-        this.offscreenVisualizationCanvasWidget = new cinema.views.VisualizationCanvasWidget({
-            el: this.compositeSearchResultContainer,
-            model: this.visModel,
-            viewpoint: this.offscreenViewpointModel,
-            layers: this.offscreenLayerModel
-        }).render().showViewpoint();
+        this.offScreenRenderView.setElement(this.compositeSearchResultContainer).render().showViewpoint();
         this.compositeSearchResultContainer.hide();
     },
 
@@ -143,10 +134,10 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
 
         var viewpoint = this.searchModel.results[this.resultIndex];
         var query = this.layerModel.serialize();
-        this.offscreenVisualizationCanvasWidget.once('c:drawn', function () {
+        this.offScreenRenderView.once('c:drawn', function () {
             self.resultIndex += 1;
             self.nextPageCount -= 1;
-            var image = self.offscreenVisualizationCanvasWidget.getImage();
+            var image = self.offScreenRenderView.getImage();
             image.onload = function() {
                 $('<img src="' + image.src + '" class = "c-search-result-wrapper"/>').
                     attr('image-key', self.searchModel.objectToOrdinal(viewpoint)).
