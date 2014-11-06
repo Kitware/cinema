@@ -38,6 +38,13 @@ cinema.views.ChartView = Backbone.View.extend({
 
     resetCamera: function () {
         this.renderView.resetCamera();
+    },
+
+    remove: function () {
+        if (this.renderView) {
+            this.renderView.remove();
+        }
+        Backbone.View.prototype.remove.apply(this, arguments);
     }
 });
 
