@@ -11,8 +11,8 @@ cinema.views.CompositeWebGlJpgView = Backbone.View.extend({
             { info: this.model });
         this.compositor = new cinema.utilities.CreateWebGlJpgCompositor();
 
-        this.controlModel.on('change', this.refreshCamera, this);
-        this.viewpointModel.on('change', this.refreshCamera, this);
+        this.listenTo(this.controlModel, 'change', this.refreshCamera);
+        this.listenTo(this.viewpointModel, 'change', this.refreshCamera);
         this.listenTo(cinema.events, 'c:resetCamera', this.resetCamera);
     },
 

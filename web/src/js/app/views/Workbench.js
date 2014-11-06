@@ -59,8 +59,8 @@ cinema.views.WorkbenchView = Backbone.View.extend({
             widget.remove();
         });
         this._elementWidgets = [];
-
         var count = 0;
+
         _.each(this.$('.c-dv-layout-item'), function (el) {
             $(el).removeClass('empty').off();
             this._elementWidgets.push(new cinema.views.WorkbenchElementWidget({
