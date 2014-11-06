@@ -3,11 +3,13 @@
  */
 cinema.views.MetaDataCompositeSearchPage = Backbone.View.extend({
     events: {
-        'click .c-search-page-next-results': 'handlePageNextResults'
+        'click .c-search-page-next-results': 'handlePageNextResults',
+        'dblclick .c-search-result-wrapper': 'handlePageMigration'
     },
 
     initialize: function (settings) {
         this.visModel = settings.visModel;
+        this.controlModel = settings.controlModel;
         this.layerModel = settings.layerModel;
         this.searchModel = new cinema.models.MetaDataSearchModel({
             visModel: this.visModel
@@ -46,6 +48,11 @@ cinema.views.MetaDataCompositeSearchPage = Backbone.View.extend({
             layers: this.offscreenLayerModel
         }).render().showViewpoint();
         this.compositeSearchResultContainer.hide();
+    },
+
+    handlePageMigration:  function (event) {
+        this.controlModel.setControls(this.searchModel.ordinalToObject($(event.currentTarget).attr('image-key')));
+        cinema.events.trigger('c:switchtorenderview');
     },
 
     handlePageNextResults:  function () {
@@ -110,20 +117,6 @@ cinema.views.MetaDataCompositeSearchPage = Backbone.View.extend({
 
     clearResults: function () {
         $('.c-search-results-list-area').empty();
-    },
-
-    /** Returns whether we are at the bottom of the page */
-    _canScroll: function () {
-        return this.$('.c-search-page-bottom').visible(true);
-    },
-
-    _setScrollWaypoint: function () {
-        var view = this;
-        Scrollpoints.add(this.$('.c-search-page-bottom')[0], function () {
-            if (view.searchModel.results) {
-                view._showNextResult();
-            }
-        });
     },
 
     _showResults: function () {

@@ -66,7 +66,7 @@ void main() {
         vec4 lDir = normalize(lightDir);
 
         // Calculate ambient term
-        vec4 ambientColor = lightColor * ka;
+        vec4 ambientColor = lutColor * ka;
 
         // This will be used in both diffuse and specular terms
         float lDotN = dot(lDir, normal);
