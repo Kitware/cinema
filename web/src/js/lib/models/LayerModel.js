@@ -52,8 +52,8 @@ cinema.models.LayerModel = Backbone.Model.extend({
             var id = layer.ids[0], layerObj;
             layerObj = this._controlStates[id] || {
                 children: {},
-                hidden: true,
-                closed: false,
+                hidden: false,
+                closed: true,
                 color: layerFields[id][0] // Default color-by set here
             };
             if (_.has(state, id)) {
@@ -78,7 +78,7 @@ cinema.models.LayerModel = Backbone.Model.extend({
                 obj.children.forEach(function (child) {
                     var childObj = processLayer(child);
                     children[child.ids[0]] = childObj;
-                    visibleChild = visibleChild || !childObj.hidden;
+                    visibleChild = visibleChild || !childObj.closed;
                 });
 
                 // add directory to the control states
