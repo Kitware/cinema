@@ -7,15 +7,14 @@ cinema.views.StaticImageView = Backbone.View.extend({
         this._hasAnalysis = _.has(this.model.get('metadata'), 'analysis');
 
         if (this._hasAnalysis) {
-            this.histogramModel = new cinema.models.CompositeHistogramModel({
-                layerModel: this.layers,
+            this.histogramModel = new cinema.models.StaticHistogramModel({
                 basePath: this.model.get('basePath'),
                 analysisInfo: this.model.get('metadata').analysis
             });
             this.controlList = opts.defaultControls.slice(0); // copy
             this.controlList.push(
                 { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
-                { position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' }
+                { position: 'center', key: 'static-histogram', icon: 'icon-chart-bar', title: 'Histogram' }
             );
         }
 
