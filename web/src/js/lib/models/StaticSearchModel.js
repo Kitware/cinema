@@ -77,7 +77,6 @@ cinema.models.StaticSearchModel = Backbone.Model.extend({
         }
 
         this._dataMap = this.buildDataMap();
-        console.log(this._dataMap[0]);
     },
 
     buildDataMap: function() {
