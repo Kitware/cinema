@@ -154,9 +154,9 @@
 
     cinema.views.CompositeView = Backbone.View.extend({
         initialize: function (opts) {
+            console.log("new CompositeImage");
             this.compositeModel = new cinema.decorators.Composite(this.model);
             this._hasAnalysis = _.has(this.model.get('metadata'), 'analysis');
-            this._hasAnalysis = false;
             var sharedData = getSharedData(this.compositeModel, this.$el, this._hasAnalysis);
 
             this.controlModel = sharedData.control;
@@ -228,7 +228,6 @@
         initialize: function (opts) {
             this.compositeModel = new cinema.decorators.Composite(this.model);
             this._hasAnalysis = _.has(this.model.get('metadata'), 'analysis');
-            this._hasAnalysis = false;
             var sharedData = getSharedData(this.compositeModel, this.$el, this._hasAnalysis);
 
             this.controlModel = sharedData.control;
