@@ -1,6 +1,6 @@
 (function () {
-    var sharedDataMap = {},
-        visibilityMap = { 'rendering': false, 'tools': false };
+    var visibilityMap = { 'rendering': false, 'tools': false },
+        leakCounter = 0;
 
     function visibility(name, value) {
         if(value === undefined) {
@@ -16,45 +16,73 @@
 
     // --------- Add 'view' page for composite-image-stack dataset ----------
 
-    cinema.viewFactory.registerView('probe-slice', 'view', function (rootSelector, viewType, model) {
-        var container = $(rootSelector),
-            dataType = model.getDataType(),
-            controlList = [
-                { position: 'left', key: 'rendering', icon: 'icon-picture', title: 'Rendering' },
-                { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
-            ],
-            controlModel = new cinema.decorators.Control(model),
-            probeModel = new cinema.decorators.Probe(controlModel),
-            renderingModel = new cinema.models.RenderingModel({
+    cinema.views.ProbeView = Backbone.View.extend({
+        initialize: function(opts) {
+            console.log('new ProbeView ' + (++leakCounter));
+            this.controlModel = new cinema.decorators.Control(
+                this.model
+            );
+            this.probeModel = new cinema.decorators.Probe(
+                this.controlModel
+            );
+            this.renderingModel = new cinema.models.RenderingModel({
                url: '/rendering/rendering.json',
-               ranges: probeModel.get('ranges'),
-               fields: probeModel.get('fields') }),
-            renderer = new cinema.views.ProbeRendererWidget({ model: probeModel , renderingModel: renderingModel}),
-            controlView = new cinema.views.ControlWidget({ model: probeModel, controlModel: probeModel}),
-            tools = new cinema.views.ProbeRendererControlWidget({ model: probeModel, controlView: controlView});
-            renderingView = new cinema.views.RenderingWidget({
-                el: $('.c-rendering-panel', container),
-                model: probeModel,
-                viewport: renderer,
-                renderingModel: renderingModel,
-                toolbarSelector: '.c-panel-toolbar',
-                disabledList: [ 'c-edit-lighting', 'c-view-fps-info']
+               ranges: this.probeModel.get('ranges'),
+               fields: this.probeModel.get('fields')
+           });
+            this.renderer = new cinema.views.ProbeRendererWidget({
+                model: this.probeModel,
+                renderingModel: this.renderingModel
             });
+            // this.controlView = new cinema.views.ControlWidget({
+            //     model: this.probeModel,
+            //     controlModel: this.probeModel
+            // });
+            // this.tools = new cinema.views.ProbeRendererControlWidget({
+            //     model: this.probeModel,
+            //     controlView: this.controlView
+            // });
+           //  this.renderingView = new cinema.views.RenderingWidget({
+           //      el: this.$('.c-rendering-panel'),
+           //      model: this.probeModel,
+           //      viewport: this.renderer,
+           //      renderingModel: this.renderingModel,
+           //      toolbarSelector: '.c-panel-toolbar',
+           //      disabledList: [ ] // 'c-edit-lighting', 'c-view-fps-info'
+           //  });
+        },
 
-        function render () {
-            var root = $(rootSelector);
-            renderer.setElement($('.c-body-container', root)).render();
-            tools.setElement($('.c-tools-panel', root)).render();
-            renderingView.setElement($('.c-rendering-panel', root)).render();
+        render: function() {
+            this.$el.html('hello');
+            // this.renderer.setElement(this.$('.c-body-container')).render();
+            // this.tools.setElement(this.$('.c-tools-panel')).render();
+            // this.renderingView.setElement(this.$('.c-rendering-panel')).render();
 
-            $('.c-tools-panel', root).toggle(visibility('tools'));
-            $('.c-rendering-panel', root).toggle(visibility('rendering'));
+            // this.$('.c-tools-panel').toggle(visibility('tools'));
+            // this.$('.c-rendering-panel').toggle(visibility('rendering'));
+        },
+
+        remove: function() {
+            console.log('new ProbeView ' + (--leakCounter));
+            // // Trash views
+            // this.renderer.remove();
+            // this.controlView.remove();
+            // this.tools.remove();
+            // this.renderingView.remove();
+
+            // // Trash models
+            // this.controlModel.remove();
+            // this.probeModel.remove();
+            // this.renderingModel.remove();
         }
+    });
 
-        return {
-            controlList: controlList,
-            render: render
-        };
+
+    cinema.viewMapper.registerView('probe-slice', 'view', cinema.views.ProbeView, {
+        controls: [
+            // { position: 'left', key: 'rendering', icon: 'icon-picture', title: 'Rendering' },
+            // { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
+        ]
     });
 
 }());
