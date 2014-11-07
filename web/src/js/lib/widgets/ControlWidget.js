@@ -30,9 +30,6 @@ cinema.views.ControlWidget = Backbone.View.extend({
     },
 
     initialize: function (settings) {
-        if (!settings.viewport) {
-            throw "Animation widget requires a viewport.";
-        }
         this.model = settings.model;
         this.exclude = settings.exclude || [];
 

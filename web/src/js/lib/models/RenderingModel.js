@@ -140,7 +140,8 @@ cinema.models.RenderingModel = Backbone.Model.extend({
             currentControlIdx = 0,
             needRemap = false,
             minIdx = 0,
-            maxIdx = 0;
+            maxIdx = 0,
+            nbColorInTable = 256; // Can be increased
 
         // If there is a min clamp, insert a new control point and mark that remap is needed
         if (clampedRange[0] > dataRange[0]) {
@@ -173,8 +174,8 @@ cinema.models.RenderingModel = Backbone.Model.extend({
 
         // Now actually generate the lookup table from the (maybe modified)
         // control points.
-        for (var idx = 0; idx < 256; idx += 1) {
-            var value = idx / 255.0,
+        for (var idx = 0; idx < nbColorInTable; idx += 1) {
+            var value = idx / nbColorInTable,
                 pointA = this.extractPoint(controlPoints, currentControlIdx),
                 pointB = this.extractPoint(controlPoints, currentControlIdx + 1);
 
@@ -188,7 +189,7 @@ cinema.models.RenderingModel = Backbone.Model.extend({
         }
 
         function lut(value) {
-            return table[Math.floor(value * 255)];
+            return table[Math.floor(value * nbColorInTable)];
         }
 
         return lut;

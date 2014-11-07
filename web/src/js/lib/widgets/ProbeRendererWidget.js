@@ -3,6 +3,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
       var self = this;
 
       this.model = settings.model;
+      this.renderingModel = settings.renderingModel;
       this.maxSize = this.model.getMaxSize();
       this.model.loadFieldImages();
       this.slicePosition = this.model.getCenterSlice();
@@ -33,8 +34,14 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
    },
 
    drawChart: function (axis, viewport, values, range, ctx) {
-      var length = values.length,
+      if(values === undefined) {
+         return;
+      }
+
+      var axisToIdx = { 'X': 0, 'Y': 1, 'Z': 2 },
+         length = values.length,
          deltaH = range[1] - range[0],
+         dimensions = this.model.getDimensions(),
          height = viewport.area[3],
          width = viewport.area[2],
          lineOffset = 2,
@@ -44,7 +51,8 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
             "Probe value: RR".replace(/RR/g, '' + this.lineValues.probe),
             "Probe Field: RR".replace(/RR/g, this.model.getActiveField()),
             "Probe cooridnates: [RR]".replace(/RR/g, this.slicePosition.join(', '))
-         ];
+         ],
+         probePosition = Math.floor(viewport.area[0] + width * this.slicePosition[axisToIdx[axis]] / dimensions[axisToIdx[axis]]);
 
       function lineTo(idx) {
          ctx.lineTo( Math.floor(width * idx / length + viewport.area[0]),
@@ -59,6 +67,14 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
       for(var i = 0; i < length; ++i) {
          lineTo(i);
       }
+      ctx.stroke();
+
+      // Draw red cursor
+      ctx.beginPath();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#FF0000';
+      ctx.moveTo(probePosition, viewport.area[1]);
+      ctx.lineTo(probePosition, viewport.area[1] + viewport.area[3]);
       ctx.stroke();
 
       ctx.font=lineHeight + "px Verdana";
@@ -422,13 +438,14 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
          width = canvas.attr('width'),
          height = canvas.attr('height'),
          layout = this.layout,
+         dataInCache = this.model.validateImageCache(),
          progress = this.model.getProgress(),
          viewportCoordinates = this.computeLayout(),
          count = 0,
          drawMap = {},
          drawPriority = [ 'renderXY', 'renderZY', 'renderXZ' ];
 
-      if(progress < 100) {
+      if( (!dataInCache) && progress < 100) {
          return false;
       }
 
@@ -615,6 +632,11 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
       this.bg.xIdx = 0;
       this.bg.yIdx = 1;
 
+      // Loading data
+      if(image === null) {
+         return;
+      }
+
       // Draw in bg image at scale 1
       bgCtx.drawImage(image, 0, dimensions[1]*offset, dimensions[0], dimensions[1], 0, 0, dimensions[0], dimensions[1]);
 
@@ -624,6 +646,9 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
 
       this.extractHorizontalLineValues(pixBuffer, 'x');
       this.extractVerticalLineValues(pixBuffer, 'y');
+
+      // Apply colors
+      this.applyLUT();
    },
 
    renderZY: function() {
@@ -640,6 +665,11 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
       // Let the system know which dimension is on which axis
       this.bg.xIdx = 2;
       this.bg.yIdx = 1;
+
+      // Loading data
+      if(this.model.getImage(activeColumn-1) === null) {
+         return;
+      }
 
       // Render in BG
       while(activeColumn--) {
@@ -658,6 +688,9 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
 
       this.extractHorizontalLineValues(pixBuffer, 'z');
       this.extractVerticalLineValues(pixBuffer, 'y');
+
+      // Apply colors
+      this.applyLUT();
    },
 
    renderXZ: function() {
@@ -675,6 +708,11 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
       this.bg.xIdx = 0;
       this.bg.yIdx = 2;
 
+      // Loading data
+      if(this.model.getImage(activeLine-1) === null) {
+         return;
+      }
+
       while(activeLine--) {
          var offset = this.model.getYOffset(activeLine),
             image = this.model.getImage(activeLine);
@@ -691,6 +729,9 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
 
       this.extractHorizontalLineValues(pixBuffer, 'x');
       this.extractVerticalLineValues(pixBuffer, 'z');
+
+      // Apply colors
+      this.applyLUT();
    },
 
    renderChartX: function(viewport) {
@@ -753,12 +794,36 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
       }
    },
 
-   setLUT: function(fieldName, lutFunction) {
-      // console.log('update LUT for ' + fieldCode);
-   },
-
+   // begin - Method called by the rendering widget
+   setLightColor: function() {},
+   setLUT: function(fieldName, lutFunction) {},
    forceRedraw: function () {
       this.drawLayout();
+   },
+   // end - Method called by the rendering widget
+
+   applyLUT: function() {
+      var dimensions = this.model.getDimensions(),
+         bgCanvas = this.$('.bg-renderer'),
+         bgCtx = bgCanvas[0].getContext('2d'),
+         pixels = bgCtx.getImageData(0, 0, dimensions[this.bg.xIdx], dimensions[this.bg.yIdx]),
+         pixBuffer = pixels.data,
+         size = pixBuffer.length,
+         idx = 0,
+         lutFunction = this.renderingModel.getLookupTableForField(this.model.getActiveField());
+
+      while(idx < size) {
+         var value = (pixBuffer[idx] + (256*pixBuffer[idx+1]) + (65536*pixBuffer[idx+2])) / 16777216,
+            color = lutFunction(value);
+
+         pixBuffer[idx]   = Math.floor(color[0]);
+         pixBuffer[idx+1] = Math.floor(color[1]);
+         pixBuffer[idx+2] = Math.floor(color[2]);
+
+         // Move to next pixel
+         idx += 4;
+      }
+      bgCtx.putImageData(pixels, 0, 0);
    }
 });
 
@@ -767,7 +832,8 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
 
 cinema.views.ProbeRendererControlWidget = Backbone.View.extend({
    initialize: function (settings) {
-      this.model = settings.model;
+      this.model = settings.model,
+      this.controlView = settings.controlView;
    },
 
    render: function () {
@@ -777,6 +843,8 @@ cinema.views.ProbeRendererControlWidget = Backbone.View.extend({
          activeField: this.model.getActiveField(),
          checked: model.getGlobalRangeForChart()
       }));
+
+      this.controlView.setElement(this.$('.fields-control-container')).render();
 
       // Attach listeners
       this.$('table').off().on('click', function() {

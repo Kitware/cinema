@@ -1,8 +1,10 @@
 (function () {
    cinema.decorators.Probe = function (rootModel) {
+      var self = this;
       rootModel.set('_imageCache', {});
       rootModel.set('_progress', { "expect": 0, "ready": 0 });
       rootModel.set('active_field', rootModel.get('fields')[0]);
+
       return _.extend(rootModel, this);
    };
 
@@ -24,12 +26,20 @@
          fieldName = this.getActiveField();
       }
 
-      // FIXME handle time or other parameter
       var sliceValues = this.get('slices'),
          size = sliceValues.length,
          imageArray = [],
          that = this,
-         imageCache = this.get('_imageCache');
+         imageCache = this.get('_imageCache'),
+         controls = this.getControls();
+
+      // Update field name
+      controls.field = fieldName;
+      controls.slice = "key";
+
+      if(this.getFilePattern(controls).indexOf('undefined') != -1) {
+         return;
+      }
 
       function imageReady() {
          that.get('_progress').ready++;
@@ -40,12 +50,15 @@
          return; // Already loaded
       }
 
-      imageCache[fieldName] = imageArray;
+      imageCache[this.getFilePattern(controls)] = imageArray;
       that.get('_progress').expect += size;
       for (var idx = 0; idx < size; ++idx) {
+         // Update active slice
+         controls.slice = sliceValues[idx];
+
          var image = new Image();
          image.onload = imageReady;
-         image.src = this.basePath + '/' + this.getFilePattern({ field: fieldName, slice: sliceValues[idx]});
+         image.src = this.basePath + '/' + this.getFilePattern(controls);
          imageArray.push(image);
       }
    };
@@ -73,7 +86,14 @@
    };
 
    prototype.getImage = function (sliceIdx) {
-      return this.get('_imageCache')[this.getActiveField()][Math.floor(sliceIdx / this.getSpriteSize())];
+      var controls = this.getControls(),
+         array = null;
+
+      controls.field = this.getActiveField();
+      controls.slice = "key";
+      array = this.get('_imageCache')[this.getFilePattern(controls)];
+
+      return (array === undefined) ? null : array[Math.floor(sliceIdx / this.getSpriteSize())];
    };
 
    prototype.getYOffset = function (sliceIdx) {
@@ -122,5 +142,22 @@
       var value = this.get('global_range');
       return (value === undefined) ? true : value;
    };
+
+   prototype.validateImageCache = function() {
+      var controls = this.getControls(),
+         cache = this.get('_imageCache');
+
+      controls.field = this.getActiveField();
+      controls.slice = "key";
+
+      if(cache.hasOwnProperty(this.getFilePattern(controls))) {
+         return true
+      }
+
+      // The cache is not ready, fill it
+      this.loadFieldImages();
+
+      return false;
+   }
 
 }());

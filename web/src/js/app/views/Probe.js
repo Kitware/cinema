@@ -20,16 +20,18 @@
         var container = $(rootSelector),
             dataType = model.getDataType(),
             controlList = [
-                { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' },
-                { position: 'left', key: 'rendering', icon: 'icon-sun', title: 'Rendering' }
+                { position: 'left', key: 'rendering', icon: 'icon-picture', title: 'Rendering' },
+                { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
             ],
-            probeModel = new cinema.decorators.Probe(model),
+            controlModel = new cinema.decorators.Control(model),
+            probeModel = new cinema.decorators.Probe(controlModel),
             renderingModel = new cinema.models.RenderingModel({
                url: '/rendering/rendering.json',
                ranges: probeModel.get('ranges'),
                fields: probeModel.get('fields') }),
-            renderer = new cinema.views.ProbeRendererWidget({ model: probeModel }),
-            tools = new cinema.views.ProbeRendererControlWidget({ model: probeModel });
+            renderer = new cinema.views.ProbeRendererWidget({ model: probeModel , renderingModel: renderingModel}),
+            controlView = new cinema.views.ControlWidget({ model: probeModel, controlModel: probeModel}),
+            tools = new cinema.views.ProbeRendererControlWidget({ model: probeModel, controlView: controlView});
             renderingView = new cinema.views.RenderingWidget({
                 el: $('.c-rendering-panel', container),
                 model: probeModel,
