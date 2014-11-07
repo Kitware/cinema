@@ -59,8 +59,6 @@ cinema.views.StaticImageVisualizationCanvasWidget = Backbone.View.extend({
         this._privateInit();
         this._controls = {};
         this._first = true;
-        this.listenTo(this.controlModel, 'change', this.drawImage);
-        this.listenTo(this.viewpoint, 'change', this.drawImage);
         this.listenTo(this.imageManager, 'c:data.ready', function () {
             if (this._first) {
                 this._first = false;
