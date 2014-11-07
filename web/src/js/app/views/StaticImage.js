@@ -118,7 +118,6 @@
 
     cinema.views.StaticImageView = Backbone.View.extend({
         initialize: function (opts) {
-            console.log("new SataicImage");
             this._hasAnalysis = _.has(this.model.get('metadata'), 'analysis');
             var sharedData = getSharedData(this.model, this.$el, this._hasAnalysis);
             this.controlModel = sharedData.control;
