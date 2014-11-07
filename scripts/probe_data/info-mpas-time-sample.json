@@ -1,0 +1,30 @@
+{
+   "dimensions": [500, 250, 30],
+   "spacing": [1.0, 1.0, 4.0],
+   "fields" : [ "density", "pressure", "salinity", "temperature" ],
+   "ranges" : {
+      "density": [0, 1042],
+      "pressure": [0, 30000000],
+      "salinity": [0, 38],
+      "temperature": [-5, 30]
+   },
+   "sprite_size" : 10,
+   "slices" : ["0", "1", "2"],
+   "name_pattern": "{time}/{field}_{slice}.png",
+   "metadata": {
+      "title": "Ocean simulation data",
+      "type": "probe-slice",
+      "id": "mpas-probe-data",
+      "description": "Some simulation data from MPAS"
+   },
+   "arguments": {
+      "time": {
+         "default": "0",
+         "type": "range",
+         "values": ["0", "1", "2", "3", "4"],
+         "label": "Time" }
+    },
+    "control": {
+        "order": ["time"]
+    }
+}
