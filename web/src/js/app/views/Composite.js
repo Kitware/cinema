@@ -220,7 +220,11 @@
         },
 
         remove: function () {
+            if (this.renderView) {
+                this.renderView.remove();
+            }
             getSharedData(this.compositeModel, this.$el, this._hasAnalysis).remove();
+            Backbone.View.prototype.remove.apply(this, arguments);
         }
     });
 
@@ -273,14 +277,14 @@
 
 cinema.viewMapper.registerView('composite-image-stack', 'view', cinema.views.CompositeView, {
     controls: [
-        { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
-        { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
+        { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' },
+        { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' }
     ]
 });
 
 cinema.viewMapper.registerView('composite-image-stack', 'search', cinema.views.CompositeSearchView, {
     controls: [
-        { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
-        { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
+        { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' },
+        { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' }
     ]
 });

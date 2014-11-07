@@ -75,6 +75,13 @@ cinema.views.CompositeWebGlJpgView = Backbone.View.extend({
             this.renderView.showViewpoint();
             this.renderView.resetCamera();
         }
+    },
+
+    remove: function () {
+        if (this.renderView) {
+            this.renderView.remove();
+        }
+        Backbone.View.prototype.remove.apply(this, arguments);
     }
 });
 
