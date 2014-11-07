@@ -155,7 +155,7 @@
         },
 
         render: function () {
-            this.renderView.setElement(this.$('.c-body-container')).render().showViewpoint(true);;
+            this.renderView.setElement(this.$('.c-body-container')).render().showViewpoint(true);
             this.toolsWidget.setElement(this.$('.c-tools-panel')).render();
             this.searchInformation.setElement(this.$('.c-information-panel')).render();
             this.$('.c-information-panel').toggle(visibility('information'));
