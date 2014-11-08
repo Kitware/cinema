@@ -19,7 +19,7 @@ cinema.models.RenderingModel = Backbone.Model.extend({
     initializeLookupTables: function() {
         var that = this;
         _.each(this.colorByFields, function(fieldName) {
-            that.initializeLutForFieldToPreset(fieldName, 'spectral')
+            that.initializeLutForFieldToPreset(fieldName, 'spectral');
         });
     },
 

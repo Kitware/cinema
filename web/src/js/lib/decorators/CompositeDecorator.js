@@ -61,9 +61,9 @@
         // Finally create the map of colorby field names to their ranges
         if (_.has(visModel.attributes.metadata, 'ranges')) {
             var rangeMap = visModel.attributes.metadata.ranges;
-            for (var fieldName in rangeMap) {
-                if (_.has(rangeMap, fieldName)) {
-                    this.colorByRanges[fieldName] = rangeMap[fieldName];
+            for (var fName in rangeMap) {
+                if (_.has(rangeMap, fName)) {
+                    this.colorByRanges[fName] = rangeMap[fName];
                 }
             }
         }
