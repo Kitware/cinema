@@ -52,11 +52,12 @@
       controls.field = fieldName;
       controls.slice = "key";
 
-      if(this.getFilePattern(controls).indexOf('undefined') != -1) {
+      if(this.getFilePattern(controls).indexOf('undefined') !== -1) {
          return;
       }
 
       function imageReady() {
+         /*jshint -W016 */
          progress.ready++;
          cinema.events.trigger('progress');
       }
@@ -67,6 +68,7 @@
 
       imageCache[this.getFilePattern(controls)] = imageArray;
       progress.expect += size;
+      /*jshint -W016 */
       for (var idx = 0; idx < size; ++idx) {
          // Update active slice
          controls.slice = sliceValues[idx];
@@ -119,6 +121,7 @@
          dims = this.get('dimensions'),
          count = 3;
 
+      /*jshint -W016 */
       while(count--) {
          max = (max < dims[count]) ? dims[count] : max;
       }
@@ -165,7 +168,7 @@
       controls.slice = "key";
 
       if(cache.hasOwnProperty(this.getFilePattern(controls))) {
-         return true
+         return true;
       }
 
       // The cache is not ready, fill it
@@ -176,6 +179,6 @@
 
    prototype.getLayoutModel = function() {
       return this.layoutModel;
-   }
+   };
 
 }());

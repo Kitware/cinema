@@ -52,6 +52,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
       ctx.fillStyle="#000000";
       ctx.strokeStyle = '#000000';
       ctx.moveTo(viewport.area[0], viewport.area[1]);
+      /*jshint -W016 */
       for(var i = 0; i < length; ++i) {
          lineTo(i);
       }
@@ -71,6 +72,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
          lines.pop();
       }
       while(lines.length) {
+         /*jshint -W016 */
          ctx.fillText(lines.shift(), viewport.area[0] + 10, viewport.area[1] + (lineOffset++ * lineHeight * 1.2));
       }
    },
@@ -86,13 +88,13 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
                return [
                   [  spacing,
                      spacing,
-                     center[0] - (1.5*spacing),
-                     center[1] - (1.5*spacing)
+                     center[0] - (1.5 * spacing),
+                     center[1] - (1.5 * spacing)
                   ], [
-                     center[0] + .5*spacing,
+                     center[0] + 0.5 * spacing,
                      spacing,
-                     width - center[0] - (1.5*spacing),
-                     center[1] - (1.5*spacing)
+                     width - center[0] - (1.5 * spacing),
+                     center[1] - (1.5 * spacing)
                   ], [
                      spacing,
                      center[1] + 0.5 * spacing,
@@ -132,12 +134,12 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
                return [
                   [  spacing,
                      spacing,
-                     center[0] - (1.5*spacing),
+                     center[0] - (1.5 * spacing),
                      height - (2 * spacing)
                   ], [
-                     center[0] + .5*spacing,
+                     center[0] + (0.5 * spacing),
                      spacing,
-                     width - center[0] - (1.5*spacing),
+                     width - center[0] - (1.5 * spacing),
                      height - (2 * spacing)
                   ]
                ];
@@ -147,7 +149,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
                   [  spacing,
                      spacing,
                      width - (2 * spacing),
-                     center[1] - (1.5*spacing)
+                     center[1] - (1.5 * spacing)
                   ], [
                      spacing,
                      center[1] + 0.5 * spacing,
@@ -165,13 +167,13 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
                return [
                   [  spacing,
                      spacing,
-                     center[0] - (1.5*spacing),
+                     center[0] - (1.5 * spacing),
                      height - (2 * spacing)
                   ], [
-                     center[0] + .5*spacing,
+                     center[0] + 0.5 * spacing,
                      spacing,
-                     width - center[0] - (1.5*spacing),
-                     center[1] - (1.5*spacing)
+                     width - center[0] - (1.5 * spacing),
+                     center[1] - (1.5 * spacing)
                   ], [
                      center[0] + 0.5 * spacing,
                      center[1] + 0.5 * spacing,
@@ -184,12 +186,12 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
                return [
                   [  spacing,
                      spacing,
-                     center[0] - (1.5*spacing),
-                     center[1] - (1.5*spacing)
+                     center[0] - (1.5 * spacing),
+                     center[1] - (1.5 * spacing)
                   ], [
-                     center[0] + .5*spacing,
+                     center[0] + 0.5 * spacing,
                      spacing,
-                     width - center[0] - (1.5*spacing),
+                     width - center[0] - (1.5 * spacing),
                      height - (2 * spacing)
                   ], [
                      spacing,
@@ -203,16 +205,16 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
                return [
                   [  spacing,
                      spacing,
-                     center[0] - (1.5*spacing),
-                     center[1] - (1.5*spacing)
+                     center[0] - (1.5 * spacing),
+                     center[1] - (1.5 * spacing)
                   ], [
-                     center[0] + .5*spacing,
+                     center[0] + 0.5 * spacing,
                      spacing,
-                     width - center[0] - (1.5*spacing),
-                     center[1] - (1.5*spacing)
+                     width - center[0] - (1.5 * spacing),
+                     center[1] - (1.5 * spacing)
                   ], [
                      spacing,
-                     center[1] + 0.5 * spacing,
+                     center[1] + (0.5 * spacing),
                      width - (2 * spacing),
                      height - center[1] - (1.5 * spacing)
                   ]
@@ -283,6 +285,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
 
       function getViewPort(x,y) {
          var count = viewports.length;
+         /*jshint -W016 */
          while(count--) {
             var area = viewports[count].area;
             if(x >= area[0] && y >= area[1] && x <= (area[0]+area[2]) && y <= (area[1]+area[3])) {
@@ -338,8 +341,12 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
 
             that.$('.dropdown-menu').css('left', xyViewport[0] + 'px').css('top', xyViewport[1] + 'px').show();
 
-            if (event.preventDefault) event.preventDefault();
-            if (event.stopPropagation) event.stopPropagation();
+            if (event.preventDefault) {
+               event.preventDefault();
+            }
+            if (event.stopPropagation) {
+               event.stopPropagation();
+            }
             event.cancelBubble = true;  // IE events
             event.returnValue = false;  // IE events
 
@@ -354,8 +361,12 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
                probe[2] = (probe[2] < 0) ? 0 : (probe[2] >= dimensions[2]) ? dimensions[2] - 1 : probe[2];
                that.drawLayout();
 
-               if (event.preventDefault) event.preventDefault();
-               if (event.stopPropagation) event.stopPropagation();
+               if (event.preventDefault) {
+                  event.preventDefault();
+               }
+               if (event.stopPropagation) {
+                  event.stopPropagation();
+               }
                event.cancelBubble = true;  // IE events
                event.returnValue = false;  // IE events
 
@@ -371,7 +382,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
             if(activeViewport && viewType) {
                if(viewType === 'toggleInfo') {
                   activeViewport.stats = !active;
-                  me.toggleClass('showStats')
+                  me.toggleClass('showStats');
                   that.drawLayout();
                } else {
                   activeViewport.view = viewType;
@@ -411,7 +422,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
       ctx.strokeStyle = '#000000';
       ctx.clearRect(0,0,width,height);
       ctx.fillRect(20, (height - 20)/2 , barLength, 20);
-      ctx.beginPath()
+      ctx.beginPath();
       ctx.rect(20, (height - 20)/2 , width - 40, 20);
       ctx.stroke();
 
@@ -451,6 +462,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
       ctx.fillStyle="#000000";
       ctx.strokeStyle = '#000000';
       count = viewportCoordinates.length;
+      /*jshint -W016 */
       while(count--) {
          var area = viewportCoordinates[count],
             viewport = layout.viewports[count],
@@ -468,11 +480,13 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
 
       // Render to BG in proper order + push to front buffer
       count = drawPriority.length;
+      /*jshint -W016 */
       for(var i = 0; i < drawPriority.length; ++i) {
          var array = drawMap[drawPriority[i]];
          if(array) {
             this[drawPriority[i]]();
             count = array.length;
+            /*jshint -W016 */
             while(count--) {
                this.pushImageToForeground(array[count], this.bg.xIdx, this.bg.yIdx);
             }
@@ -485,13 +499,14 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
          ['renderChartY', 'y', 'renderXY'],
          ['renderChartZ', 'z', 'renderXZ']
       ];
-      for(var i = 0; i < dependencies.length; ++i) {
-         var dep = dependencies[i];
+      for(var j = 0; j < dependencies.length; ++j) {
+         var dep = dependencies[j];
          if(drawMap[dep[0]]) {
             if(!this.lineValues.hasOwnProperty(dep[1])) {
                this[dep[2]]();
             }
             count = drawMap[dep[0]].length;
+            /*jshint -W016 */
             while(count--) {
                this[dep[0]](drawMap[dep[0]][count]);
             }
@@ -660,6 +675,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
       }
 
       // Render in BG
+      /*jshint -W016 */
       while(activeColumn--) {
          var offset = this.model.getYOffset(activeColumn),
             image = this.model.getImage(activeColumn);
@@ -701,6 +717,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
          return;
       }
 
+      /*jshint -W016 */
       while(activeLine--) {
          var offset = this.model.getYOffset(activeLine),
             image = this.model.getImage(activeLine);
@@ -770,6 +787,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
       // Draw text information
       ctx.font = lineHeight + "px Verdana";
 
+      /*jshint -W016 */
       while(count--) {
          var lineWidth = ctx.measureText(lines[count]).width;
          maxWidth = (maxWidth < lineWidth) ? lineWidth : maxWidth;
@@ -825,7 +843,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
 
 cinema.views.ProbeRendererControlWidget = Backbone.View.extend({
    initialize: function (settings) {
-      this.model = settings.model,
+      this.model = settings.model;
       this.controlView = settings.controlView;
    },
 

@@ -20,11 +20,11 @@
             };
         }
         return result;
-    };
+    }
 
     function freeDecoratedModel(model) {
         delete modelMap[model.getHash()];
-    };
+    }
 
     function visibility(name, value) {
         if(value === undefined) {
@@ -32,7 +32,7 @@
         } else {
             visibilityMap[name] = value;
         }
-    };
+    }
 
     cinema.events.on('toggle-control-panel', function(event) {
         visibility(event.key, event.visible);
@@ -42,7 +42,7 @@
 
     cinema.views.ProbeView = Backbone.View.extend({
         initialize: function(opts) {
-            console.log('NEW: Probe view ' + ++instanceCount);
+            // console.log('NEW: Probe view ' + (++instanceCount));
 
             this.probeModel = getDecoratedModel(this.model).probeModel;
             this.renderingModel = getDecoratedModel(this.model).renderingModel;
@@ -79,7 +79,7 @@
         },
 
         remove: function() {
-            console.log('REMOVE: Probe view ' + --instanceCount);
+            // console.log('REMOVE: Probe view ' + --instanceCount);
 
             // Free factory
             freeDecoratedModel(this.model);
