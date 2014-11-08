@@ -84,7 +84,7 @@
             console.error("Can not set " + newValue + " to " + name);
         }
         if (changed && trigger !== false) {
-            this.trigger('change');
+            this.trigger('control-change');
         }
         return changed;
     };
@@ -100,7 +100,7 @@
         _.each(obj, function (v, k) {
             this.setControl(k, v, false);
         }, this);
-        this.trigger('change');
+        this.trigger('control-change');
     };
 
     /**
@@ -116,7 +116,7 @@
             console.log("index out of range for control " + name);
         }
         if (changed) {
-            this.trigger('change');
+            this.trigger('control-change');
         }
         return changed;
     };
@@ -132,7 +132,7 @@
             this.controlMap[name].activeIdx = wrap ? 0 : this.controlMap[name].values.length - 1;
         }
 
-        this.trigger('change');
+        this.trigger('control-change');
         return this.getControl(name);
     };
 
@@ -146,7 +146,7 @@
             this.controlMap[name].activeIdx = wrap ? this.controlMap[name].values.length - 1 : 0;
         }
 
-        this.trigger('change');
+        this.trigger('control-change');
         return this.getControl(name);
     };
 
@@ -156,7 +156,7 @@
      */
     prototype.setFirstControlValue = function (name) {
         this.controlMap[name].activeIdx = 0;
-        this.trigger('change');
+        this.trigger('control-change');
         return this.getControl(name);
     };
 
@@ -166,7 +166,7 @@
      */
     prototype.setLastControlValue = function (name) {
         this.controlMap[name].activeIdx = this.controlMap[name].values.length - 1;
-        this.trigger('change');
+        this.trigger('control-change');
         return this.getControl(name);
     };
 

@@ -1,9 +1,25 @@
 (function () {
+   var imageCache = {},
+      progress = { "expect": 0, "ready": 0 };
+
    cinema.decorators.Probe = function (rootModel) {
-      var self = this;
-      rootModel.set('_imageCache', {});
-      rootModel.set('_progress', { "expect": 0, "ready": 0 });
-      rootModel.set('active_field', rootModel.get('fields')[0]);
+      var dims = rootModel.get('dimensions');
+
+      this.activeField = rootModel.get('fields')[0];
+      this.globalRange = true;
+      this.layoutName = '2x2';
+      this.layoutModel = {
+         split: [ 0.5, 0.5 ],
+         slicePosition: [ dims[0]/2, dims[1]/2, dims[2]/2 ],
+         spacing: 10,
+         viewTypes: [ 'XY', 'ZY', 'XZ', 'ChartX', 'ChartY', 'ChartZ', 'Stats'],
+         viewports: [
+            { center: [250, 250], zoom: 0.5, view: 'XY', stats: true},
+            { center: [250, 250], zoom: 0.5, view: 'ZY', stats: false},
+            { center: [250, 250], zoom: 0.5, view: 'XZ', stats: false},
+            { center: [250, 250], zoom: 0.5, view: 'ChartX', stats: false}
+         ]
+      };
 
       return _.extend(rootModel, this);
    };
@@ -30,7 +46,6 @@
          size = sliceValues.length,
          imageArray = [],
          that = this,
-         imageCache = this.get('_imageCache'),
          controls = this.getControls();
 
       // Update field name
@@ -42,7 +57,7 @@
       }
 
       function imageReady() {
-         that.get('_progress').ready++;
+         progress.ready++;
          cinema.events.trigger('progress');
       }
 
@@ -51,7 +66,7 @@
       }
 
       imageCache[this.getFilePattern(controls)] = imageArray;
-      that.get('_progress').expect += size;
+      progress.expect += size;
       for (var idx = 0; idx < size; ++idx) {
          // Update active slice
          controls.slice = sliceValues[idx];
@@ -65,11 +80,11 @@
 
    prototype.setActiveField = function (fieldName) {
       this.loadFieldImages(fieldName);
-      this.set('active_field', fieldName);
+      this.activeField = fieldName;
    };
 
    prototype.getActiveField = function () {
-      return this.get('active_field');
+      return this.activeField;
    };
 
    prototype.getSpacing = function () {
@@ -81,7 +96,6 @@
    };
 
    prototype.getProgress = function() {
-      var progress = this.get('_progress');
       return 100 * progress.ready / progress.expect;
    };
 
@@ -91,7 +105,7 @@
 
       controls.field = this.getActiveField();
       controls.slice = "key";
-      array = this.get('_imageCache')[this.getFilePattern(controls)];
+      array = imageCache[this.getFilePattern(controls)];
 
       return (array === undefined) ? null : array[Math.floor(sliceIdx / this.getSpriteSize())];
    };
@@ -126,26 +140,26 @@
    };
 
    prototype.setLayout = function (layoutName) {
-      this.set('layout_name', layoutName);
+      this.layoutName = layoutName;
+      this.trigger('probe-change');
    };
 
    prototype.getLayout = function () {
-      var layout = this.get('layout_name');
-      return layout ? layout : '2x2';
+      return this.layoutName;
    };
 
    prototype.setGlobalRangeForChart = function (fullRange) {
-      this.set('global_range', !!fullRange);
+      this.globalRange = !!fullRange;
+      this.trigger('probe-change');
    };
 
    prototype.getGlobalRangeForChart = function () {
-      var value = this.get('global_range');
-      return (value === undefined) ? true : value;
+      return this.globalRange;
    };
 
    prototype.validateImageCache = function() {
       var controls = this.getControls(),
-         cache = this.get('_imageCache');
+         cache = imageCache;
 
       controls.field = this.getActiveField();
       controls.slice = "key";
@@ -158,6 +172,10 @@
       this.loadFieldImages();
 
       return false;
+   };
+
+   prototype.getLayoutModel = function() {
+      return this.layoutModel;
    }
 
 }());

@@ -121,8 +121,15 @@ cinema.views.RenderingWidget = Backbone.View.extend({
 
         this.renderingModel = settings.renderingModel;
 
-        this.listenTo(this.renderingModel, 'change', this.readyRenderingModel);
-        this.renderingModel.fetch();
+        if(this.renderingModel.loaded()) {
+            this.readyRenderingModel();
+        } else {
+            var self = this;
+            this.renderingModel.once('change', function() {
+                self.readyRenderingModel();
+            });
+            this.renderingModel.fetch();
+        }
     },
 
     readyRenderingModel: function () {
@@ -146,7 +153,8 @@ cinema.views.RenderingWidget = Backbone.View.extend({
             this.$('.c-control-panel-body').html(cinema.templates.rendering({
                 presets: this.renderingModel.getPresetNames(),
                 luts: this.fields,
-                colors: this.swatchColors
+                colors: this.swatchColors,
+                disabledList: this.disabledList
             }));
             this.toolbarRendering.setElement(this.$(this.toolbarSelector)).render();
             this.$('.c-minimum-x').html(this.clampMinimum.toFixed(3));

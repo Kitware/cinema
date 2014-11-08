@@ -6,20 +6,8 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
       this.renderingModel = settings.renderingModel;
       this.maxSize = this.model.getMaxSize();
       this.model.loadFieldImages();
-      this.slicePosition = this.model.getCenterSlice();
       this.lineValues = { x: [], y: [], z: [], probe: null };
       this.bg = { xIdx: 0, yIdx: 1 };
-      this.layout = {
-         split: [ 0.5, 0.5 ],
-         spacing: 10,
-         viewTypes: [ 'XY', 'ZY', 'XZ', 'ChartX', 'ChartY', 'ChartZ', 'Stats'],
-         viewports: [
-            { center: [250, 250], zoom: 0.5, view: 'XY', stats: true},
-            { center: [250, 250], zoom: 0.5, view: 'ZY', stats: false},
-            { center: [250, 250], zoom: 0.5, view: 'XZ', stats: false},
-            { center: [250, 250], zoom: 0.5, view: 'ChartX', stats: false}
-         ]
-      };
 
       // Event management
       cinema.bindWindowResizeHandler(this, this.render, 200);
@@ -28,7 +16,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
          self.render();
       });
 
-      this.model.on('change', function() {
+      this.model.on('change control-change probe-change', function() {
          this.render();
       }, this);
    },
@@ -50,9 +38,9 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
             "Data Range along TT: [RR]".replace(/RR/g, range.join(', ')).replace(/TT/g, axis),
             "Probe value: RR".replace(/RR/g, '' + this.lineValues.probe),
             "Probe Field: RR".replace(/RR/g, this.model.getActiveField()),
-            "Probe cooridnates: [RR]".replace(/RR/g, this.slicePosition.join(', '))
+            "Probe cooridnates: [RR]".replace(/RR/g, this.model.getLayoutModel().slicePosition.join(', '))
          ],
-         probePosition = Math.floor(viewport.area[0] + width * this.slicePosition[axisToIdx[axis]] / dimensions[axisToIdx[axis]]);
+         probePosition = Math.floor(viewport.area[0] + width * this.model.getLayoutModel().slicePosition[axisToIdx[axis]] / dimensions[axisToIdx[axis]]);
 
       function lineTo(idx) {
          ctx.lineTo( Math.floor(width * idx / length + viewport.area[0]),
@@ -91,8 +79,8 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
       var canvas = this.$('.fg-renderer'),
          width = canvas.attr('width'),
          height = canvas.attr('height'),
-         center = [ Math.floor(width * this.layout.split[0]), Math.floor(height * this.layout.split[1])],
-         spacing = this.layout.spacing,
+         center = [ Math.floor(width * this.model.getLayoutModel().split[0]), Math.floor(height * this.model.getLayoutModel().split[1])],
+         spacing = this.model.getLayoutModel().spacing,
          layoutFunctions = {
             "2x2": function () {
                return [
@@ -240,11 +228,11 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
          return (value < 0) ? 0 : (value >= max) ? max - 1 : value;
       }
 
-      var viewports = this.layout.viewports,
+      var viewports = this.model.layoutModel.viewports,
          mouseDown = false,
          dimensions = this.model.getDimensions(),
-         split = this.layout.split,
-         probe = this.slicePosition,
+         split = this.model.layoutModel.split,
+         probe = this.model.getLayoutModel().slicePosition,
          that = this,
          downEvent = null,
          activeViewport = null,
@@ -437,7 +425,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
          ctx = canvas[0].getContext('2d'),
          width = canvas.attr('width'),
          height = canvas.attr('height'),
-         layout = this.layout,
+         layout = this.model.getLayoutModel(),
          dataInCache = this.model.validateImageCache(),
          progress = this.model.getProgress(),
          viewportCoordinates = this.computeLayout(),
@@ -514,7 +502,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
    },
 
    pushImageToForeground: function(viewport, xIdx, yIdx) {
-      var xyz = this.slicePosition,
+      var xyz = this.model.getLayoutModel().slicePosition,
          dimensions = this.model.getDimensions(),
          spacing = this.model.getSpacing(),
          bgCanvas = this.$('.bg-renderer'),
@@ -572,7 +560,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
    extractHorizontalLineValues: function(pixBuffer, axis) {
       if(!this.lineValues.hasOwnProperty(axis)) {
          var dimensions = this.model.getDimensions(),
-            xyz = this.slicePosition,
+            xyz = this.model.getLayoutModel().slicePosition,
             offset = dimensions[this.bg.xIdx] * xyz[this.bg.yIdx] * 4,
             length = dimensions[this.bg.xIdx] * 4,
             idx = 0,
@@ -595,7 +583,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
    extractVerticalLineValues: function(pixBuffer, axis) {
       if(!this.lineValues.hasOwnProperty(axis)) {
          var dimensions = this.model.getDimensions(),
-            xyz = this.slicePosition,
+            xyz = this.model.getLayoutModel().slicePosition,
             offset = xyz[this.bg.xIdx] * 4,
             delta = dimensions[this.bg.xIdx] * 4,
             length = dimensions[this.bg.yIdx] * delta,
@@ -621,7 +609,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
          return;
       }
 
-      var xyz = this.slicePosition,
+      var xyz = this.model.getLayoutModel().slicePosition,
          dimensions = this.model.getDimensions(),
          image = this.model.getImage(xyz[2]),
          offset = this.model.getYOffset(xyz[2]),
@@ -656,7 +644,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
          return;
       }
 
-      var xyz = this.slicePosition,
+      var xyz = this.model.getLayoutModel().slicePosition,
          dimensions = this.model.getDimensions(),
          bgCanvas = this.$('.bg-renderer'),
          bgCtx = bgCanvas[0].getContext('2d'),
@@ -698,7 +686,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
          return;
       }
 
-      var xyz = this.slicePosition,
+      var xyz = this.model.getLayoutModel().slicePosition,
          dimensions = this.model.getDimensions(),
          bgCanvas = this.$('.bg-renderer'),
          bgCtx = bgCanvas[0].getContext('2d'),
@@ -762,7 +750,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
    },
 
    drawStatistics: function(viewport) {
-      var xyz = this.slicePosition,
+      var xyz = this.model.getLayoutModel().slicePosition,
          dimensions = this.model.getDimensions(),
          spacing = this.model.getSpacing(),
          canvas = this.$('.fg-renderer'),
@@ -773,7 +761,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
             "Data Size: [RR]".replace(/RR/g, dimensions.join(', ')),
             "Data Spacing: [RR]".replace(/RR/g, spacing.join(', ')),
             "Probe Field: RR".replace(/RR/g, this.model.getActiveField()),
-            "Probe cooridnates: [RR]".replace(/RR/g, this.slicePosition.join(', ')),
+            "Probe cooridnates: [RR]".replace(/RR/g, this.model.getLayoutModel().slicePosition.join(', ')),
             "Probe value: RR".replace(/RR/g, '' + this.lineValues.probe)
          ],
          maxWidth = 0,
@@ -798,7 +786,7 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
    setLightColor: function() {},
    setLUT: function(fieldName, lutFunction) {},
    forceRedraw: function () {
-      this.drawLayout();
+      this.render();
    },
    // end - Method called by the rendering widget
 
@@ -811,6 +799,11 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
          size = pixBuffer.length,
          idx = 0,
          lutFunction = this.renderingModel.getLookupTableForField(this.model.getActiveField());
+
+      if(!lutFunction) {
+         console.log('No lut function for field ' + this.model.getActiveField());
+         return;
+      }
 
       while(idx < size) {
          var value = (pixBuffer[idx] + (256*pixBuffer[idx+1]) + (65536*pixBuffer[idx+2])) / 16777216,
