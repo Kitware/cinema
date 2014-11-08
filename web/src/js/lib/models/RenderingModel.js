@@ -7,46 +7,20 @@ cinema.models.RenderingModel = Backbone.Model.extend({
         Backbone.Model.apply(this, arguments);
 
         this.url = settings.url;
-        this.visModel = settings.visModel;
-        this.fieldNamesToCodes = {};
-        this.fieldCodesToNames = {};
+        this.ranges = settings.ranges;
+        this.colorByFields = settings.fields;
+
         this.lutMap = {};
     },
 
     defaults: {
     },
 
-    _computeUnionOfColorBys: function() {
-        var colorBys = [];
-        if (_.has(this.visModel.attributes.metadata, 'layer_color_by')) {
-            var allcbs = [];
-            for (var layer in this.visModel.attributes.metadata.layer_color_by) {
-                if (_.has(this.visModel.attributes.metadata.layer_color_by, layer)) {
-                    allcbs.push(this.visModel.attributes.metadata.layer_color_by[layer]);
-                }
-            }
-            colorBys = _.union.apply(_, allcbs);
-        }
-        return colorBys;
-    },
-
     initializeLookupTables: function() {
-        var colorByFields = this._computeUnionOfColorBys();
-        var fields = this.visModel.attributes.metadata.fields;
-        for (var fieldCode in fields) {
-            if (_.has(fields, fieldCode)) {
-                var fieldName = fields[fieldCode];
-                // If either 1) this info.json doesn't have the "layer_color_by" in the
-                // metadata section, or 2) it does have it, and this field is in there
-                // somewhere, then we set up ui for this field and initialize a LUT for it.
-                if (_.isEmpty(colorByFields) || _.contains(colorByFields, fieldCode)) {
-                    if (this.initializeLutForFieldToPreset(fieldCode, fieldName, 'spectral')) {
-                        this.fieldNamesToCodes[fieldName] = fieldCode;
-                        this.fieldCodesToNames[fieldCode] = fieldName;
-                    }
-                }
-            }
-        }
+        var that = this;
+        _.each(this.colorByFields, function(fieldName) {
+            that.initializeLutForFieldToPreset(fieldName, 'spectral')
+        });
     },
 
     ensureLookupTablesReady: function() {
@@ -55,61 +29,63 @@ cinema.models.RenderingModel = Backbone.Model.extend({
         }
     },
 
-    initializeLutForFieldToPreset: function(fieldCode, fieldName, presetName) {
+    initializeLutForFieldToPreset: function(fieldName, presetName) {
         var controlPoints = this.getControlPoints(presetName);
         if (controlPoints !== 'no-match') {
             var controlPointsArray = $.extend(true, [], controlPoints);
             var range = this.getRangeForField(fieldName);
             if (range !== null) {
-                this.lutMap[fieldCode] = {
+                this.lutMap[fieldName] = {
                     'controlPoints': controlPointsArray,
                     'clampedRange': range,
                     'dataRange': range
                 };
+                this._invalidateTable(fieldName);
                 return true;
             }
         }
         return false;
     },
 
-    getLookupTableForField: function(fieldCode) {
+    getLookupTableForField: function(fieldName) {
         this.ensureLookupTablesReady();
-        if (_.has(this.lutMap, fieldCode)) {
-            return this.getLutFunction(this.lutMap[fieldCode]);
+        if (_.has(this.lutMap, fieldName)) {
+            return this.getLutFunction(this.lutMap[fieldName]);
         }
         return null;
     },
 
-    getControlPointsForField: function(fieldCode) {
-        if (_.has(this.lutMap, fieldCode)) {
-            return this.lutMap[fieldCode].controlPoints;
+    getControlPointsForField: function(fieldName) {
+        if (_.has(this.lutMap, fieldName)) {
+            return this.lutMap[fieldName].controlPoints;
         }
         return null;
     },
 
-    getClampedRangeForField: function(fieldCode) {
-        if (_.has(this.lutMap, fieldCode)) {
-            return this.lutMap[fieldCode].clampedRange;
+    getClampedRangeForField: function(fieldName) {
+        if (_.has(this.lutMap, fieldName)) {
+            return this.lutMap[fieldName].clampedRange;
         }
         return null;
     },
 
-    setClampedRangeForField: function(fieldCode, clampedRange) {
-        if (_.has(this.lutMap, fieldCode)) {
-            this.lutMap[fieldCode].clampedRange = clampedRange;
+    setClampedRangeForField: function(fieldName, clampedRange) {
+        if (_.has(this.lutMap, fieldName)) {
+            this.lutMap[fieldName].clampedRange = clampedRange;
+            this._invalidateTable(fieldName);
         }
     },
 
     getRangeForField: function(fieldName) {
-        if (_.has(this.visModel.attributes.metadata.ranges, fieldName)) {
-            return this.visModel.attributes.metadata.ranges[fieldName];
+        if (_.has(this.ranges, fieldName)) {
+            return this.ranges[fieldName];
         }
         return null;
     },
 
     getFields: function() {
         this.ensureLookupTablesReady();
-        return this.fieldNamesToCodes;
+        return this.colorByFields;
     },
 
     loaded: function () {
@@ -219,6 +195,6 @@ cinema.models.RenderingModel = Backbone.Model.extend({
     },
 
     _invalidateTable: function (name) {
-
+        this.trigger('c:lut-invalid', {'field': name});
     }
 });

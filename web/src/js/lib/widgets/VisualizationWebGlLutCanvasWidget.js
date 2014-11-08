@@ -72,14 +72,13 @@ cinema.views.VisualizationWebGlLutCanvasWidget = Backbone.View.extend({
 
         this.lutArrayBuffers = {};
         this.lutArrayViews = {};
-        var fieldsMap = this.renderingModel.getFields();
-        for (var fieldName in fieldsMap) {
-            if (_.has(fieldsMap, fieldName)) {
-                var fieldCode = fieldsMap[fieldName];
-                this.lutArrayBuffers[fieldCode] = new ArrayBuffer(256*1*4);
-                this.lutArrayViews[fieldCode] = new Uint8Array(this.lutArrayBuffers[fieldCode]);
-            }
-        }
+        var fieldsList = this.renderingModel.getFields();
+
+        var self = this;
+        _.each(fieldsList, function(fieldName) {
+            self.lutArrayBuffers[fieldName] = new ArrayBuffer(256*1*4);
+            self.lutArrayViews[fieldName] = new Uint8Array(self.lutArrayBuffers[fieldName]);
+        });
 
         this.compositeManager = settings.compositeManager ||
             new cinema.utilities.CompositeImageManager({
@@ -121,6 +120,7 @@ cinema.views.VisualizationWebGlLutCanvasWidget = Backbone.View.extend({
         this.listenTo(this.controlModel, 'change', this.drawImage);
         this.listenTo(this.viewpoint, 'change', this.drawImage);
         this.listenTo(this.layers, 'change', this.updateQuery);
+        this.listenTo(this.renderingModel, 'c:lut-invalid', this.updateLut);
         cinema.bindWindowResizeHandler(this, this.drawImage, 200);
 
         this.xscale = 1.0;
@@ -209,20 +209,25 @@ cinema.views.VisualizationWebGlLutCanvasWidget = Backbone.View.extend({
         return maxOffset;
     },
 
-    setLUT: function (fieldCode, _lut) {
-        if (!_.has(this.lutArrayBuffers, fieldCode)) {
-            this.lutArrayBuffers[fieldCode] = new ArrayBuffer(256*1*4);
-            this.lutArrayViews[fieldCode] = new Uint8Array(this.lutArrayBuffers[fieldCode]);
+    updateLut: function(event) {
+        var lut = this.renderingModel.getLookupTableForField(event.field);
+        this.setLUT(event.field, lut);
+    },
+
+    setLUT: function (fieldName, _lut) {
+        if (!_.has(this.lutArrayBuffers, fieldName)) {
+            this.lutArrayBuffers[fieldName] = new ArrayBuffer(256*1*4);
+            this.lutArrayViews[fieldName] = new Uint8Array(this.lutArrayBuffers[fieldName]);
         }
         for (var i = 0; i < 256; i+=1) {
             var idx = i * 4;
             var val = i / 255;
             var color = _lut(val);
             // console.log("val:", val, "color:", color);
-            this.lutArrayViews[fieldCode][idx] = Math.round(color[0]);
-            this.lutArrayViews[fieldCode][idx + 1] = Math.round(color[1]);
-            this.lutArrayViews[fieldCode][idx + 2] = Math.round(color[2]);
-            this.lutArrayViews[fieldCode][idx + 3] = 1.0;
+            this.lutArrayViews[fieldName][idx] = Math.round(color[0]);
+            this.lutArrayViews[fieldName][idx + 1] = Math.round(color[1]);
+            this.lutArrayViews[fieldName][idx + 2] = Math.round(color[2]);
+            this.lutArrayViews[fieldName][idx + 3] = 1.0;
         }
     },
 
@@ -262,7 +267,7 @@ cinema.views.VisualizationWebGlLutCanvasWidget = Backbone.View.extend({
 
                 if (fieldDependencies && _.has(fieldDependencies, 'lutfield') && fieldDependencies.lutfield === "true") {
                     lutOffsets.scalar = this.layerOffset[layerName];
-                    lutOffsets.colorBy = this.layers.attributes.state[layerName];
+                    lutOffsets.colorBy = this.compositeModel.getFieldName(this.layers.attributes.state[layerName]);
                     idxList.push(lutOffsets);
                 } else {
                     idxList.push(this.layerOffset[layerName]);

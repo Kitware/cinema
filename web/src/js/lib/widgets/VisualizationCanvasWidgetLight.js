@@ -24,6 +24,9 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         this.renderingModel = settings.renderingModel;
         this.lf = {};
         this.lutTable = {};
+
+        this.listenTo(this.renderingModel, 'c:lut-invalid', this.updateLut);
+
         /*
         for (var phi=0; phi <= 360; phi+=30) {
             var res = this._spherical2CartesianN(phi, 45.0);
@@ -91,6 +94,11 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         }
     },
 
+    updateLut: function(event) {
+        var lut = this.renderingModel.getLookupTableForField(event.field);
+        this.setLUT(event.field, lut);
+    },
+
     setLUT: function (fieldCode, _lut) {
         this.lutTable[fieldCode] = _lut;
     },
@@ -136,17 +144,18 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
 
             //through LUT
             var toColor = value;
+            var fieldName = this.compositeModel.getFieldName(renderTerms.fieldCode);
 
             var lut = null;
-            if (!_.has(this.lutTable, renderTerms.fieldCode)) {
+            if (!_.has(this.lutTable, fieldName)) {
                 try {
-                    this.lutTable[renderTerms.fieldCode] = this.renderingModel.getLookupTableForField(renderTerms.fieldCode);
+                    this.lutTable[fieldName] = this.renderingModel.getLookupTableForField(fieldName);
                 } catch (error) {
                     console.log("No lookup table for " + renderTerms.fieldCode + " => " + renderTerms.fieldName);
-                    this.lutTable[renderTerms.fieldCode] = null;
+                    this.lutTable[fieldName] = null;
                 }
             }
-            lut = this.lutTable[renderTerms.fieldCode];
+            lut = this.lutTable[fieldName];
 
             var color = toColor;
 
