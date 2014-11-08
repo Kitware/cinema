@@ -7,9 +7,12 @@ cinema.views.CompositeWebGlLightView = Backbone.View.extend({
         this.layers = new cinema.models.LayerModel(this.compositeModel.getDefaultPipelineSetup(),
             { info: this.model });
         this.compositor = new cinema.utilities.CreateWebGlLightCompositor();
+
         this.renderingModel = new cinema.models.RenderingModel({
               url: 'rendering/rendering.json',
-              visModel: this.model
+              visModel: this.model,
+              ranges: this.compositeModel.getColorByRanges(),
+              fields: this.compositeModel.getColorByFields()
         });
 
         this.listenTo(this.controlModel, 'change', this.refreshCamera);

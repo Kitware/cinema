@@ -21,8 +21,8 @@ flatFilePattern = 'flat_n_primal/LON_LAT_NLAYER-primal_%d_0.vtu'
 
 ### For testing debugging: Reduce number of timesteps
 #flatFileTimes = range(50, 5151, 50)  # range(50, 5901, 50)
-#flatFileTimes = range(50, 151, 50)
-flatFileTimes = [ 1250 ]
+flatFileTimes = range(50, 5151, 1050)
+#flatFileTimes = [ 1250 ]
 
 # Make output directory if it does not exist
 if not os.path.exists(outputWorkingDir):
