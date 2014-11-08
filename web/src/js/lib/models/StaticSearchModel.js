@@ -2,17 +2,21 @@
  * This model is used to store the state of a search query, and implements the
  * search filtering logic.
  */
-cinema.models.MetaDataSearchModel = Backbone.Model.extend({
+cinema.models.StaticSearchModel = Backbone.Model.extend({
     constructor: function (settings) {
         Backbone.Model.apply(this, arguments);
 
+        this.basePath = settings.basePath;
+        this.histogramModel = settings.histogramModel;
+        this.controlModel = settings.controlModel;
         this.visModel = settings.visModel;
         this.query = settings.query || {};
-        this.exclude = ["filename"];
 
         this.results = [];
 
         this.listenTo(this.visModel, 'change', this.readyToInitialize);
+        this.listenTo(this.histogramModel, 'change', this.updateDataMap);
+        this.listenTo(this.controlModel, 'change', this.updateHistogramModel);
         this.readyToInitialize();
     },
 
@@ -27,14 +31,17 @@ cinema.models.MetaDataSearchModel = Backbone.Model.extend({
         }
         var pattern = this.visModel.get('name_pattern') || "",
             args = this.visModel.get('arguments') || {},
+            metadata = this.visModel.get('metadata') || {},
             compList = pattern.replace('_','/').replace('.jpg','').replace('.png','').split('/'),
             i,
+            index,
             re = /{(.+)}/,
             self = this;
 
-        this.filename = null;
-        if (pattern.indexOf("{filename}") >= 0) {
-            this.filename = args.filename.default;
+        this._layers = metadata.analysis.layer.values;
+        index = this._layers.indexOf("_");
+        if (index > -1) {
+            this._layers.splice(index, 1);
         }
 
         this._argArrays = [];
@@ -42,21 +49,26 @@ cinema.models.MetaDataSearchModel = Backbone.Model.extend({
         this._maxOrdinal = 1;
         this._multipliers = [];
 
+
         _.each(compList.slice(0, compList.length), function (value, idx, list) {
-            var match = re.exec(value);
-            if (!(_.contains(self.exclude, match[1]))) {
-                var arr = args[match[1]].values;
-                self._argKeys.push(match[1]);
-                self._argArrays.push(arr);
-                self._maxOrdinal *= arr.length;
-            }
+            var match = re.exec(value),
+                arr = args[match[1]].values;
+
+            self._argKeys.push(match[1]);
+            self._argArrays.push(arr);
+            self._maxOrdinal *= arr.length;
         });
         this._maxOrdinal -= 1;
+
 
         this._realKeys = [];
         for (i = 0; i < this._argKeys.length; i += 1) {
             this._realKeys.push(this._argKeys[i]);
         }
+        for (i = 0; i < this._layers.length; i += 1) {
+            this._realKeys.push(this._layers[i]);
+        }
+
 
         var multiplier = 1;
         for (i = this._argArrays.length - 1; i >= 0; i-=1) {
@@ -77,6 +89,9 @@ cinema.models.MetaDataSearchModel = Backbone.Model.extend({
         for (i = 0; i <= this._maxOrdinal; i += 1) {
             obj = this.ordinalToObject(i);
             url = this.basePath + '/' + this.objectToPath(obj);
+            for (j = 0; j < this._layers.length; j += 1) {
+                obj[this._layers[j]] = 0;
+            }
             results.push( {"index": i, "obj": obj, "url": url, "keep": false} );
         }
         return results;
@@ -246,9 +261,41 @@ cinema.models.MetaDataSearchModel = Backbone.Model.extend({
      *
      */
     objectToPath: function (obj) {
-        if (this.filename !== null) {
-            obj.filename = this.filename;
+        var result = [];
+        _.each(this._argKeys, function (value, idx, list) {
+            result.push(obj[value]);
+        });
+
+        return result.join('/');
+    },
+
+    imageCount: function () {
+        return this.visModel.lengthPhi() * this.visModel.lengthTime() * this.visModel.lengthTheta();
+    },
+
+    updateDataMap: function() {
+        if (!this.histogramModel.loaded()) {
+            return;
         }
-        return this.visModel.getFilePattern(obj);
+        var i,
+            images = this.histogramModel.getData('images'),
+            j,
+            k,
+            key;
+
+        for (i = 0; i < images.length; i += 1) {
+            for (j = 0; j < this._layers.length; j += 1) {
+                if (this._layers[j] in images[i]) {
+                    key = this._layers[j];
+                    for (k = 0; k < images[i][key].length; k += 1) {
+                        this._dataMap[images[i][key][k]].obj[key] = i;
+                    }
+                }
+            }
+        }
+    },
+
+    updateHistogramModel: function () {
+        //this.histogramModel.fetch();
     }
 });
