@@ -76,7 +76,7 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         this._computeLayerOffset();
         this._first = true;
 
-        this.avgElapsedMillis = 0.0;
+        this.averageElapsedMillis = 0.0;
         this.totalElapsedMillis = 0.0;
         this.compositeCount = 0;
 
@@ -105,8 +105,6 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
                 cinema.events.trigger('c:fpsupdate', {'curFps': curFps, 'avgFps': avgFps});
             }
         });
-        this.listenTo(this.controlModel, 'change', this.drawImage);
-        this.listenTo(this.viewpoint, 'change', this.drawImage);
         this.listenTo(this.layers, 'change', this.updateQuery);
         cinema.bindWindowResizeHandler(this, this.drawImage, 200);
 

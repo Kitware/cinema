@@ -168,7 +168,7 @@
 
         refreshCamera: function () {
             if (this.renderView) {
-                this.renderView.showViewpoint(true);
+                this.renderView.showViewpoint();
             }
         },
 
@@ -204,10 +204,6 @@
                 this.searchView = sharedData.metaDataSearchView;
                 this.searchInformation = sharedData.metaDataInformationWidget;
             }
-
-            this.listenTo(this.controlModel, 'change', this.refreshCamera);
-            this.listenTo(this.viewpointModel, 'change', this.refreshCamera);
-            this.listenTo(cinema.events, 'c:resetCamera', this.resetCamera);
         },
 
         render: function () {
