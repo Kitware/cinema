@@ -40,6 +40,7 @@
 
         img.onload = _.bind(function () {
             this._cache[key].image = img;
+            this._cache[key].ready = true;
             this.trigger('c:data.ready', this._cache[key]);
         }, this);
 

@@ -59,8 +59,6 @@ cinema.views.StaticImageVisualizationCanvasWidget = Backbone.View.extend({
         this._privateInit();
         this._controls = {};
         this._first = true;
-        this.listenTo(this.controlModel, 'change', this.drawImage);
-        this.listenTo(this.viewpoint, 'change', this.drawImage);
         this.listenTo(this.imageManager, 'c:data.ready', function () {
             if (this._first) {
                 this._first = false;
@@ -145,9 +143,9 @@ cinema.views.StaticImageVisualizationCanvasWidget = Backbone.View.extend({
      * do not pass this, simply renders the current this.viewpoint value.
      * @return this, for chainability
      */
-    showViewpoint: function (forced, controlModel) {
+    showViewpoint: function () {
         var changed = false,
-            controls = controlModel || this.controlModel.getControls();
+            controls = this.controlModel.getControls();
 
         // Search for change
         for (var key in controls) {
@@ -160,7 +158,8 @@ cinema.views.StaticImageVisualizationCanvasWidget = Backbone.View.extend({
             }
         }
         this._controls = _.extend(this._controls, controls);
-        if (changed || forced) {
+
+        if (changed) {
             this.imageManager.updateControls(this._controls);
         } else {
             this.drawImage();
