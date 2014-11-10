@@ -39,6 +39,7 @@
         'loaded': false
       }
     },
+    programsLoaded = false,
     initialized = false;
 
 
@@ -155,11 +156,14 @@
         gl.deleteBuffer(texCoordBuffer);
         gl.deleteBuffer(posCoordBuffer);
 
+        // And finally, reset flags to indicate shaders not yet loaded
         for (var progReq in programReqs) {
           if (_.has(programReqs, progReq)) {
             programReqs[progReq].loaded = false;
           }
         }
+
+        programsLoaded = false;
     }
 
 
@@ -384,14 +388,19 @@
     //
     // --------------------------------------------------------------------------
     function allProgramsReady() {
+      if (programsLoaded === true) {
+        return true;
+      }
+
       for (var key in programReqs) {
         if (_.has(programReqs, key)) {
-          if (programReqs[key].loaded == false) {
-            return false
+          if (programReqs[key].loaded === false) {
+            return false;
           }
         }
       }
 
+      programsLoaded = true;
       return true;
     }
 

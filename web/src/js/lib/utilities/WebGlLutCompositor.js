@@ -29,6 +29,29 @@
     projection = null,
     mvp = null,
     glCanvas = null,
+    programReqs = {
+      'display' : {
+        'vertex': 'shaders/vertex/displayVertex.c',
+        'fragment': 'shaders/fragment/displayFragment.c',
+        'loaded': false
+      },
+      'composite': {
+        'vertex': 'shaders/vertex/compositeVertex.c',
+        'fragment': 'shaders/fragment/compositeFragment.c',
+        'loaded': false
+      },
+      'compositeLut': {
+        'vertex': 'shaders/vertex/compositeVertex.c',
+        'fragment': 'shaders/fragment/compositeLutFragment.c',
+        'loaded': false
+      },
+      'background': {
+        'vertex': 'shaders/vertex/compositeVertex.c',
+        'fragment': 'shaders/fragment/backgroundFragment.c',
+        'loaded': false
+      }
+    },
+    programsLoaded = false,
     initialized = false;
 
 
@@ -65,65 +88,81 @@
       // Create vertex position and tex coord buffers
       initAttribBuffers();
 
-      // Initialize the display program shaders
-      displayProgram = createShaderProgram(loadShaderFiles('shaders/vertex/displayVertex.c', 'shaders/fragment/displayFragment.c'));
+      // Load shaders for display program
+      loadShaderFiles(programReqs.display.vertex, programReqs.display.fragment, function (shaders) {
+        displayProgram = createShaderProgram(shaders);
 
-      // look up where the vertex position coords need to go when using the display program
-      gl.bindBuffer(gl.ARRAY_BUFFER, posCoordBuffer);
-      displayProgram.positionLocation = gl.getAttribLocation(displayProgram, "a_position");
-      gl.enableVertexAttribArray(displayProgram.positionLocation);
-      gl.vertexAttribPointer(displayProgram.positionLocation, 2, gl.FLOAT, false, 0, 0);
+        // look up where the vertex position coords need to go when using the display program
+        gl.bindBuffer(gl.ARRAY_BUFFER, posCoordBuffer);
+        displayProgram.positionLocation = gl.getAttribLocation(displayProgram, "a_position");
+        gl.enableVertexAttribArray(displayProgram.positionLocation);
+        gl.vertexAttribPointer(displayProgram.positionLocation, 2, gl.FLOAT, false, 0, 0);
 
-      // ditto for vertex texture coords
-      gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-      displayProgram.texCoordLocation = gl.getAttribLocation(displayProgram, "a_texCoord");
-      gl.enableVertexAttribArray(displayProgram.texCoordLocation);
-      gl.vertexAttribPointer(displayProgram.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+        // ditto for vertex texture coords
+        gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+        displayProgram.texCoordLocation = gl.getAttribLocation(displayProgram, "a_texCoord");
+        gl.enableVertexAttribArray(displayProgram.texCoordLocation);
+        gl.vertexAttribPointer(displayProgram.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
-      // Initialize the compositing program shaders
-      compositeProgram = createShaderProgram(loadShaderFiles('shaders/vertex/compositeVertex.c', 'shaders/fragment/compositeFragment.c'));
+        programReqs.display.loaded = true;
+      });
 
-      // look up where the vertex position coords need to go when using the compositing program
-      gl.bindBuffer(gl.ARRAY_BUFFER, posCoordBuffer);
-      compositeProgram.positionLocation = gl.getAttribLocation(compositeProgram, "a_position");
-      gl.enableVertexAttribArray(compositeProgram.positionLocation);
-      gl.vertexAttribPointer(compositeProgram.positionLocation, 2, gl.FLOAT, false, 0, 0);
+      // Load shaders for composite program
+      loadShaderFiles(programReqs.composite.vertex, programReqs.composite.fragment, function (shaders) {
+        compositeProgram = createShaderProgram(shaders);
 
-      // ditto for vertex texture coords
-      gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-      compositeProgram.texCoordLocation = gl.getAttribLocation(compositeProgram, "a_texCoord");
-      gl.enableVertexAttribArray(compositeProgram.texCoordLocation);
-      gl.vertexAttribPointer(compositeProgram.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+        // look up where the vertex position coords need to go when using the compositing program
+        gl.bindBuffer(gl.ARRAY_BUFFER, posCoordBuffer);
+        compositeProgram.positionLocation = gl.getAttribLocation(compositeProgram, "a_position");
+        gl.enableVertexAttribArray(compositeProgram.positionLocation);
+        gl.vertexAttribPointer(compositeProgram.positionLocation, 2, gl.FLOAT, false, 0, 0);
 
-      // Initialize the compositing program shaders
-      compositeLutProgram = createShaderProgram(loadShaderFiles('shaders/vertex/compositeVertex.c', 'shaders/fragment/compositeLutFragment.c'));
+        // ditto for vertex texture coords
+        gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+        compositeProgram.texCoordLocation = gl.getAttribLocation(compositeProgram, "a_texCoord");
+        gl.enableVertexAttribArray(compositeProgram.texCoordLocation);
+        gl.vertexAttribPointer(compositeProgram.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
-      // look up where the vertex position coords need to go when using the compositing program
-      gl.bindBuffer(gl.ARRAY_BUFFER, posCoordBuffer);
-      compositeLutProgram.positionLocation = gl.getAttribLocation(compositeLutProgram, "a_position");
-      gl.enableVertexAttribArray(compositeLutProgram.positionLocation);
-      gl.vertexAttribPointer(compositeLutProgram.positionLocation, 2, gl.FLOAT, false, 0, 0);
+        programReqs.composite.loaded = true;
+      });
 
-      // ditto for vertex texture coords
-      gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-      compositeLutProgram.texCoordLocation = gl.getAttribLocation(compositeLutProgram, "a_texCoord");
-      gl.enableVertexAttribArray(compositeLutProgram.texCoordLocation);
-      gl.vertexAttribPointer(compositeLutProgram.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+      // Load shaders for composite+lookuptable program
+      loadShaderFiles(programReqs.compositeLut.vertex, programReqs.compositeLut.fragment, function (shaders) {
+        compositeLutProgram = createShaderProgram(shaders);
 
-      // Initialize the compositing program shaders
-      backgroundProgram = createShaderProgram(loadShaderFiles('shaders/vertex/compositeVertex.c', 'shaders/fragment/backgroundFragment.c'));
+        // look up where the vertex position coords need to go when using the compositing program
+        gl.bindBuffer(gl.ARRAY_BUFFER, posCoordBuffer);
+        compositeLutProgram.positionLocation = gl.getAttribLocation(compositeLutProgram, "a_position");
+        gl.enableVertexAttribArray(compositeLutProgram.positionLocation);
+        gl.vertexAttribPointer(compositeLutProgram.positionLocation, 2, gl.FLOAT, false, 0, 0);
 
-      // look up where the vertex position coords need to go when using the compositing program
-      gl.bindBuffer(gl.ARRAY_BUFFER, posCoordBuffer);
-      backgroundProgram.positionLocation = gl.getAttribLocation(backgroundProgram, "a_position");
-      gl.enableVertexAttribArray(backgroundProgram.positionLocation);
-      gl.vertexAttribPointer(backgroundProgram.positionLocation, 2, gl.FLOAT, false, 0, 0);
+        // ditto for vertex texture coords
+        gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+        compositeLutProgram.texCoordLocation = gl.getAttribLocation(compositeLutProgram, "a_texCoord");
+        gl.enableVertexAttribArray(compositeLutProgram.texCoordLocation);
+        gl.vertexAttribPointer(compositeLutProgram.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
-      // ditto for vertex texture coords
-      gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-      backgroundProgram.texCoordLocation = gl.getAttribLocation(backgroundProgram, "a_texCoord");
-      gl.enableVertexAttribArray(backgroundProgram.texCoordLocation);
-      gl.vertexAttribPointer(backgroundProgram.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+        programReqs.compositeLut.loaded = true;
+      });
+
+      // Load shaders for background program
+      loadShaderFiles(programReqs.background.vertex, programReqs.background.fragment, function (shaders) {
+        backgroundProgram = createShaderProgram(shaders);
+
+        // look up where the vertex position coords need to go when using the compositing program
+        gl.bindBuffer(gl.ARRAY_BUFFER, posCoordBuffer);
+        backgroundProgram.positionLocation = gl.getAttribLocation(backgroundProgram, "a_position");
+        gl.enableVertexAttribArray(backgroundProgram.positionLocation);
+        gl.vertexAttribPointer(backgroundProgram.positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+        // ditto for vertex texture coords
+        gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+        backgroundProgram.texCoordLocation = gl.getAttribLocation(backgroundProgram, "a_texCoord");
+        gl.enableVertexAttribArray(backgroundProgram.texCoordLocation);
+        gl.vertexAttribPointer(backgroundProgram.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+
+        programReqs.background.loaded = true;
+      });
 
       // Create a framebuffer for rendering to texture
       var fboResult = initFrameBuffer();
@@ -179,6 +218,15 @@
         gl.deleteTexture(scalarTexture);
         gl.deleteBuffer(texCoordBuffer);
         gl.deleteBuffer(posCoordBuffer);
+
+        // And finally, reset flags to indicate shaders not yet loaded
+        for (var progReq in programReqs) {
+          if (_.has(programReqs, progReq)) {
+            programReqs[progReq].loaded = false;
+          }
+        }
+
+        programsLoaded = false;
     }
 
 
@@ -262,20 +310,30 @@
     // --------------------------------------------------------------------------
     //
     // --------------------------------------------------------------------------
-    function loadShaderFiles(vertexUrl, fragmentUrl) {
+    function loadShaderFiles(vertexUrl, fragmentUrl, readyCallback) {
 
-      function loadFile(url) {
-        var xhr = new XMLHttpRequest();
-        var okStatus = document.location.protocol === "file:" ? 0 : 200;
-        xhr.open('GET', url, false);
-        xhr.send(null);
-        return xhr.status === okStatus ? xhr.responseText : null;
+      var initializedShaders = {};
+
+      function shaderLoaded(srcString, whichProgram) {
+        initializedShaders[whichProgram] = initShader(srcString, whichProgram);
+        if (_.has(initializedShaders, gl.VERTEX_SHADER) && _.has(initializedShaders, gl.FRAGMENT_SHADER)) {
+          readyCallback([initializedShaders[gl.VERTEX_SHADER], initializedShaders[gl.FRAGMENT_SHADER]]);
+        }
       }
 
-      var vertexShader = initShader(loadFile(vertexUrl), gl.VERTEX_SHADER);
-      var fragmentShader = initShader(loadFile(fragmentUrl), gl.FRAGMENT_SHADER);
+      $.ajax({
+        url: vertexUrl,
+        success: function (result) {
+          shaderLoaded(result, gl.VERTEX_SHADER);
+        }
+      });
 
-      return [ vertexShader, fragmentShader ];
+      $.ajax({
+        url: fragmentUrl,
+        success: function (result) {
+          shaderLoaded(result, gl.FRAGMENT_SHADER);
+        }
+      });
     }
 
 
@@ -418,7 +476,32 @@
     // --------------------------------------------------------------------------
     //
     // --------------------------------------------------------------------------
+    function allProgramsReady() {
+      if (programsLoaded === true) {
+        return true;
+      }
+
+      for (var key in programReqs) {
+        if (_.has(programReqs, key)) {
+          if (programReqs[key].loaded === false) {
+            return false;
+          }
+        }
+      }
+
+      programsLoaded = true;
+      return true;
+    }
+
+
+    // --------------------------------------------------------------------------
+    //
+    // --------------------------------------------------------------------------
     function drawDisplayPass(xscale, yscale, center) {
+      if (!allProgramsReady()) {
+        return;
+      }
+
       // Draw to the screen framebuffer
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
@@ -456,6 +539,10 @@
     //
     // --------------------------------------------------------------------------
     function drawCompositePass(textureCanvas) {
+      if (!allProgramsReady()) {
+        return;
+      }
+
       // Draw to the fbo on this pass
       gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
 
@@ -495,6 +582,10 @@
     //
     // --------------------------------------------------------------------------
     function drawBackgroundPass(backgroundCanvas, backgroundColor) {
+      if (!allProgramsReady()) {
+        return;
+      }
+
       // Draw to the fbo on this pass
       gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
 
@@ -532,6 +623,10 @@
     //
     // --------------------------------------------------------------------------
     function drawLutCompositePass(scalarCanvas, lutData) {
+      if (!allProgramsReady()) {
+        return;
+      }
+
       // Draw to the fbo on this pass
       gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
 
