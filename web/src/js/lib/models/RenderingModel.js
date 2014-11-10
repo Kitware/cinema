@@ -175,7 +175,7 @@ cinema.models.RenderingModel = Backbone.Model.extend({
         // Now actually generate the lookup table from the (maybe modified)
         // control points.
         for (var idx = 0; idx < nbColorInTable; idx += 1) {
-            var value = idx / nbColorInTable,
+            var value = idx / (nbColorInTable - 1),
                 pointA = this.extractPoint(controlPoints, currentControlIdx),
                 pointB = this.extractPoint(controlPoints, currentControlIdx + 1);
 
@@ -189,7 +189,7 @@ cinema.models.RenderingModel = Backbone.Model.extend({
         }
 
         function lut(value) {
-            return table[Math.floor(value * nbColorInTable)];
+            return table[Math.floor(value * (nbColorInTable - 1))];
         }
 
         return lut;
