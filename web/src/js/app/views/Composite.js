@@ -114,6 +114,7 @@
             }
 
             var shared = {
+                key: key,
                 control: control,
                 histogram: histogram,
                 layer: layer,
@@ -140,6 +141,10 @@
         }
     };
 
+    var freeSharedDataMap = function (key) {
+        delete sharedDataMap[key];
+    };
+
     var visibility = function (name, value) {
         if (value === undefined) {
             return visibilityMap[name];
@@ -157,6 +162,7 @@
             this.compositeModel = new cinema.decorators.Composite(this.model);
             this._hasAnalysis = _.has(this.model.get('metadata'), 'analysis');
             var sharedData = getSharedData(this.compositeModel, this.$el, this._hasAnalysis);
+            this.key = sharedData.key;
 
             this.controlModel = sharedData.control;
             this.viewpointModel = sharedData.viewpoint;
@@ -220,6 +226,26 @@
 
         remove: function () {
             getSharedData(this.compositeModel, this.$el, this._hasAnalysis).remove();
+
+            // SharedData
+            freeSharedDataMap(this.key);
+
+            // Connections to SharedData
+            this.key = null;
+
+            // Models
+            this.controlModel.remove();
+            this.viewpointModel.remove();
+
+            // Views
+            this.renderView.remove();
+            this.compositeTools.remove();
+            if (this._hasAnalysis) {
+                this.compositeHistogram.remove();
+                this.searchInformation.remove();
+            } else {
+                this.searchInformation.remove();
+            }
         }
     });
 
@@ -228,6 +254,7 @@
             this.compositeModel = new cinema.decorators.Composite(this.model);
             this._hasAnalysis = _.has(this.model.get('metadata'), 'analysis');
             var sharedData = getSharedData(this.compositeModel, this.$el, this._hasAnalysis);
+            this.key = sharedData.key;
 
             this.controlModel = sharedData.control;
             this.viewpointModel = sharedData.viewpoint;
@@ -261,6 +288,26 @@
 
         remove: function () {
             getSharedData(this.compositeModel, this.$el, this._hasAnalysis).remove();
+
+            // SharedData
+            freeSharedDataMap(this.key);
+
+            // Connections to SharedData
+            this.key = null;
+
+            // Models
+            this.controlModel.remove();
+            this.viewpointModel.remove();
+
+            // Views
+            this.searchView.remove();
+            this.searchTools.remove();
+            if (this._hasAnalysis) {
+                this.compositeHistogram.remove();
+                this.searchInformation.remove();
+            } else {
+                this.searchInformation.remove();
+            }
         }
     });
 }());
