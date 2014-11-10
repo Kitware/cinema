@@ -41,7 +41,8 @@
             if (analysis) {
                 histogram = new cinema.models.StaticHistogramModel({
                     basePath: model.get('basePath'),
-                    analysisInfo: model.get('metadata').analysis
+                    analysisInfo: model.get('metadata').analysis,
+                    namePattern: model.get('name_pattern')
                 });
                 informationWidget = new cinema.views.ComposableInformationWidget({
                     el: $('.c-information-panel', container),
