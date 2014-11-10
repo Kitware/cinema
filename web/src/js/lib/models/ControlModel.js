@@ -134,12 +134,11 @@ cinema.models.ControlModel = Backbone.Model.extend({
      * @param wrap [bool] Whether the list is circular
      */
     incrementControlValue: function (name, wrap) {
-        this.controlMap[name].activeIdx = (this.controlMap[name].activeIdx + 1);
-        if (wrap) {
-            this.controlMap[name].activeIdx %= this.controlMap[name].values.length;
-        } else if (this.controlMap[name].activeIdx >= this.controlMap[name].values.length) {
-            this.controlMap[name].activeIdx = this.controlMap[name].values.length - 1;
+        this.controlMap[name].activeIdx = Number(this.controlMap[name].activeIdx) + 1;
+        if(this.controlMap[name].activeIdx >= this.controlMap[name].values.length) {
+            this.controlMap[name].activeIdx = wrap ? 0 : this.controlMap[name].values.length - 1;
         }
+
         this.trigger('change');
         return this.getControl(name);
     },

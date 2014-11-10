@@ -2,7 +2,7 @@
     var visibilityMap = { 'rendering': false, 'tools': false },
         modelMap = {};
 
-    function getDecoratedModel(model) {
+    function getDecoratedModel(model, container) {
         var key =  + '::' + ($(container).attr('container-uid') || 'main'),
             result = modelMap[key];
         if(!result) {
@@ -44,9 +44,9 @@
         initialize: function(opts) {
             // console.log('NEW: Probe view ' + (++instanceCount));
 
-            this.key = getDecoratedModel(this.model).key;
-            this.probeModel = getDecoratedModel(this.model).probeModel;
-            this.renderingModel = getDecoratedModel(this.model).renderingModel;
+            this.key = getDecoratedModel(this.model, this.$el).key;
+            this.probeModel = getDecoratedModel(this.model, this.$el).probeModel;
+            this.renderingModel = getDecoratedModel(this.model, this.$el).renderingModel;
 
             this.renderer = new cinema.views.ProbeRendererWidget({
                 model: this.probeModel,
@@ -85,7 +85,7 @@
             // Free factory
             freeDecoratedModel(this.key);
 
-            this.key == null;
+            this.key = null;
 
             // Trash views
             this.renderer.remove();
