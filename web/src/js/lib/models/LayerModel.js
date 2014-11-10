@@ -48,12 +48,12 @@ cinema.models.LayerModel = Backbone.Model.extend({
             layerFields = this.info.get('metadata').layer_fields,
             iDirectory = 0;
 
-        var processLayer = function (layer) {
+        var processLayer = function (layer, isChild) {
             var id = layer.ids[0], layerObj;
             layerObj = this._controlStates[id] || {
                 children: {},
-                hidden: false,
-                closed: true,
+                hidden: !isChild,
+                closed: isChild,
                 color: layerFields[id][0] // Default color-by set here
             };
             if (_.has(state, id)) {
@@ -70,13 +70,13 @@ cinema.models.LayerModel = Backbone.Model.extend({
             var children, visibleChild = false;
 
             if (obj.type === 'layer') {
-                processLayer(obj);
+                processLayer(obj, false);
             } else {
                 children = {};
 
                 // support nested directories?
                 obj.children.forEach(function (child) {
-                    var childObj = processLayer(child);
+                    var childObj = processLayer(child, true);
                     children[child.ids[0]] = childObj;
                     visibleChild = visibleChild || !childObj.closed;
                 });
