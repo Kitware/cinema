@@ -1,10 +1,9 @@
 (function () {
     var visibilityMap = { 'rendering': false, 'tools': false },
-        modelMap = {},
-        instanceCount = 0;
+        modelMap = {};
 
     function getDecoratedModel(model) {
-        var key = model.getHash(),
+        var key =  + '::' + ($(container).attr('container-uid') || 'main'),
             result = modelMap[key];
         if(!result) {
             var probeModel = new cinema.decorators.Probe(new cinema.decorators.Control(model)),
@@ -15,6 +14,7 @@
                 });
 
             result = modelMap[key] = {
+                key: key,
                 probeModel: probeModel,
                 renderingModel: renderingModel
             };
@@ -22,8 +22,8 @@
         return result;
     }
 
-    function freeDecoratedModel(model) {
-        delete modelMap[model.getHash()];
+    function freeDecoratedModel(key) {
+        delete modelMap[key];
     }
 
     function visibility(name, value) {
@@ -44,6 +44,7 @@
         initialize: function(opts) {
             // console.log('NEW: Probe view ' + (++instanceCount));
 
+            this.key = getDecoratedModel(this.model).key;
             this.probeModel = getDecoratedModel(this.model).probeModel;
             this.renderingModel = getDecoratedModel(this.model).renderingModel;
 
@@ -82,7 +83,9 @@
             // console.log('REMOVE: Probe view ' + --instanceCount);
 
             // Free factory
-            freeDecoratedModel(this.model);
+            freeDecoratedModel(this.key);
+
+            this.key == null;
 
             // Trash views
             this.renderer.remove();
