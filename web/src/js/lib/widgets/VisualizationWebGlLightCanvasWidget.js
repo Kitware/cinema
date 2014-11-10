@@ -283,7 +283,6 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
             var idx = i * 4;
             var val = i / 255;
             var color = _lut(val);
-            // console.log("val:", val, "color:", color);
             this.lutArrayViews[fieldName][idx] = Math.round(color[0]);
             this.lutArrayViews[fieldName][idx + 1] = Math.round(color[1]);
             this.lutArrayViews[fieldName][idx + 2] = Math.round(color[2]);
