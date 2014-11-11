@@ -190,6 +190,8 @@
                 this.controlList.push(
                     { position: 'center', key: 'histogram', icon: 'icon-chart-bar', title: 'Histogram' }
                 );
+
+                sharedData.histogram.fetch();
             } else {
                 this.searchInformation = sharedData.metaDataInformationWidget;
             }

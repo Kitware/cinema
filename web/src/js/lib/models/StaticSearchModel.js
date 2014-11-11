@@ -296,6 +296,6 @@ cinema.models.StaticSearchModel = Backbone.Model.extend({
     },
 
     updateHistogramModel: function () {
-        //this.histogramModel.fetch();
+        this.histogramModel.fetch( {'controlModel': this.controlModel} );
     }
 });

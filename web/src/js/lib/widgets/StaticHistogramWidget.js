@@ -29,54 +29,30 @@ cinema.views.StaticHistogramWidget = Backbone.View.extend({
         this.visModel = settings.visModel;
         this.analysisInfo = settings.analysisInfo;
 
-        this.buildStaticHistogramMap();
-
         this.listenTo(cinema.events, 'toggle-control-panel', this.toggleControlPanel);
         this.listenTo(cinema.events, 'c:edithistogram', this.toggleHistogramTools);
         this.listenTo(cinema.events, 'c:showhistogramlegend', this.toggleHistogramLegend);
         this.listenTo(this.controlModel, 'change', this.updateHistogramModel);
         this.listenTo(this.histogramModel, 'change', this.readyHistogramModel);
-    },
 
-    buildStaticHistogramMap: function() {
-        var namePattern = this.visModel.attributes.name_pattern;
-        var ignoreComponents = ['time', 'phi', 'theta'];
-        var regex = /{([^}]+)}/g;
-        this.layerComponents = [];
-        this.layerEncodingMap = {};
-        var m = regex.exec(namePattern);
-
-        while (m) {
-            if (!_.contains(ignoreComponents, m[1])) {
-                this.layerComponents.push(m[1]);
-            }
-            m = regex.exec(namePattern);
-        }
-
-        for (var i = 0; i < this.analysisInfo.information.length; i+=1) {
-            var info = this.analysisInfo.information[i];
-            var name = info.name;
-            this.layerEncodingMap[name] = {};
-            for (var j = 0; j < info.mappings.length; j+=1) {
-                var mapping = info.mappings[j];
-                this.layerEncodingMap[name][mapping.value] = mapping.code;
-            }
-        }
+        this.readyHistogramModel();
     },
 
     readyHistogramModel: function () {
         var i,
             palette = new Rickshaw.Color.Palette(), series, newSeries = [];
 
-        series = this.histogramModel.getData("series");
-        for (i = 0; i < series.length; i = i + 1) {
-            series[i].color = palette.color();
-            if (series[i].data.length !== 0) {
-                newSeries.push(series[i]);
+        if (this.histogramModel.loaded()) {
+            series = this.histogramModel.getData("series");
+            for (i = 0; i < series.length; i = i + 1) {
+                series[i].color = palette.color();
+                if (series[i].data.length !== 0) {
+                    newSeries.push(series[i]);
+                }
             }
+            this.series = newSeries;
+            this.render();
         }
-        this.series = newSeries;
-        this.render();
     },
 
     render:  function () {
@@ -159,11 +135,10 @@ cinema.views.StaticHistogramWidget = Backbone.View.extend({
                 }
             });
         }
-
     },
 
     toggleControlPanel: function (event) {
-        if (event.key === 'histogram') {
+        if (event.key === 'static-histogram') {
             this.updateHistogramModel();
         }
     },
@@ -566,17 +541,7 @@ cinema.views.StaticHistogramWidget = Backbone.View.extend({
     },
 
     updateHistogramModel: function () {
-        var layerCodeElts = [];
-
-        for (var idx = 0; idx < this.layerComponents.length; idx += 1) {
-            var lName = this.layerComponents[idx];
-            var controlElement = this.controlModel.controlMap[lName];
-            var lValue = controlElement.values[parseInt(controlElement.activeIdx)];
-            layerCodeElts.push(this.layerEncodingMap[lName][lValue]);
-        }
-
-        var layerCodeString = layerCodeElts.join('-');
-        this.histogramModel.fetch({'layerCodeString': layerCodeString});
+        this.histogramModel.fetch( {'controlModel': this.controlModel} );
     }
 
 });
