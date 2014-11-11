@@ -14,6 +14,7 @@
     fb2 = 0,
     rt1 = 0,
     rt2 = 0,
+    pong = false,
     fbo = 0,
     renderTexture = 0,
     numSprites = 22,
@@ -128,6 +129,7 @@
       fb2 = pongFbo[0];
       rt2 = pongFbo[1];
 
+      pong = true;
       fbo = fb1;
       renderTexture = rt2;
     }
@@ -368,12 +370,14 @@
     //
     // --------------------------------------------------------------------------
     function swapFbos() {
-      if (fbo === fb1) {
+      if (pong === true) {
         fbo = fb2;
         renderTexture = rt1;
+        pong = false;
       } else {
         fbo = fb1;
         renderTexture = rt2;
+        pong = true;
       }
     }
 
@@ -519,6 +523,7 @@
       gl.bindFramebuffer(gl.FRAMEBUFFER, fb2);
       gl.clear(gl.COLOR_BUFFER_BIT);
 
+      pong = true;
       fbo = fb1;
       renderTexture = rt2;
     }
