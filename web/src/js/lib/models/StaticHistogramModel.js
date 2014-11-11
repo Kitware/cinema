@@ -52,7 +52,7 @@ cinema.models.StaticHistogramModel = Backbone.Model.extend({
             layerCodeElts.push(this.layerEncodingMap[lName][lValue]);
         }
 
-        var layerCodeString = layerCodeElts.join('-');
+        var layerCodeString = layerCodeElts.join('');
         this.url = this.basePath + '/' + layerCodeString + '/' + this.fileName;
 
         return Backbone.Model.prototype.fetch.apply(this, arguments);
