@@ -146,6 +146,8 @@
                 this.controlList.push(
                     { position: 'center', key: 'static-histogram', icon: 'icon-chart-bar', title: 'Histogram' }
                 );
+                this.histogramModel = sharedData.histogram;
+                this.histogramModel.fetch( { 'controlModel': this.controlModel } );
             } else {
                 this.searchInformation = sharedData.metaDataInformationWidget;
             }
