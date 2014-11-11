@@ -10,6 +10,11 @@
     posCoordBuffer = 0,
     texture = 0,
     depthTexture = 0,
+    fb1 = 0,
+    fb2 = 0,
+    rt1 = 0,
+    rt2 = 0,
+    pong = false,
     fbo = 0,
     renderTexture = 0,
     numSprites = 22,
@@ -117,10 +122,18 @@
         programReqs.composite.loaded = true;
       });
 
-      // Create a framebuffer for rendering to texture
-      var fboResult = initFrameBuffer();
-      fbo = fboResult[0];
-      renderTexture = fboResult[1];
+      // Create two framebuffers for repeated rendering to texture
+      var pingFbo = initFrameBuffer();
+      fb1 = pingFbo[0];
+      rt1 = pingFbo[1];
+
+      var pongFbo = initFrameBuffer();
+      fb2 = pongFbo[0];
+      rt2 = pongFbo[1];
+
+      pong = true;
+      fbo = fb1;
+      renderTexture = rt2;
     }
 
 
@@ -152,8 +165,10 @@
         gl.deleteProgram(compositeProgram);
 
         // Now clean up fbo, textures, and buffers
-        gl.deleteFramebuffer(fbo);
-        gl.deleteTexture(renderTexture);
+        gl.deleteFramebuffer(fb1);
+        gl.deleteTexture(rt1);
+        gl.deleteFramebuffer(fb2);
+        gl.deleteTexture(rt2);
         gl.deleteTexture(texture);
         gl.deleteTexture(depthTexture);
         gl.deleteBuffer(texCoordBuffer);
@@ -355,6 +370,22 @@
     // --------------------------------------------------------------------------
     //
     // --------------------------------------------------------------------------
+    function swapFbos() {
+      if (pong === true) {
+        fbo = fb2;
+        renderTexture = rt1;
+        pong = false;
+      } else {
+        fbo = fb1;
+        renderTexture = rt2;
+        pong = true;
+      }
+    }
+
+
+    // --------------------------------------------------------------------------
+    //
+    // --------------------------------------------------------------------------
     function createTextures() {
       // Create a texture.
       texture = gl.createTexture();
@@ -496,6 +527,9 @@
       gl.drawArrays(gl.TRIANGLES, 0, 6);
 
       gl.finish();
+
+      // Ping-pong
+      swapFbos();
     }
 
 
@@ -503,8 +537,15 @@
     //
     // --------------------------------------------------------------------------
     function clearFbo() {
-      gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fb1);
       gl.clear(gl.COLOR_BUFFER_BIT);
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fb2);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      pong = true;
+      fbo = fb1;
+      renderTexture = rt2;
     }
 
 
