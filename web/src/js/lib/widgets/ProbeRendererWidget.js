@@ -806,6 +806,8 @@ cinema.views.ProbeRendererWidget = Backbone.View.extend({
    forceRedraw: function () {
       this.render();
    },
+   setLightTerms: function (terms) {},
+   setLight: function(vectorLight) {},
    // end - Method called by the rendering widget
 
    applyLUT: function() {
