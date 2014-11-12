@@ -75,8 +75,10 @@
             this.tools.setElement(this.$('.c-tools-panel')).render();
             this.renderingView.setElement(this.$('.c-rendering-panel')).render();
 
-            this.$('.c-tools-panel').toggle(visibility('tools'));
-            this.$('.c-rendering-panel').toggle(visibility('rendering'));
+            // If we do this, we can never interact with these panels in the
+            // workbench.
+            //this.$('.c-tools-panel').toggle(visibility('tools'));
+            //this.$('.c-rendering-panel').toggle(visibility('rendering'));
         },
 
         remove: function() {
