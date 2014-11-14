@@ -231,6 +231,8 @@ cinema.views.VisualizationWebGlLutCanvasWidget = Backbone.View.extend({
         }
     },
 
+    setLightTerms: function (terms) {},
+
     /**
      * Computes the composite image and writes it into the composite buffer.
      * @param data The payload from the composite image manager c:data.ready
@@ -281,8 +283,8 @@ cinema.views.VisualizationWebGlLutCanvasWidget = Backbone.View.extend({
         var imgw = dim[0], imgh = dim[1];
 
         // Draw a background pass
-        //var bgColor = [ 1.0, 1.0, 1.0 ];
-        var bgColor = [ 0.0, 0.0, 0.0 ];
+        var bgColor = [ 1.0, 1.0, 1.0 ];
+        // var bgColor = [ 0.0, 0.0, 0.0 ];
         compositeCtx.clearRect(0, 0, imgw, imgh);
         compositeCtx.drawImage(data.image, 0, (this._maxOffset * imgh), imgw, imgh, 0, 0, imgw, imgh);
         this.webglCompositor.drawBackgroundPass(compositeCanvas, bgColor);
