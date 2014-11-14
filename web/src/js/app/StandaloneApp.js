@@ -46,7 +46,7 @@ cinema.StandaloneApp = Backbone.View.extend({
 
     initialize: function (settings) {
         this.dataRoot = settings.dataRoot;
-        this.staticRoot = settings.staticRoot;
+        cinema.staticRoot = this.staticRoot = settings.staticRoot;
 
         // When additional view type are added just expand the given list
         this.allowedViewType = ['view', 'search'];

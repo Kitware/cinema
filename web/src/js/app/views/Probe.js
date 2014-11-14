@@ -8,7 +8,7 @@
         if(!result) {
             var probeModel = new cinema.decorators.Probe(new cinema.decorators.Control(model)),
                 renderingModel = new cinema.models.RenderingModel({
-                    url: '/rendering/rendering.json',
+                    url: cinema.staticRoot + 'rendering/rendering.json',
                     ranges: probeModel.get('ranges'),
                     fields: probeModel.get('fields')
                 });

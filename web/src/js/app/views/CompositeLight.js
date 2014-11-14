@@ -6,7 +6,7 @@ cinema.views.CompositeLightView = Backbone.View.extend({
         this.layers = new cinema.models.LayerModel(this.compositeModel.getDefaultPipelineSetup(),
             { info: this.model });
         this.renderingModel = new cinema.models.RenderingModel({
-            url: 'rendering/rendering.json',
+            url: cinema.staticRoot + 'rendering/rendering.json',
             visModel: this.model,
               ranges: this.compositeModel.getColorByRanges(),
               fields: this.compositeModel.getColorByFields()
