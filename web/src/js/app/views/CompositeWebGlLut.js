@@ -9,7 +9,7 @@ cinema.views.CompositeWebGlLutView = Backbone.View.extend({
         this.compositor = new cinema.utilities.CreateWebGlLutCompositor();
 
         this.renderingModel = new cinema.models.RenderingModel({
-              url: 'rendering/rendering.json',
+              url: cinema.staticRoot + 'rendering/rendering.json',
               visModel: this.model,
               ranges: this.compositeModel.getColorByRanges(),
               fields: this.compositeModel.getColorByFields()

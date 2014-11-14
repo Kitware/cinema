@@ -34,13 +34,13 @@
     copyCanvas = null,
     programReqs = {
       'display' : {
-        'vertex': 'shaders/vertex/displayVertex.c',
-        'fragment': 'shaders/fragment/displayFragment.c',
+        'vertex': cinema.staticRoot + 'shaders/vertex/displayVertex.c',
+        'fragment': cinema.staticRoot + 'shaders/fragment/displayFragment.c',
         'loaded': false
       },
       'composite': {
-        'vertex': 'shaders/vertex/compositeVertex.c',
-        'fragment': 'shaders/fragment/compositeFragment.c',
+        'vertex': cinema.staticRoot + 'shaders/vertex/compositeVertex.c',
+        'fragment': cinema.staticRoot + 'shaders/fragment/compositeFragment.c',
         'loaded': false
       }
     },
