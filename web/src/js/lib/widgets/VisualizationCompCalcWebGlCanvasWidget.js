@@ -61,7 +61,7 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
         }
 
         this._privateInit();
-        this.compositeModel = new cinema.decorators.Composite(this.model);
+        this.compositeModel = settings.model || new cinema.decorators.Composite(this.model);
         this.layers = settings.layers || new cinema.models.LayerModel(this.compositeModel.getDefaultPipelineSetup());
         this.backgroundColor = settings.backgroundColor || '#ffffff';
         //this.orderMapping = {};
@@ -105,8 +105,6 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
                 this.$('.s-timing-info-average').text(avgFps);
             }
         });
-        this.listenTo(this.controlModel, 'change', this.drawImage);
-        this.listenTo(this.viewpoint, 'change', this.drawImage);
         this.listenTo(this.layers, 'change', this.updateQuery);
         cinema.bindWindowResizeHandler(this, this.drawImage, 200);
 
