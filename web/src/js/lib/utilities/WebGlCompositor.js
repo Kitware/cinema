@@ -189,7 +189,7 @@
     // --------------------------------------------------------------------------
     function initGL() {
       // Get A WebGL context
-      gl = glCanvas.getContext("experimental-webgl") || glCanvas.getContext("webgl");
+      gl = glCanvas.getContext("experimental-webgl", {preserveDrawingBuffer:true}) || glCanvas.getContext("webgl", {preserveDrawingBuffer:true});
       if (!gl) {
         return null;
       }
@@ -528,13 +528,19 @@
       renderTexture = rt2;
     }
 
+    function getImage() {
+      var image = new Image();
+      image.src = glCanvas.toDataURL("image/png");
+      return image;
+    }
 
     return {
       'init': init,
       'clearFbo': clearFbo,
       'drawCompositePass': drawCompositePass,
       'drawDisplayPass': drawDisplayPass,
-      'resizeViewport': resizeViewport
+      'resizeViewport': resizeViewport,
+      'getImage': getImage
     };
 
   };
