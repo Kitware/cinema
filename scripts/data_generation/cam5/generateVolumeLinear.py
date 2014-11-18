@@ -21,8 +21,8 @@ data_base_path = os.path.join(path_root, 'cam5')
 
 earth_file = os.path.join(data_base_path, 'earth.vtk')
 file_pattern = os.path.join(data_base_path, 'cam5earth_%d.vtk')
-#file_times = range(0, 13, 1)
-file_times = [ 6 ]
+file_times = range(0, 13, 1)
+#file_times = [ 6 ]
 cam5_filenames = [ (file_pattern % time) for time in file_times]
 
 resolution = 500
