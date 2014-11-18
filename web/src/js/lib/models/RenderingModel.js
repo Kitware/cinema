@@ -56,6 +56,7 @@ cinema.models.RenderingModel = Backbone.Model.extend({
     },
 
     getControlPointsForField: function(fieldName) {
+        this.ensureLookupTablesReady();
         if (_.has(this.lutMap, fieldName)) {
             return this.lutMap[fieldName].controlPoints;
         }

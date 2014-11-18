@@ -434,9 +434,9 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         compositeCtx.putImageData(frontBuffer, 0, 0);
     },
 
-    showViewpoint: function () {
+    showViewpoint: function (forced, controlModel) {
         var changed = false,
-            controls = this.controlModel.getControls();
+            controls = controlModel || this.controlModel.getControls();
 
         // Search for change
         for (var key in controls) {
@@ -462,7 +462,6 @@ cinema.views.VisualizationCanvasWidgetLight = cinema.views.VisualizationCanvasWi
         }
         return this;
     },
-
 
     forceRedraw: function () {
         this._forceRedraw = true;

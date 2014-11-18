@@ -139,12 +139,14 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         this.currentField = this.fields[0];
 
         this.swatchColors = swatches.colors;
-        this.controlPoints = this.renderingModel.getControlPointsForField(this.currentField);
 
         if (this.fields !== null && !_.isEmpty(this.fields)) {
             this.renderingModel.initializeLookupTables();
+            this.controlPoints = this.renderingModel.getControlPointsForField(this.currentField);
             this.viewport.forceRedraw();
             this.render();
+        } else {
+            this.controlPoints = this.renderingModel.getControlPointsForField(this.currentField);
         }
     },
 
