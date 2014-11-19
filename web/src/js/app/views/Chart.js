@@ -65,6 +65,7 @@
                     controlModel: control
                 });
             } else {
+                /*jshint -W035 */
                 /*
                 metaDataSearchView = new cinema.views.MetaDataStaticSearchPage({
                     el: $('.c-body-container', container),
@@ -190,6 +191,7 @@
                 this.staticHistogram.remove();
                 //this.searchInformation.remove();
             } else {
+                /*jshint -W035 */
                 //this.searchInformation.remove();
             }
         }
@@ -249,6 +251,7 @@
                 this.staticHistogram.remove();
                 //this.searchInformation.remove();
             } else {
+                /*jshint -W035 */
                 //this.searchInformation.remove();
             }
         }
