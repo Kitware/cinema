@@ -50,7 +50,7 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
      *        the visModel. If that is not set, creates one internally.
      */
     initialize: function (settings) {
-        this.controls = settings.controls;
+        this.controlModel = settings.viewpoint.controlModel;
         this.viewpoint = settings.viewpoint;
 
         if (!this.model.loaded()) {
@@ -61,12 +61,12 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
         }
 
         this._privateInit();
-        this.compositeModel = new cinema.decorators.Composite(this.model);
+        this.compositeModel = settings.model || new cinema.decorators.Composite(this.model);
         this.layers = settings.layers || new cinema.models.LayerModel(this.compositeModel.getDefaultPipelineSetup());
         this.backgroundColor = settings.backgroundColor || '#ffffff';
         //this.orderMapping = {};
         this.compositeCache = {};
-        this._fields = {};
+        this._controls = {};
 
         this.compositeManager = settings.compositeManager ||
             new cinema.utilities.CompositeImageManager({
@@ -84,7 +84,7 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
             this.trigger('c:error', e);
         });
         this.listenTo(this.compositeManager, 'c:data.ready', function (data, fields) {
-            if (_.isEqual(fields, this._fields)) {
+            if (_.isEqual(fields, this._controls)) {
                 var startMillis = Date.now();
 
                 this._writeCompositeBuffer(data);
@@ -105,8 +105,6 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
                 this.$('.s-timing-info-average').text(avgFps);
             }
         });
-        this.listenTo(this.controls, 'change', this.drawImage);
-        this.listenTo(this.viewpoint, 'change', this.drawImage);
         this.listenTo(this.layers, 'change', this.updateQuery);
         cinema.bindWindowResizeHandler(this, this.drawImage, 200);
 
@@ -401,29 +399,33 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
         return this;
     },
 
+    getImage: function () {
+        return this.webglCompositor.getImage();
+    },
+
     /**
      * Change the viewpoint to show a different image.
      * @param viewpoint An object containing "time", "phi", and "theta" keys. If you
      * do not pass this, simply renders the current this.viewpoint value.
      * @return this, for chainability
      */
-    showViewpoint: function (forced) {
+    showViewpoint: function (forced, controlModel) {
         var changed = false,
-            fields = this.controls.getControls();
+            controls = controlModel || this.controlModel.getControls();
 
         // Search for change
-        for (var key in fields) {
-            if (_.has(this._fields, key)) {
-                if (this._fields[key] !== fields[key]) {
+        for (var key in controls) {
+            if (_.has(this._controls, key)) {
+                if (this._controls[key] !== controls[key]) {
                     changed = true;
                 }
             } else {
                 changed = true;
             }
         }
-        this._fields = _.extend(this._fields, fields);
+        this._controls = _.extend(this._controls, controls);
         if (changed || forced) {
-            this.compositeManager.downloadData(this._fields);
+            this.compositeManager.downloadData(this._controls);
         } else {
             this.drawImage();
         }
@@ -434,8 +436,26 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
         //this.orderMapping = {};
         this.compositeCache = {};
         this._computeLayerOffset();
-        this._fields = {}; // force redraw
+        this._controls = {}; // force redraw
         this.showViewpoint();
+    },
+
+    updateTheQuery: function (query, viewpoint) {
+        this.orderMapping = {};
+        this.compositeCache = {};
+        this.layerOffset = {};
+
+        for (var i = 0; i < query.length; i += 2) {
+            var layer = query[i];
+
+            if (query[i + 1] === '_') {
+                this.layerOffset[layer] = -1;
+            } else {
+                this.layerOffset[layer] = this.compositeModel.getSpriteSize() -
+                this.compositeModel.getOffset()[query.substr(i, 2)];
+            }
+        }
+        this.showViewpoint(true, viewpoint);
     },
 
     /**

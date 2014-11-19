@@ -139,12 +139,14 @@ cinema.views.RenderingWidget = Backbone.View.extend({
         this.currentField = this.fields[0];
 
         this.swatchColors = swatches.colors;
-        this.controlPoints = this.renderingModel.getControlPointsForField(this.currentField);
 
         if (this.fields !== null && !_.isEmpty(this.fields)) {
             this.renderingModel.initializeLookupTables();
+            this.controlPoints = this.renderingModel.getControlPointsForField(this.currentField);
             this.viewport.forceRedraw();
             this.render();
+        } else {
+            this.controlPoints = this.renderingModel.getControlPointsForField(this.currentField);
         }
     },
 
@@ -175,30 +177,32 @@ cinema.views.RenderingWidget = Backbone.View.extend({
     },
 
     drawControlPoints: function (ih, iw) {
-        var i, y = ih * 0.5, radius = 5.0;
+        if (this.controlPoints !== null) {
+            var i, y = ih * 0.5, radius = 5.0;
 
-        for (i = 0; i < this.controlPoints.length; i = i + 1) {
-            this.context.beginPath();
-            this.context.moveTo(this.controlPoints[i].x * iw, 0);
-            this.context.lineTo(this.controlPoints[i].x * iw, ih);
-            this.context.lineWidth = 1;
-            this.context.strokeStyle = 'black';
-            this.context.stroke();
-            this.context.beginPath();
-            this.context.fillStyle = "rgb(R,G,B)"
-                .replace(/R/g, (255 * this.controlPoints[i].r).toFixed(0))
-                .replace(/G/g, (255 * this.controlPoints[i].g).toFixed(0))
-                .replace(/B/g, (255 * this.controlPoints[i].b).toFixed(0));
-            this.context.arc(this.controlPoints[i].x * iw, y, radius, 0, 2 * Math.PI, false);
-            this.context.fill();
-            this.context.lineWidth = 2;
-            if (this.selectedControlPoint === i) {
-                this.context.strokeStyle = 'white';
-            }
-            else {
+            for (i = 0; i < this.controlPoints.length; i = i + 1) {
+                this.context.beginPath();
+                this.context.moveTo(this.controlPoints[i].x * iw, 0);
+                this.context.lineTo(this.controlPoints[i].x * iw, ih);
+                this.context.lineWidth = 1;
                 this.context.strokeStyle = 'black';
+                this.context.stroke();
+                this.context.beginPath();
+                this.context.fillStyle = "rgb(R,G,B)"
+                    .replace(/R/g, (255 * this.controlPoints[i].r).toFixed(0))
+                    .replace(/G/g, (255 * this.controlPoints[i].g).toFixed(0))
+                    .replace(/B/g, (255 * this.controlPoints[i].b).toFixed(0));
+                this.context.arc(this.controlPoints[i].x * iw, y, radius, 0, 2 * Math.PI, false);
+                this.context.fill();
+                this.context.lineWidth = 2;
+                if (this.selectedControlPoint === i) {
+                    this.context.strokeStyle = 'white';
+                }
+                else {
+                    this.context.strokeStyle = 'black';
+                }
+                this.context.stroke();
             }
-            this.context.stroke();
         }
     },
 
@@ -224,18 +228,20 @@ cinema.views.RenderingWidget = Backbone.View.extend({
     },
 
     drawLUTGradient: function (iw, ih) {
-        var i;
+        if (this.controlPoints !== null) {
+            var i;
 
-        this.context.rect(0, 0, iw, ih);
-        var grd = this.context.createLinearGradient(0, 0, iw, 0);
-        for (i = 0; i < this.controlPoints.length; i = i + 1) {
-            grd.addColorStop(this.controlPoints[i].x, "rgb(R,G,B)"
-                .replace(/R/g, (255 * this.controlPoints[i].r).toFixed(0))
-                .replace(/G/g, (255 * this.controlPoints[i].g).toFixed(0))
-                .replace(/B/g, (255 * this.controlPoints[i].b).toFixed(0)));
+            this.context.rect(0, 0, iw, ih);
+            var grd = this.context.createLinearGradient(0, 0, iw, 0);
+            for (i = 0; i < this.controlPoints.length; i = i + 1) {
+                grd.addColorStop(this.controlPoints[i].x, "rgb(R,G,B)"
+                    .replace(/R/g, (255 * this.controlPoints[i].r).toFixed(0))
+                    .replace(/G/g, (255 * this.controlPoints[i].g).toFixed(0))
+                    .replace(/B/g, (255 * this.controlPoints[i].b).toFixed(0)));
+            }
+            this.context.fillStyle = grd;
+            this.context.fill();
         }
-        this.context.fillStyle = grd;
-        this.context.fill();
     },
 
     _refresh: function () {
@@ -521,17 +527,19 @@ cinema.views.RenderingWidget = Backbone.View.extend({
             this.currentField = origin.val();
             var range = this.renderingModel.getRangeForField(this.currentField);
             var clampedRange = this.renderingModel.getClampedRangeForField(this.currentField);
-            this.xMinimum = range[0];
-            this.xMaximum = range[1];
-            this.clampMinimum = clampedRange[0];
-            this.clampMaximum = clampedRange[1];
-            this.selectedControlPoint = -1;
-            this.clampMidpoint = this.mapToClampedRange(0.5);
-            this.controlPoints = this.renderingModel.getControlPointsForField(this.currentField);
-            this.updateLookupTable();
-            this.drawLookupTable();
-            this.$('.c-lookuptable-x').val('');
-            this.updateScalarBarLabels();
+            if (range !== null && clampedRange !== null) {
+                this.xMinimum = range[0];
+                this.xMaximum = range[1];
+                this.clampMinimum = clampedRange[0];
+                this.clampMaximum = clampedRange[1];
+                this.selectedControlPoint = -1;
+                this.clampMidpoint = this.mapToClampedRange(0.5);
+                this.controlPoints = this.renderingModel.getControlPointsForField(this.currentField);
+                this.updateLookupTable();
+                this.drawLookupTable();
+                this.$('.c-lookuptable-x').val('');
+                this.updateScalarBarLabels();
+            }
         }
     },
 

@@ -34,7 +34,7 @@
                     visModel: model
                 }),
                 renderView = new cinema.views.VisualizationCanvasWidget({
-                    el: this.$('.c-body-container', container),
+                    el: $('.c-body-container', container),
                     model: model,
                     layers: layer,
                     controls: control,
@@ -51,7 +51,7 @@
                     controlModel: offScreenControl
                 }),
                 offScreenRenderView = new cinema.views.VisualizationCanvasWidget({
-                    el: this.$('.c-body-container', container),
+                    el: $('.c-body-container', container),
                     model: model,
                     viewpoint: offScreenViewpoint,
                     layers: offScreenLayer
