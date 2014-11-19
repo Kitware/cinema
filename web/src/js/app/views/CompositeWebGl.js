@@ -36,7 +36,7 @@
                     visModel: model
                 }),
                 renderView = new cinema.views.VisualizationWebGlCanvasWidget({
-                    el: this.$('.c-body-container', container),
+                    el: $('.c-body-container', container),
                     model: model,
                     layers: layer,
                     viewpoint: viewpoint,
@@ -53,7 +53,7 @@
                     controlModel: offScreenControl
                 }),
                 offScreenRenderView = new cinema.views.VisualizationWebGlCanvasWidget({
-                    el: this.$('.c-body-container', container),
+                    el: $('.c-body-container', container),
                     model: model,
                     layers: offScreenLayer,
                     viewpoint: offScreenViewpoint,

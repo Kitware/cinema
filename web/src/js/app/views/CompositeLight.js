@@ -63,7 +63,7 @@
                     controlModel: offScreenControl
                 }),
                 offScreenRenderView = new cinema.views.VisualizationCanvasWidgetLight({
-                    el: this.$('.c-body-container', container),
+                    el: $('.c-body-container', container),
                     model: model,
                     layers: offScreenLayer,
                     viewpoint: offScreenViewpoint,

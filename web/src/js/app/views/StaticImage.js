@@ -14,7 +14,7 @@
                     controlModel: control
                 }),
                 renderView = new cinema.views.StaticImageVisualizationCanvasWidget({
-                    el: this.$('.c-body-container'),
+                    el: $('.c-body-container', container),
                     model: model,
                     controlModel: control,
                     viewpoint: viewpoint
