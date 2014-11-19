@@ -85,6 +85,7 @@
             }
 
             var shared = {
+                key: key,
                 control: control,
                 histogram: histogram,
                 viewpoint: viewpoint,
@@ -105,6 +106,10 @@
         }
     };
 
+    var freeSharedDataMap = function (key) {
+        delete sharedDataMap[key];
+    };
+
     var visibility = function (name, value) {
         if (value === undefined) {
             return visibilityMap[name];
@@ -121,6 +126,8 @@
         initialize: function (opts) {
             this._hasAnalysis = _.has(this.model.get('metadata'), 'analysis');
             var sharedData = getSharedData(this.model, this.$el, this._hasAnalysis);
+            this.key = sharedData.key;
+
             this.controlModel = sharedData.control;
             this.viewpointModel = sharedData.viewpoint;
             this.renderView = sharedData.renderView;
@@ -183,6 +190,26 @@
 
         remove: function () {
             getSharedData(this.model, this.$el, this._hasAnalysis).remove();
+
+            // SharedData
+            freeSharedDataMap(this.key);
+
+            // Connections to SharedData
+            this.key = null;
+
+            // Models
+            this.controlModel.remove();
+            this.viewpointModel.remove();
+
+            // Views
+            this.renderView.remove();
+            this.compositeTools.remove();
+            if (this._hasAnalysis) {
+                this.staticHistogram.remove();
+                this.searchInformation.remove();
+            } else {
+                this.searchInformation.remove();
+            }
         }
     });
 
@@ -190,6 +217,7 @@
         initialize: function (opts) {
             this._hasAnalysis = _.has(this.model.get('metadata'), 'analysis');
             var sharedData = getSharedData(this.model, this.$el, this._hasAnalysis);
+            this.key = sharedData.key;
 
             this.controlModel = sharedData.control;
             this.viewpointModel = sharedData.viewpoint;
@@ -223,6 +251,26 @@
 
         remove: function () {
             getSharedData(this.model, this.$el, this._hasAnalysis).remove();
+
+            // SharedData
+            freeSharedDataMap(this.key);
+
+            // Connections to SharedData
+            this.key = null;
+
+            // Models
+            this.controlModel.remove();
+            this.viewpointModel.remove();
+
+            // Views
+            this.searchView.remove();
+            this.searchTools.remove();
+            if (this._hasAnalysis) {
+                this.staticHistogram.remove();
+                this.searchInformation.remove();
+            } else {
+                this.searchInformation.remove();
+            }
         }
     });
 }());
