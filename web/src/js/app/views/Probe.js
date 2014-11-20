@@ -1,8 +1,8 @@
 (function () {
-    var visibilityMap = { 'rendering': false, 'tools': false },
-        sharedDataMap = {};
+    var sharedDataMap = {},
+        visibilityMap = { 'rendering': false, 'tools': false };
 
-    var getSharedData = function (model, container) {
+    var getSharedData = function (model, container, analysis) {
         var key = model.getHash() + '::' + ($(container).attr('container-uid') || 'main');
         if (_.has(sharedDataMap, key)) {
             return sharedDataMap[key];
@@ -68,8 +68,8 @@
 
     cinema.views.ProbeView = Backbone.View.extend({
         initialize: function(opts) {
-            // console.log('NEW: Probe view ' + (++instanceCount));
-            var sharedData = getSharedData(this.model, this.$el);
+            this._hasAnalysis = _.has(this.model.get('metadata'), 'analysis');
+            var sharedData = getSharedData(this.model, this.$el, this._hasAnalysis);
             this.key = sharedData.key;
 
             this.renderer = sharedData.renderer;
@@ -97,11 +97,39 @@
         }
     });
 
+    cinema.views.ProbeSearchView = Backbone.View.extend({
+        initialize: function (opts) {
+            this._hasAnalysis = _.has(this.model.get('metadata'), 'analysis');
+            var sharedData = getSharedData(this.model, this.$el, this._hasAnalysis);
+            this.key = sharedData.key;
+        },
+
+        render: function () {
+            return this;
+        },
+
+        remove: function () {
+            getSharedData(this.model, this.$el, this._hasAnalysis).remove();
+
+            // SharedData
+            freeSharedDataMap(this.key);
+
+            // Connections to SharedData
+            this.key = null;
+        }
+    });
 
     cinema.viewMapper.registerView('probe-slice', 'view', cinema.views.ProbeView, {
         controls: [
             { position: 'left', key: 'rendering', icon: 'icon-picture', title: 'Rendering' },
             { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
+        ]
+    });
+
+    cinema.viewMapper.registerView('probe-slice', 'search', cinema.views.ProbeSearchView, {
+        controls: [
+            //{ position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
+            //{ position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
         ]
     });
 

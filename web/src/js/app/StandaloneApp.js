@@ -1,3 +1,5 @@
+var viewMap = { 'view': null, 'search': null };
+
 cinema.StandaloneApp = Backbone.View.extend({
     events: {
         // Handle control panel close action
@@ -26,10 +28,7 @@ cinema.StandaloneApp = Backbone.View.extend({
             cinema.events.trigger('c:handlesearchquery', {searchQuery: searchQuery});
         },
 
-        'click .c-app-icon': function (e) {
-            cinema.viewType = 'view';
-            this.render();
-        },
+        'click .c-app-icon': 'switchToRenderView',
 
         'keyup .c-search-filter': function (e) {
             if (e.keyCode === 13) {
@@ -76,15 +75,15 @@ cinema.StandaloneApp = Backbone.View.extend({
         // Find out what the view control list is for control panel container
         var viewInfo = cinema.viewMapper.getView(cinema.model.getDataType(), cinema.viewType);
 
-        /*
-        TODO make sure this doesn't blow away this view's container
-        if (this._currentView) {
-            this._currentView.remove();
-        }*/
-        this._currentView = new viewInfo.view({
-            defaultControls: viewInfo.opts.controls,
-            model: this.model
-        });
+        if (viewMap[cinema.viewType] === null) {
+            this._currentView = new viewInfo.view({
+                defaultControls: viewInfo.opts.controls,
+                model: this.model
+            });
+            viewMap[cinema.viewType] = this._currentView;
+        } else {
+            this._currentView = viewMap[cinema.viewType];
+        }
 
         // Create container for control panels
         var controlList = this._currentView.controlList || viewInfo.opts.controls;
