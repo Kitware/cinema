@@ -273,18 +273,19 @@
             }
         }
     });
+
+    cinema.viewMapper.registerView('parametric-image-stack', 'view', cinema.views.StaticImageView, {
+        controls: [
+            { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
+            { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
+        ]
+    });
+
+    cinema.viewMapper.registerView('parametric-image-stack', 'search', cinema.views.StaticImageSearchView, {
+        controls: [
+            { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
+            { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
+        ]
+    });
+
 }());
-
-cinema.viewMapper.registerView('parametric-image-stack', 'view', cinema.views.StaticImageView, {
-    controls: [
-        { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
-        { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
-    ]
-});
-
-cinema.viewMapper.registerView('parametric-image-stack', 'search', cinema.views.StaticImageSearchView, {
-    controls: [
-        { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
-        { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
-    ]
-});

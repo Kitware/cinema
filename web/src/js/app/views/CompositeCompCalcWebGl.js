@@ -317,18 +317,19 @@
             }
         }
     });
+
+    cinema.viewMapper.registerView('composite-image-stack-compcalc', 'view', cinema.views.CompositeCompCalcWebGlView, {
+        controls: [
+            { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
+            { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
+        ]
+    });
+
+    cinema.viewMapper.registerView('composite-image-stack-compcalc', 'search', cinema.views.CompositeCompCalcWebGlSearchView, {
+        controls: [
+            { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
+            { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
+        ]
+    });
+
 }());
-
-cinema.viewMapper.registerView('composite-image-stack-compcalc', 'view', cinema.views.CompositeCompCalcWebGlView, {
-    controls: [
-        { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
-        { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
-    ]
-});
-
-cinema.viewMapper.registerView('composite-image-stack-compcalc', 'search', cinema.views.CompositeCompCalcWebGlSearchView, {
-    controls: [
-        { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
-        { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
-    ]
-});

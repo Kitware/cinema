@@ -256,18 +256,19 @@
             }
         }
     });
+
+    cinema.viewMapper.registerView('parametric-chart-stack', 'view', cinema.views.ChartView, {
+        controls: [
+            //{ position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
+            { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
+        ]
+    });
+
+    cinema.viewMapper.registerView('parametric-chart-stack', 'search', cinema.views.ChartSearchView, {
+        controls: [
+            //{ position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
+            //{ position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
+        ]
+    });
+
 }());
-
-cinema.viewMapper.registerView('parametric-chart-stack', 'view', cinema.views.ChartView, {
-    controls: [
-        //{ position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
-        { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
-    ]
-});
-
-cinema.viewMapper.registerView('parametric-chart-stack', 'search', cinema.views.ChartSearchView, {
-    controls: [
-        //{ position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
-        //{ position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
-    ]
-});

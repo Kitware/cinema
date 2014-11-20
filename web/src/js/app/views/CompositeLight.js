@@ -330,19 +330,20 @@
             }
         }
     });
+
+    cinema.viewMapper.registerView('composite-image-stack-light', 'view', cinema.views.CompositeLightView, {
+        controls: [
+            { position: 'left', key: 'rendering', icon: 'icon-picture', title: 'Rendering'},
+            { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
+            { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
+        ]
+    });
+
+    cinema.viewMapper.registerView('composite-image-stack-light', 'search', cinema.views.CompositeLightSearchView, {
+        controls: [
+            { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
+            { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
+        ]
+    });
+
 }());
-
-cinema.viewMapper.registerView('composite-image-stack-light', 'view', cinema.views.CompositeLightView, {
-    controls: [
-        { position: 'left', key: 'rendering', icon: 'icon-picture', title: 'Rendering'},
-        { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
-        { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
-    ]
-});
-
-cinema.viewMapper.registerView('composite-image-stack-light', 'search', cinema.views.CompositeLightSearchView, {
-    controls: [
-        { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
-        { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
-    ]
-});
