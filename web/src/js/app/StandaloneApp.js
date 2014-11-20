@@ -1,4 +1,4 @@
-viewMap = { 'view': null, 'search': null };
+var viewMap = { 'view': null, 'search': null };
 
 cinema.StandaloneApp = Backbone.View.extend({
     events: {
@@ -74,7 +74,7 @@ cinema.StandaloneApp = Backbone.View.extend({
 
         // Find out what the view control list is for control panel container
         var viewInfo = cinema.viewMapper.getView(cinema.model.getDataType(), cinema.viewType);
-        
+
         if (viewMap[cinema.viewType] === null) {
             this._currentView = new viewInfo.view({
                 defaultControls: viewInfo.opts.controls,
