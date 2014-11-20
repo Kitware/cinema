@@ -1,30 +1,58 @@
 (function () {
     var visibilityMap = { 'rendering': false, 'tools': false },
-        modelMap = {};
+        sharedDataMap = {};
 
-    function getDecoratedModel(model, container) {
-        var key =  + '::' + ($(container).attr('container-uid') || 'main'),
-            result = modelMap[key];
-        if(!result) {
-            var probeModel = new cinema.decorators.Probe(new cinema.decorators.Control(model)),
-                renderingModel = new cinema.models.RenderingModel({
+    var getSharedData = function (model, container) {
+        var key = model.getHash() + '::' + ($(container).attr('container-uid') || 'main');
+        if (_.has(sharedDataMap, key)) {
+            return sharedDataMap[key];
+        } else {
+            var probe = new cinema.decorators.Probe(new cinema.decorators.Control(model)),
+                rendering = new cinema.models.RenderingModel({
                     url: cinema.staticRoot + 'rendering/rendering.json',
-                    ranges: probeModel.get('ranges'),
-                    fields: probeModel.get('fields')
+                    ranges: probe.get('ranges'),
+                    fields: probe.get('fields')
+                }),
+                renderer = new cinema.views.ProbeRendererWidget({
+                    model: probe,
+                    renderingModel: rendering
+                }),
+                controlView = new cinema.views.ControlWidget({
+                    model: probe,
+                    controlModel: probe
+                }),
+                tools = new cinema.views.ProbeRendererControlWidget({
+                    model: probe,
+                    controlView: controlView
+                }),
+                renderingView = new cinema.views.RenderingWidget({
+                    el: this.$('.c-rendering-panel', container),
+                    model: probe,
+                    viewport: renderer,
+                    renderingModel: rendering,
+                    disabledList: [ 'c-edit-lighting', 'c-view-fps-info' ],
+                    toolbarSelector: '.c-panel-toolbar'
                 });
 
-            result = modelMap[key] = {
+            var shared = {
                 key: key,
-                probeModel: probeModel,
-                renderingModel: renderingModel
-            };
-        }
-        return result;
-    }
+                rendering: rendering,
+                renderer: renderer,
+                controlView: controlView,
+                tools: tools,
+                renderingView: renderingView,
+                remove: function () {
 
-    function freeDecoratedModel(key) {
-        delete modelMap[key];
-    }
+                }
+            };
+            sharedDataMap[key] = shared;
+            return shared;
+        }
+    };
+
+    var freeSharedDataMap = function (key) {
+        delete sharedDataMap[key];
+    };
 
     function visibility(name, value) {
         if(value === undefined) {
@@ -38,66 +66,34 @@
         visibility(event.key, event.visible);
     });
 
-    // --------- Add 'view' page for composite-image-stack dataset ----------
-
     cinema.views.ProbeView = Backbone.View.extend({
         initialize: function(opts) {
             // console.log('NEW: Probe view ' + (++instanceCount));
+            var sharedData = getSharedData(this.model, this.$el);
+            this.key = sharedData.key;
 
-            this.key = getDecoratedModel(this.model, this.$el).key;
-            this.probeModel = getDecoratedModel(this.model, this.$el).probeModel;
-            this.renderingModel = getDecoratedModel(this.model, this.$el).renderingModel;
-
-            this.renderer = new cinema.views.ProbeRendererWidget({
-                model: this.probeModel,
-                renderingModel: this.renderingModel
-            });
-            this.controlView = new cinema.views.ControlWidget({
-                model: this.probeModel,
-                controlModel: this.probeModel
-            });
-            this.tools = new cinema.views.ProbeRendererControlWidget({
-                model: this.probeModel,
-                controlView: this.controlView
-            });
-            this.renderingView = new cinema.views.RenderingWidget({
-                el: this.$('.c-rendering-panel'),
-                model: this.probeModel,
-                viewport: this.renderer,
-                renderingModel: this.renderingModel,
-                toolbarSelector: '.c-panel-toolbar',
-                disabledList: [ 'c-edit-lighting', 'c-view-fps-info' ]
-            });
+            this.renderer = sharedData.renderer;
+            this.tools = sharedData.tools;
+            this.renderingView = sharedData.renderingView;
         },
 
         render: function() {
             this.renderer.setElement(this.$('.c-body-container')).render();
             this.tools.setElement(this.$('.c-tools-panel')).render();
             this.renderingView.setElement(this.$('.c-rendering-panel')).render();
-
-            // If we do this, we can never interact with these panels in the
-            // workbench.
-            //this.$('.c-tools-panel').toggle(visibility('tools'));
-            //this.$('.c-rendering-panel').toggle(visibility('rendering'));
         },
 
         remove: function() {
-            // console.log('REMOVE: Probe view ' + --instanceCount);
 
             // Free factory
-            freeDecoratedModel(this.key);
+            freeSharedDataMap(this.key);
 
             this.key = null;
 
             // Trash views
             this.renderer.remove();
-            this.controlView.remove();
             this.tools.remove();
             this.renderingView.remove();
-
-            // Trash models
-            this.probeModel.remove();
-            this.renderingModel.remove();
         }
     });
 
