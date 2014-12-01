@@ -118,6 +118,7 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
         this.$el.html(cinema.templates.compCalcWebglVisCanvas());
 
         if (this.$('.c-compcalc-webglvis-webgl-canvas').length > 0) {
+            console.log("WE WILL RENDER THIS VIEW!!!");
             var imgDim = this.compositeModel.getImageSize();
 
             var vpDim = [
@@ -400,6 +401,15 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
     },
 
     getImage: function () {
+        var compositeCanvas = this.$('.c-compcalc-webglvis-composite-buffer')[0];
+
+        //var image = new Image();
+        //var compositeCanvas = this.$('.c-compcalc-webglvis-webgl-canvas')[0];
+        //compositeCanvas = this.$('.c-compcalc-webglvis-composite-buffer')[0];
+        //image.src = compositeCanvas.toDataURL("image/png");
+        //return image;
+
+        //return compositeCanvas.toDataURL('image/png');
         return this.webglCompositor.getImage();
     },
 
