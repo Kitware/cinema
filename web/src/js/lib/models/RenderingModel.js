@@ -133,45 +133,17 @@ cinema.models.RenderingModel = Backbone.Model.extend({
         return [ controlPoints[idx].x, controlPoints[idx].r, controlPoints[idx].g, controlPoints[idx].b ];
     },
 
+    transform: function(inMin, value, inMax, outMin, outMax) {
+        return (((value - inMin) / (inMax - inMin)) * (outMax - outMin)) + outMin;
+    },
+
     getLutFunction: function(config) {
         var table =  [],
             controlPoints = $.extend(true, [], config.controlPoints),
             clampedRange = config.clampedRange,
             dataRange = config.dataRange,
             currentControlIdx = 0,
-            needRemap = false,
-            minIdx = 0,
-            maxIdx = 0,
             nbColorInTable = 256; // Can be increased
-
-        // If there is a min clamp, insert a new control point and mark that remap is needed
-        if (clampedRange[0] > dataRange[0]) {
-            var cp1 = controlPoints[0];
-            var frac1 = (clampedRange[0] - dataRange[0]) / (dataRange[1] - dataRange[0]);
-            controlPoints.splice(1, 0, {'r': cp1.r, 'g': cp1.g, 'b': cp1.b, 'x': frac1});
-            needRemap = true;
-            minIdx = 1;
-        }
-
-        // Ditto if there is a max clamp
-        if (clampedRange[1] < dataRange[1]) {
-            var cpn = controlPoints[controlPoints.length - 1];
-            var fracn = (clampedRange[1] - dataRange[0]) / (dataRange[1] - dataRange[0]);
-            controlPoints.splice(controlPoints.length - 1, 0, {'r': cpn.r, 'g': cpn.g, 'b': cpn.b, 'x': fracn});
-            needRemap = true;
-            maxIdx = controlPoints.length - 2;
-        } else {
-            maxIdx = controlPoints.length - 1;
-        }
-
-        // Now remap the interior control points so they have the same spacing
-        // as before the clamp.
-        if (needRemap === true) {
-            var span = controlPoints[maxIdx].x - controlPoints[minIdx].x;
-            for (var i = minIdx + 1; i < maxIdx; i += 1) {
-                controlPoints[i].x = (controlPoints[i].x * span) + controlPoints[minIdx].x;
-            }
-        }
 
         // Now actually generate the lookup table from the (maybe modified)
         // control points.
@@ -189,8 +161,19 @@ cinema.models.RenderingModel = Backbone.Model.extend({
             table.push(this.interpolateColor(pointA, pointB, value));
         }
 
+        var self = this;
+
         function lut(value) {
-            return table[Math.floor(value * (nbColorInTable - 1))];
+            var actualValue = self.transform(0.0, value, 1.0, dataRange[0], dataRange[1]);
+            if (actualValue < clampedRange[0]) {
+                var cp1 = controlPoints[0];
+                return [ cp1.r * 255, cp1.g * 255, cp1.b * 255 ];
+            } else if (actualValue > clampedRange[1]) {
+                var cpn = controlPoints[controlPoints.length - 1];
+                return [ cpn.r * 255, cpn.g * 255, cpn.b * 255 ];
+            }
+            var clampedValue = self.transform(clampedRange[0], actualValue, clampedRange[1], 0.0, 1.0);
+            return table[Math.floor(clampedValue * (nbColorInTable - 1))];
         }
 
         return lut;
