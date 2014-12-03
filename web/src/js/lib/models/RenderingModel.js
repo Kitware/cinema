@@ -165,8 +165,8 @@ cinema.models.RenderingModel = Backbone.Model.extend({
 
         function lut(value) {
             if (dataRange[0] === dataRange[1]) {
-                var cp1 = controlPoints[0];
-                return [ cp1.r * 255, cp1.g * 255, cp1.b * 255 ];
+                var cp = controlPoints[0];
+                return [ cp.r * 255, cp.g * 255, cp.b * 255 ];
             }
             var actualValue = self.transform(0.0, value, 1.0, dataRange[0], dataRange[1]);
             if (actualValue < clampedRange[0]) {
