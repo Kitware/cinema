@@ -38,7 +38,6 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
     _privateInit: function (settings) {
         this.lightPosition = [ -1, 1, 0 ];
         this.worldLight = new Vector(-1, 0, 1);
-        this._forceRedraw = false;
         this.lightTerms = { ka: 0.1, kd: 0.6, ks: 0.3, alpha: 20.0 };
         this.lightColor = [ 1, 1, 1 ];
     },
@@ -526,8 +525,7 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
     },
 
     forceRedraw: function () {
-        this._forceRedraw = true;
-        this.showViewpoint();
+        this.showViewpoint(true);
     },
 
     /**
