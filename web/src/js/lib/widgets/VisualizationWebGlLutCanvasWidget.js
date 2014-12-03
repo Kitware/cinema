@@ -36,7 +36,7 @@ cinema.views.VisualizationWebGlLutCanvasWidget = Backbone.View.extend({
 
     //subclass uses to extend
     _privateInit: function (settings) {
-        this._forceRedraw = false;
+
     },
 
     /**
@@ -425,8 +425,7 @@ cinema.views.VisualizationWebGlLutCanvasWidget = Backbone.View.extend({
     },
 
     forceRedraw: function () {
-        this._forceRedraw = true;
-        this.showViewpoint();
+        this.showViewpoint(true);
     },
 
     /**
