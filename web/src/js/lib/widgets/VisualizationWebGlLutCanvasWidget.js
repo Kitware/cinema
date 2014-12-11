@@ -178,8 +178,6 @@ cinema.views.VisualizationWebGlLutCanvasWidget = Backbone.View.extend({
             this.xscale = 1.0;
             this.yscale = imgAspect / vpAspect;
         }
-
-        console.log("xscale = " + this.xscale + ", yscale = " + this.yscale);
     },
 
     _computeLayerOffset: function () {
@@ -333,6 +331,11 @@ cinema.views.VisualizationWebGlLutCanvasWidget = Backbone.View.extend({
             w = this.$el.width(),
             h = this.$el.height();
 
+        if ( w === 0 && h === 0 ) {
+            w = 400;
+            h = 400;
+        }
+
         $(webglCanvas).attr({
             width: w,
             height: h
@@ -342,14 +345,11 @@ cinema.views.VisualizationWebGlLutCanvasWidget = Backbone.View.extend({
 
         var zoomLevel = this.viewpoint.get('zoom');
         var drawingCenter = this.viewpoint.get('center');
-
         zoomLevel = zoomLevel / this.naturalZoom;
 
         this._resizeViewport([w, h], this.compositeModel.getImageSize());
         this.webglCompositor.resizeViewport(w, h);
         this.webglCompositor.drawDisplayPass(this.xscale / zoomLevel, this.yscale / zoomLevel, drawingCenter);
-        // this.webglCompositor.drawDisplayPass(this.xscale / zoomLevel * 2.0, this.yscale / zoomLevel * 2.0, drawingCenter);
-        // this.webglCompositor.drawDisplayPass(this.xscale, this.yscale, drawingCenter);
 
         this.trigger('c:drawn');
     },

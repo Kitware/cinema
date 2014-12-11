@@ -415,8 +415,6 @@
       bottom = centerY - yscale;
       top = centerY + yscale;
 
-      console.log("orthomatrix: left = " + left + ", right = " + right + ", bottom = " + bottom + ", top = " + top);
-
       mat4.ortho(matrix, left, right, bottom, top, 1.0, -1.0);
     }
 
@@ -475,16 +473,16 @@
 
       gl.finish();
 
-      webglImage = (function convertCanvasToImage(canvas) {
-        // console.log("Attempting to generate png image from webgl canvas");
-        var image = new Image();
-        var dataUrl = canvas.toDataURL('image/png');
-        image.src = dataUrl;
-        //console.log("webglcanvas:");
-        //console.log(canvas);
-        //console.log("Just set image src attribute to: " + dataUrl);
-        return image;
-      })(glCanvas);
+      //webglImage = (function convertCanvasToImage(canvas) {
+      //  // console.log("Attempting to generate png image from webgl canvas");
+      //  var image = new Image();
+      //  var dataUrl = canvas.toDataURL('image/png');
+      //  image.src = dataUrl;
+      //  //console.log("webglcanvas:");
+      //  //console.log(canvas);
+      //  //console.log("Just set image src attribute to: " + dataUrl);
+      //  return image;
+      //})(glCanvas);
     }
 
 
@@ -544,10 +542,13 @@
     }
 
     function getImage() {
-      //var image = new Image();
-      //image.src = glCanvas.toDataURL("image/png");
-      //return image;
-      console.log("Retrieving image generated from webgl canvas: ");
+      webglImage = (function convertCanvasToImage(canvas) {
+        var image = new Image();
+        var dataUrl = canvas.toDataURL('image/png');
+        image.src = dataUrl;
+        return image;
+      })(glCanvas);
+
       return webglImage;
     }
 

@@ -174,11 +174,13 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
         var vpAspect = viewportDimensions[0] / viewportDimensions[1];
 
         if (vpAspect > imgAspect) {
-            this.xscale = vpAspect;
+            this.naturalZoom = viewportDimensions[1] / imageDimensions[1];
+            this.xscale = vpAspect / imgAspect;
             this.yscale = 1.0;
         } else {
+            this.naturalZoom = viewportDimensions[0] / imageDimensions[0];
             this.xscale = 1.0;
-            this.yscale = 1.0 / vpAspect;
+            this.yscale = imgAspect / vpAspect;
         }
     },
 
@@ -431,19 +433,25 @@ cinema.views.VisualizationWebGlLightCanvasWidget = Backbone.View.extend({
             w = this.$el.width(),
             h = this.$el.height();
 
+        if ( w === 0 && h === 0 ) {
+            w = 400;
+            h = 400;
+        }
+
         $(webglCanvas).attr({
             width: w,
             height: h
         });
 
-        // console.log("zoom: " + zoomLevel + ", center: " + drawingCenter);
-
         var zoomLevel = this.viewpoint.get('zoom');
         var drawingCenter = this.viewpoint.get('center');
+        zoomLevel = zoomLevel / this.naturalZoom;
+
+        // console.log("drawImage, w = " + w + ", h = " + h + ", zoom: " + zoomLevel + ", center: " + drawingCenter);
 
         this._resizeViewport([w, h], this.compositeModel.getImageSize());
         this.webglCompositor.resizeViewport(w, h);
-        this.webglCompositor.drawDisplayPass(this.xscale / zoomLevel * 2.0, this.yscale / zoomLevel * 2.0, drawingCenter);
+        this.webglCompositor.drawDisplayPass(this.xscale / zoomLevel, this.yscale / zoomLevel, drawingCenter);
 
         this.trigger('c:drawn');
     },

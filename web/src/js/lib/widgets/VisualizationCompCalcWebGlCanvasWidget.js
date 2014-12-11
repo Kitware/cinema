@@ -118,15 +118,12 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
         this.$el.html(cinema.templates.compCalcWebglVisCanvas());
 
         if (this.$('.c-compcalc-webglvis-webgl-canvas').length > 0) {
-            console.log("WE WILL RENDER THIS VIEW!!!");
             var imgDim = this.compositeModel.getImageSize();
 
             var vpDim = [
                 this.$('.c-compcalc-webglvis-webgl-canvas').parent().width(),
                 this.$('.c-compcalc-webglvis-webgl-canvas').parent().height()
             ];
-
-            console.log('in render: viewport dims from parent -> w = ' + vpDim[0] + ', h = ' + vpDim[1]);
 
             $(this.$('.c-compcalc-webglvis-webgl-canvas')[0]).attr({
                 width: vpDim[0],
@@ -157,7 +154,8 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
             this.yscale = imgAspect / vpAspect;
         }
 
-        console.log("xscale = " + this.xscale + ", yscale = " + this.yscale);
+        //console.log("imgAspect = " + imgAspect + ", vpAspect = " + vpAspect + ", xscale = " +
+        //            this.xscale + ", yscale = " + this.yscale);
     },
 
     _computeLayerOffset: function () {
@@ -372,7 +370,7 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
             w = this.$el.width(),
             h = this.$el.height();
 
-        if (w === 0 && h === 0) {
+        if ( w === 0 && h === 0 ) {
             w = 400;
             h = 400;
         }
@@ -382,17 +380,14 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
             height: h
         });
 
-        // console.log("zoom: " + zoomLevel + ", center: " + drawingCenter);
-
         var zoomLevel = this.viewpoint.get('zoom');
         var drawingCenter = this.viewpoint.get('center');
         zoomLevel = zoomLevel / this.naturalZoom;
 
-        console.log("drawImage, w = " + w + ", h = " + h + ", zoom: " + zoomLevel + ", center: " + drawingCenter);
+        // console.log("drawImage, w = " + w + ", h = " + h + ", zoom: " + zoomLevel + ", center: " + drawingCenter);
 
         this._resizeViewport([w, h], this.compositeModel.getImageSize());
         this.webglCompositor.resizeViewport(w, h);
-        // this.webglCompositor.drawDisplayPass(this.xscale / zoomLevel * 2.0, this.yscale / zoomLevel * 2.0, drawingCenter);
         this.webglCompositor.drawDisplayPass(this.xscale / zoomLevel, this.yscale / zoomLevel, drawingCenter);
 
         this.trigger('c:drawn');
@@ -416,15 +411,6 @@ cinema.views.VisualizationCompCalcWebGlCanvasWidget = Backbone.View.extend({
     },
 
     getImage: function () {
-        var compositeCanvas = this.$('.c-compcalc-webglvis-composite-buffer')[0];
-
-        //var image = new Image();
-        //var compositeCanvas = this.$('.c-compcalc-webglvis-webgl-canvas')[0];
-        //compositeCanvas = this.$('.c-compcalc-webglvis-composite-buffer')[0];
-        //image.src = compositeCanvas.toDataURL("image/png");
-        //return image;
-
-        //return compositeCanvas.toDataURL('image/png');
         return this.webglCompositor.getImage();
     },
 

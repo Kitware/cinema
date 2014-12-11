@@ -68,8 +68,6 @@ cinema.views.CompositeSearchPage = Backbone.View.extend({
     },
 
     handleSearchQuery:  function (event) {
-        console.log("Handling a new search query: ");
-        console.log(event);
         this.clearResults();
         var that = this;
         $('.c-search-page-next-results').hide();
