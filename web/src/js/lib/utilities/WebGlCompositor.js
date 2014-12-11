@@ -32,6 +32,7 @@
     mvp = null,
     glCanvas = null,
     copyCanvas = null,
+    webglImage = null,
     programReqs = {
       'display' : {
         'vertex': cinema.staticRoot + 'shaders/vertex/displayVertex.c',
@@ -190,6 +191,7 @@
     function initGL() {
       // Get A WebGL context
       gl = glCanvas.getContext("experimental-webgl", {preserveDrawingBuffer:true}) || glCanvas.getContext("webgl", {preserveDrawingBuffer:true});
+      //gl = glCanvas.getContext("experimental-webgl") || glCanvas.getContext("webgl");
       if (!gl) {
         return null;
       }
@@ -470,6 +472,17 @@
       gl.drawArrays(gl.TRIANGLES, 0, 6);
 
       gl.finish();
+
+      //webglImage = (function convertCanvasToImage(canvas) {
+      //  // console.log("Attempting to generate png image from webgl canvas");
+      //  var image = new Image();
+      //  var dataUrl = canvas.toDataURL('image/png');
+      //  image.src = dataUrl;
+      //  //console.log("webglcanvas:");
+      //  //console.log(canvas);
+      //  //console.log("Just set image src attribute to: " + dataUrl);
+      //  return image;
+      //})(glCanvas);
     }
 
 
@@ -529,9 +542,14 @@
     }
 
     function getImage() {
-      var image = new Image();
-      image.src = glCanvas.toDataURL("image/png");
-      return image;
+      webglImage = (function convertCanvasToImage(canvas) {
+        var image = new Image();
+        var dataUrl = canvas.toDataURL('image/png');
+        image.src = dataUrl;
+        return image;
+      })(glCanvas);
+
+      return webglImage;
     }
 
     return {
