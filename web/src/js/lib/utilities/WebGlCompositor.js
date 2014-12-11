@@ -415,6 +415,8 @@
       bottom = centerY - yscale;
       top = centerY + yscale;
 
+      console.log("orthomatrix: left = " + left + ", right = " + right + ", bottom = " + bottom + ", top = " + top);
+
       mat4.ortho(matrix, left, right, bottom, top, 1.0, -1.0);
     }
 
@@ -478,7 +480,9 @@
         var image = new Image();
         var dataUrl = canvas.toDataURL('image/png');
         image.src = dataUrl;
-        console.log("Just set image src attribute to: " + dataUrl);
+        //console.log("webglcanvas:");
+        //console.log(canvas);
+        //console.log("Just set image src attribute to: " + dataUrl);
         return image;
       })(glCanvas);
     }
