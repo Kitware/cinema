@@ -1,9 +1,5 @@
 cinema.views.ToolsToolbar = Backbone.View.extend({
     events: {
-        'click .c-pipeline-editor': function () {
-            cinema.events.trigger('c:editpipelines');
-        },
-
         'click .c-controls-editor': function () {
             cinema.events.trigger('c:editcontrols');
         },

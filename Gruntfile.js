@@ -24,12 +24,6 @@ module.exports = function (grunt) {
                 src: ['node_modules/bootstrap/dist/css/bootstrap.min.css',
                       'node_modules/rickshaw/rickshaw.min.css' ],
                 dest: 'web/dist/built/'
-            },
-            shaders: {
-                cwd: 'web/src/shaders',
-                src: '**/*',           // copy all files and subfolders
-                dest: 'web/dist/shaders',    // destination folder
-                expand: true
             }
         },
 
@@ -118,17 +112,17 @@ module.exports = function (grunt) {
                 files: {
                     'web/dist/built/cinema.ext.min.js': [
                         'web/ext/shim.js',
-                        'node_modules/jquery-browser/lib/jquery.js',
-                        'node_modules/jade/runtime.js',
-                        'node_modules/underscore/underscore.js',
+                        'node_modules/jquery-browser/lib/jquery.js', //jscript queries
+                        'node_modules/jade/runtime.js', //runtime component to jade minimized html
+                        'node_modules/underscore/underscore.js', //nice looping and functional shortcuts
                         'node_modules/backbone/backbone.js',
-                        'node_modules/bootstrap/dist/js/bootstrap.js',
-                        'node_modules/d3/d3.js',
-                        'node_modules/jsep/build/jsep.js',
-                        'node_modules/rickshaw/rickshaw.js',
-                        'node_modules/gl-matrix/dist/gl-matrix.js',
-                        'web/ext/vector.js',
-                        'node_modules/scrollpoints/scrollpoints.js',
+                        'node_modules/bootstrap/dist/js/bootstrap.js', //interaction on top of jquery
+                        'node_modules/d3/d3.js', //2D charts/plots
+                        'node_modules/jsep/build/jsep.js', //expression parsing
+                        'node_modules/rickshaw/rickshaw.js', //2d animated stacked plots (remember baby name database)
+                        'node_modules/gl-matrix/dist/gl-matrix.js', //fast matrix manipulation
+                        'web/ext/vector.js', //vector math lib
+                        'node_modules/scrollpoints/scrollpoints.js', //scroll alerts for GUI
                         'web/ext/jquery-visible.js'
                     ]
                 }
@@ -172,10 +166,6 @@ module.exports = function (grunt) {
             index_html: {
                 files: ['web/src/templates/index.html.jade'],
                 tasks: ['index-html']
-            },
-            shaders: {
-                files: ['web/src/shaders/**/*'],
-                tasks: ['copy:shaders']
             }
         },
 
@@ -228,6 +218,6 @@ module.exports = function (grunt) {
         ['express', 'watch']
     );
     grunt.registerTask('build-js', ['jade', 'uglify:app', 'uglify:lib']);
-    grunt.registerTask('init', ['copy:ext', 'copy:shaders', 'extend', 'uglify:ext', 'index-html']);
+    grunt.registerTask('init', ['copy:ext', 'extend', 'uglify:ext', 'index-html']);
     grunt.registerTask('default', ['stylus', 'build-js']);
 };

@@ -19,9 +19,6 @@ cinema.models.ControlModel = Backbone.Model.extend({
         Backbone.Model.call(this, {}, options);
     },
 
-    /**
-     * Store all available camera angles according to the information model.
-     */
     setControlsParameters: function () {
         var args = this.info.get('arguments');
         if (!this.info.loaded()) {
@@ -45,7 +42,7 @@ cinema.models.ControlModel = Backbone.Model.extend({
     },
 
     /**
-     * Get control value base on its name.
+     * Get control value based on its name.
      */
     getControl: function (name) {
         return this.controlMap[name].values[this.controlMap[name].activeIdx];
@@ -59,14 +56,14 @@ cinema.models.ControlModel = Backbone.Model.extend({
     },
 
     /**
-     * Get control label base on its name.
+     * Get control label based on its name.
      */
     getControlLabel: function (name) {
         return this.controlMap[name].label;
     },
 
     /**
-     * Get control type base on its name.
+     * Get control type based on its name.
      */
     getControlType: function (name) {
         return this.controlMap[name].type;

@@ -26,63 +26,12 @@
                     viewport: renderView,
                     toolbarSelector: '.c-panel-toolbar'
                 }),
-                searchToolsWidget = new cinema.views.StaticSearchToolsWidget({
-                    el: $('.c-tools-panel', container),
-                    model: model,
-                    toolbarSelector: '.c-panel-toolbar'
-                }),
                 histogram = null,
                 informationWidget = null,
                 histogramWidget = null,
                 searchView = null,
                 metaDataSearchView = null,
                 metaDataInformationWidget = null;
-
-            if (analysis) {
-                histogram = new cinema.models.StaticHistogramModel({
-                    basePath: model.get('basePath'),
-                    analysisInfo: model.get('metadata').analysis,
-                    namePattern: model.get('name_pattern')
-                });
-                informationWidget = new cinema.views.ComposableInformationWidget({
-                    el: $('.c-information-panel', container),
-                    model: model,
-                    controlModel: control,
-                    exclude: ['layer', 'filename'],
-                    analysisInfo: model.get('metadata').analysis,
-                    toolbarSelector: '.c-panel-toolbar'
-                });
-                histogramWidget = new cinema.views.StaticHistogramWidget({
-                    el: $('.c-static-histogram-panel', container),
-                    basePath: model.get('basePath'),
-                    histogramModel: histogram,
-                    viewpoint: viewpoint,
-                    controlModel: control,
-                    visModel: model,
-                    analysisInfo: model.get('metadata').analysis,
-                    toolbarSelector: '.c-panel-toolbar'
-                });
-                searchView = new cinema.views.StaticSearchPage({
-                    el: $('.c-body-container', container),
-                    basePath: model.get('basePath'),
-                    histogramModel: histogram,
-                    visModel: model,
-                    controlModel: control
-                });
-            } else {
-                metaDataSearchView = new cinema.views.MetaDataStaticSearchPage({
-                    el: $('.c-body-container', container),
-                    visModel: model,
-                    controlModel: control
-                });
-                metaDataInformationWidget = new cinema.views.MetaDataSearchInformationWidget({
-                    el: $('.c-information-panel', container),
-                    model: model,
-                    controlModel: control,
-                    exclude: ['layer', 'filename'],
-                    toolbarSelector: '.c-panel-toolbar'
-                });
-            }
 
             var shared = {
                 key: key,
@@ -93,12 +42,7 @@
                 renderView: renderView,
                 histogramWidget: histogramWidget,
                 toolsWidget: toolsWidget,
-                searchToolsWidget: searchToolsWidget,
-                searchView: searchView,
-                metaDataSearchView: metaDataSearchView,
-                metaDataInformationWidget: metaDataInformationWidget,
                 remove: function () {
-
                 }
             };
             sharedDataMap[key] = shared;
@@ -124,8 +68,7 @@
 
     cinema.views.StaticImageView = Backbone.View.extend({
         initialize: function (opts) {
-            this._hasAnalysis = _.has(this.model.get('metadata'), 'analysis');
-            var sharedData = getSharedData(this.model, this.$el, this._hasAnalysis);
+            var sharedData = getSharedData(this.model, this.$el, false);
             this.key = sharedData.key;
 
             this.controlModel = sharedData.control;
@@ -146,19 +89,6 @@
                     keyModifiers: null
                 });
 
-            if (this._hasAnalysis) {
-                this.staticHistogram = sharedData.histogramWidget;
-                this.searchInformation = sharedData.informationWidget;
-                this.controlList = opts.defaultControls.slice(0);
-                this.controlList.push(
-                    { position: 'center', key: 'static-histogram', icon: 'icon-chart-bar', title: 'Histogram' }
-                );
-
-                sharedData.histogram.fetch( { 'controlModel': this.controlModel } );
-            } else {
-                this.searchInformation = sharedData.metaDataInformationWidget;
-            }
-
             this.listenTo(this.controlModel, 'change', this.refreshCamera);
             this.listenTo(this.viewpointModel, 'change', this.refreshCamera);
             this.listenTo(cinema.events, 'c:resetCamera', this.resetCamera);
@@ -167,12 +97,7 @@
         render: function () {
             this.renderView.setElement(this.$('.c-body-container')).render().showViewpoint(true);
             this.toolsWidget.setElement(this.$('.c-tools-panel')).render();
-            this.searchInformation.setElement(this.$('.c-information-panel')).render();
             this.$('.c-information-panel').toggle(visibility('information'));
-            if (this._hasAnalysis) {
-                this.staticHistogram.setElement(this.$('.c-static-histogram-panel')).render();
-                this.$('.c-static-histogram-panel').toggle(visibility('histogram'));
-            }
             return this;
         },
 
@@ -189,7 +114,7 @@
         },
 
         remove: function () {
-            getSharedData(this.model, this.$el, this._hasAnalysis).remove();
+            getSharedData(this.model, this.$el, false).remove();
 
             // SharedData
             freeSharedDataMap(this.key);
@@ -204,84 +129,10 @@
             // Views
             this.renderView.remove();
             this.compositeTools.remove();
-            if (this._hasAnalysis) {
-                this.staticHistogram.remove();
-                this.searchInformation.remove();
-            } else {
-                this.searchInformation.remove();
-            }
-        }
-    });
-
-    cinema.views.StaticImageSearchView = Backbone.View.extend({
-        initialize: function (opts) {
-            this._hasAnalysis = _.has(this.model.get('metadata'), 'analysis');
-            var sharedData = getSharedData(this.model, this.$el, this._hasAnalysis);
-            this.key = sharedData.key;
-
-            this.controlModel = sharedData.control;
-            this.viewpointModel = sharedData.viewpoint;
-            this.searchTools = sharedData.searchToolsWidget;
-
-            if (this._hasAnalysis) {
-                this.searchView = sharedData.searchView;
-                this.staticHistogram = sharedData.histogramWidget;
-                this.searchInformation = sharedData.informationWidget;
-                this.controlList = opts.defaultControls.slice(0);
-                this.controlList.push(
-                    { position: 'center', key: 'static-histogram', icon: 'icon-chart-bar', title: 'Histogram' }
-                );
-            } else {
-                this.searchView = sharedData.metaDataSearchView;
-                this.searchInformation = sharedData.metaDataInformationWidget;
-            }
-        },
-
-        render: function () {
-            this.searchView.setElement(this.$('.c-body-container')).render();
-            this.searchTools.setElement(this.$('.c-tools-panel')).render();
-            this.searchInformation.setElement(this.$('.c-information-panel')).render();
-            this.$('.c-information-panel').toggle(visibility('information'));
-            if (this._hasAnalysis) {
-                this.staticHistogram.setElement(this.$('.c-static-histogram-panel')).render();
-                this.$('.c-static-histogram-panel').toggle(visibility('histogram'));
-            }
-            return this;
-        },
-
-        remove: function () {
-            getSharedData(this.model, this.$el, this._hasAnalysis).remove();
-
-            // SharedData
-            freeSharedDataMap(this.key);
-
-            // Connections to SharedData
-            this.key = null;
-
-            // Models
-            this.controlModel.remove();
-            this.viewpointModel.remove();
-
-            // Views
-            this.searchView.remove();
-            this.searchTools.remove();
-            if (this._hasAnalysis) {
-                this.staticHistogram.remove();
-                this.searchInformation.remove();
-            } else {
-                this.searchInformation.remove();
-            }
         }
     });
 
     cinema.viewMapper.registerView('parametric-image-stack', 'view', cinema.views.StaticImageView, {
-        controls: [
-            { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
-            { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }
-        ]
-    });
-
-    cinema.viewMapper.registerView('parametric-image-stack', 'search', cinema.views.StaticImageSearchView, {
         controls: [
             { position: 'left', key: 'information', icon: 'icon-help', title: 'Information' },
             { position: 'right', key: 'tools', icon: 'icon-tools', title: 'Tools' }

@@ -22,13 +22,9 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
         return this.urlRoot + '/' + this.infoFile;
     },
 
-    workbench: function () {
-        return false;
-    },
-
     getDataType: function () {
         if(this.loaded()) {
-            return this.workbench() ? '' : this.get('metadata').type;
+            return this.get('metadata').type;
         }
         return 'no-match';
     },

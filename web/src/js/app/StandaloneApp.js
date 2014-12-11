@@ -17,30 +17,8 @@ cinema.StandaloneApp = Backbone.View.extend({
             panel.fadeToggle();
         },
 
-        // Handle search navigation
-        'click .c-search-filter-apply': function (e) {
-            if (cinema.viewType !== 'search') {
-                cinema.viewType = 'search';
-                this.render();
-            }
-            var searchQuery = $('.c-search-filter').val();
-            cinema.searchQuery = searchQuery;
-            cinema.events.trigger('c:handlesearchquery', {searchQuery: searchQuery});
-        },
+        'click .c-app-icon': 'switchToRenderView'
 
-        'click .c-app-icon': 'switchToRenderView',
-
-        'keyup .c-search-filter': function (e) {
-            if (e.keyCode === 13) {
-                if (cinema.viewType !== 'search') {
-                    cinema.viewType = 'search';
-                    this.render();
-                }
-                var searchQuery = $(e.currentTarget).val();
-                cinema.searchQuery = searchQuery;
-                cinema.events.trigger('c:handlesearchquery', {searchQuery: searchQuery});
-            }
-        }
     },
 
     initialize: function (settings) {
@@ -48,7 +26,7 @@ cinema.StandaloneApp = Backbone.View.extend({
         cinema.staticRoot = this.staticRoot = settings.staticRoot;
 
         // When additional view type are added just expand the given list
-        this.allowedViewType = ['view', 'search'];
+        this.allowedViewType = ['view'];
 
         this.model = new cinema.models.VisualizationModel({
             basePath: this.dataRoot,
@@ -94,16 +72,8 @@ cinema.StandaloneApp = Backbone.View.extend({
 
         // Handle header bar base on application type (workbench/cinema)
         var title;
-        if (cinema.model.getDataType() === 'workbench') {
-            title = 'Workbench';
-            this.$('.header-right').html(cinema.app.templates.workbenchControl({
-                runs: cinema.model.get('runs')
-            }));
-        } else {
-            title = 'Cinema';
-            this.$('.header-right').html(cinema.app.templates.cinemaControl({controlList: controlList}));
-            this.$('.header-center').html(cinema.app.templates.cinemaSearch({query: cinema.searchQuery}));
-        }
+        title = 'Cinema';
+        this.$('.header-right').html(cinema.app.templates.cinemaControl({controlList: controlList}));
 
         this.$('.header-left').html(cinema.app.templates.headerLeft({
             icon: 'icon-cinema',
@@ -116,7 +86,7 @@ cinema.StandaloneApp = Backbone.View.extend({
             delay: {show: 200}
         });
 
-        var container = this.model.getDataType() === 'workbench' ? this.$('.c-body-container') : this.$el;
+        var container = this.$el;
         this._currentView.setElement(container).render();
 
         return this;
