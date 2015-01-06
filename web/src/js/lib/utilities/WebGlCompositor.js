@@ -279,15 +279,23 @@
 
       $.ajax({
         url: vertexUrl,
+        dataType: 'text',
         success: function (result) {
           shaderLoaded(result, gl.VERTEX_SHADER);
+        },
+        error: function (xhr, status, error) {
+          console.log("Unable to load vertex shader (" + vertexUrl + "): " + error);
         }
       });
 
       $.ajax({
         url: fragmentUrl,
+        dataType: 'text',
         success: function (result) {
           shaderLoaded(result, gl.FRAGMENT_SHADER);
+        },
+        error: function (xhr, status, error) {
+          console.log("Unable to load fragment shader (" + fragmentUrl + "): " + error);
         }
       });
     }
