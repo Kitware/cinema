@@ -32,7 +32,7 @@ module.exports = function (grunt) {
                 defaults: {
                     staticRoot: '',
                     dataRoot: '/data',
-                    title: 'ParaView Cinema'
+                    title: 'Cinema'
                 }
             },
             config: {
