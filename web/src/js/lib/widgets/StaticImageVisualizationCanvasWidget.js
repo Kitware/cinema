@@ -66,7 +66,7 @@ cinema.views.StaticImageVisualizationCanvasWidget = Backbone.View.extend({
             }
             this.drawImage();
         });
-        cinema.bindWindowResizeHandler(this, this.drawImage, 200);
+        cinema.bindWindowResizeHandler(this, this.resizeEvent, 200);
 
         this.showViewpoint();
     },
@@ -74,6 +74,10 @@ cinema.views.StaticImageVisualizationCanvasWidget = Backbone.View.extend({
     render: function () {
         this.$el.html(cinema.templates.staticCanvas());
         return this;
+    },
+
+    resizeEvent: function() {
+        this.resetCamera();
     },
 
     /**

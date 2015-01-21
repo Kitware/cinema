@@ -1,0 +1,15 @@
+| Which View?
+
+.c-dv-layout-item
+
+select#sophie
+  each model,name in models
+    option(value=name) #{name}
+
+.c-dv-button
+
+button#Accept(
+  type='submit'
+) Accept
+
+.c-run-container

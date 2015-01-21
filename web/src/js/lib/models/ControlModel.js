@@ -1,5 +1,5 @@
 /**
- * Represents all the controls except the camera location and time.
+ * Represents all the controls.
  */
 
 cinema.models.ControlModel = Backbone.Model.extend({
@@ -171,6 +171,18 @@ cinema.models.ControlModel = Backbone.Model.extend({
         this.controlMap[name].activeIdx = this.controlMap[name].values.length - 1;
         this.trigger('change');
         return this.getControl(name);
+    },
+
+    /**
+     *
+     */
+    startPlay: function (name) {
+        if (this.controlMap[name].activeIdx < this.controlMap[name].values.length - 1) {
+            this.incrementControlValue(name, false);
+            setTimeout(function(caller, name) {
+                caller.startPlay(name);
+            }, 500, this, name);
+        }
     },
 
     /**

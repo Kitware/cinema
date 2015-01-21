@@ -148,5 +148,10 @@ cinema.views.ControlWidget = Backbone.View.extend({
     first: function (controlName) {
         this.controlModel.setFirstControlValue(controlName);
         this._refresh();
+    },
+
+    play: function (controlName) {
+        this.controlModel.startPlay(controlName);
+        this._refresh();
     }
 });

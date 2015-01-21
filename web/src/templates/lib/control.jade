@@ -14,6 +14,7 @@
             input(type="range", value="#{controlMap[controlName].activeIdx}", min="0", max="#{controlMap[controlName].values.length -   1}", step="1")
             i.icon-fast-forward.c-controls-control-button(action="next")
             i.icon-to-end-1.c-controls-control-button(action="last")
+            i.icon-play-1.c-controls-control-button(action="play")
         else
           select
             each option in controlMap[controlName].values

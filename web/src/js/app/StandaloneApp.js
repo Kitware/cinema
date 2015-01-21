@@ -1,5 +1,3 @@
-var viewMap = { 'view': null, 'search': null };
-
 cinema.StandaloneApp = Backbone.View.extend({
     events: {
         // Handle control panel close action
@@ -24,7 +22,7 @@ cinema.StandaloneApp = Backbone.View.extend({
         cinema.staticRoot = this.staticRoot = settings.staticRoot;
 
         // When additional view type are added just expand the given list
-        this.allowedViewType = ['view'];
+        this.allowedViewType = ['view', 'workbench'];
 
         this.model = new cinema.models.VisualizationModel({
             basePath: this.dataRoot,
@@ -38,27 +36,24 @@ cinema.StandaloneApp = Backbone.View.extend({
     },
 
     render: function () {
+        this.model = cinema.model;
+
         if (!this.model.loaded()) {
             return;
         }
 
-        // Make sure we have a view type valid
-        if (!cinema.viewType || !_.contains(this.allowedViewType, cinema.viewType)) {
+        var desired = cinema.model.attributes.metadata.type;
+        // Make sure we have a valid view type
+        if (!desired || !_.contains(this.allowedViewType, desired)) {
             cinema.viewType = 'view';
         }
 
         // Find out what the view control list is for control panel container
-        var viewInfo = cinema.viewMapper.getView(cinema.model.getDataType(), cinema.viewType);
-
-        if (viewMap[cinema.viewType] === null) {
-            this._currentView = new viewInfo.view({
-                defaultControls: viewInfo.opts.controls,
-                model: this.model
-            });
-            viewMap[cinema.viewType] = this._currentView;
-        } else {
-            this._currentView = viewMap[cinema.viewType];
-        }
+        var viewInfo = cinema.viewMapper.getView(cinema.model.getDataType(), 'view');
+        this._currentView = new viewInfo.view({
+            defaultControls: viewInfo.opts.controls,
+            model: this.model
+        });
 
         // Create container for control panels
         var controlList = this._currentView.controlList || viewInfo.opts.controls;

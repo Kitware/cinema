@@ -4,9 +4,6 @@ cinema.views.ToolsToolbar = Backbone.View.extend({
             cinema.events.trigger('c:editcontrols');
         },
 
-        'click .c-play-tools': function () {
-        },
-
         'click .c-resize-tools': function () {
             cinema.events.trigger('c:resetCamera');
         }
