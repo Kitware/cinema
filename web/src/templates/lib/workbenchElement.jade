@@ -1,15 +1,12 @@
-| Which View?
+.c-header-container
+    .header-left
 
-.c-dv-layout-item
+.c-menu-container
 
-select#sophie
-  each model,name in models
-    option(value=name) #{name}
+  | Choose a View
 
-.c-dv-button
+  p
 
-button#Accept(
-  type='submit'
-) Accept
-
-.c-run-container
+  select#sophie
+    each model,name in models
+      option(value=name) #{name}

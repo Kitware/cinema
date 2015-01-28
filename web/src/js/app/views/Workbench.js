@@ -20,11 +20,22 @@
         },
 
         render: function () {
+
             this.$el.html(cinema.templates['workbenchElement']({
             models: this.configuration.models,
             }));
-            var button = $('button#Accept')
-            button.on("click", data=this, function(e){ e.data.setRun() });
+
+            var title;
+            title = 'Cinema';
+
+            this.$('.header-left').html(cinema.app.templates.headerLeft({
+                icon: 'icon-cinema',
+                title: title,
+                active: cinema.viewType
+            }));
+
+            var menu = $('#sophie')
+            menu.on("mouseup", data=this, function(e){ e.data.setRun() });
 
         },
 
