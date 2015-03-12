@@ -119,10 +119,6 @@ cinema.StandaloneApp = Backbone.View.extend({
         var container = this.model.getDataType() === 'workbench' ? this.$('.c-body-container') : this.$el;
         this._currentView.setElement(container).render();
 
-        // Set the background color based on the metadata value, if any.  This
-        // will return white unless there is a bg color specified in metadata.
-        container.css('background-color', this.model.getBackgroundColor());
-
         return this;
     },
 

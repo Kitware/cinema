@@ -173,6 +173,11 @@
                 this.staticHistogram.setElement(this.$('.c-static-histogram-panel')).render();
                 this.$('.c-static-histogram-panel').toggle(visibility('histogram'));
             }
+
+            // Set the background color based on the metadata value, if any.  This
+            // will return white unless there is a bg color specified in metadata.
+            this.$('.c-body-container').css('background-color', this.model.getBackgroundColor());
+
             return this;
         },
 
