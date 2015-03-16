@@ -33,6 +33,23 @@ cinema.models.VisualizationModel = Backbone.Model.extend({
         return 'no-match';
     },
 
+    getBackgroundColor: function () {
+        var bgColor = 'rgb(255,255,255)';
+        if (this.loaded()) {
+            if (!this.workbench()) {
+                var md = this.get('metadata');
+                if (md && md.hasOwnProperty('backgroundColor')) {
+                    var bg = md.backgroundColor,
+                        r = Math.round(bg[0] * 255),
+                        g = Math.round(bg[1] * 255),
+                        b = Math.round(bg[2] * 255);
+                    bgColor = 'rgb(' + r + ',' + g + ',' + b + ')';
+                }
+            }
+        }
+        return bgColor;
+    },
+
     getFilePattern: function(args, ignoreList) {
         var keySet = args || {},
             result = this.get('name_pattern') || '',
