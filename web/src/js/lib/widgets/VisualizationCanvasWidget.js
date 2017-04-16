@@ -107,7 +107,6 @@ cinema.views.VisualizationCanvasWidget = Backbone.View.extend({
         });
         this.listenTo(this.layers, 'change', this.updateQuery);
         cinema.bindWindowResizeHandler(this, this.drawImage, 200);
-
     },
 
     render: function () {
